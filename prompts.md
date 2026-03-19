@@ -368,4 +368,10 @@ whats next section 4?
 go
 
 ### Prompt 082
+
+### Prompt 083
+compact our conversation and lets check where we are becuse you seem to be losing context
+
+### Prompt 084
+save and commit, we will start from here tomorrow
 yes i approve
