@@ -24,6 +24,8 @@
 - Each task must meet the universal DoD before it is marked Done.
 - Dependencies must be explicit.
 - Progress is recorded against each task.
+- Blocked status requires explicit blocker reason.
+- Done status requires traceability links (spec -> task -> tests -> chronicle).
 - Brownfield plans should prefer tiny, behavior-safe increments.
 - Brownfield tasks should include parity checks at the smallest practical unit.
 
@@ -40,6 +42,8 @@
 - DoR met? Yes | No | Blocked on: [what]
 - Definition of done: inherits universal DoD from `02_WORKFLOW_STAGES.md`; add task-specific additions here:
 - Status: Not started | In progress | Blocked | Done
+- Blocker reason: (required if Status = Blocked)
+- Traceability links: (required if Status = Done)
 - Progress notes:
 
 2. T-002: [Title]
@@ -53,6 +57,8 @@
 - DoR met? Yes | No | Blocked on: [what]
 - Definition of done: inherits universal DoD from `02_WORKFLOW_STAGES.md`; add task-specific additions here:
 - Status: Not started | In progress | Blocked | Done
+- Blocker reason: (required if Status = Blocked)
+- Traceability links: (required if Status = Done)
 - Progress notes:
 
 3. T-003: [Title]
@@ -66,6 +72,8 @@
 - DoR met? Yes | No | Blocked on: [what]
 - Definition of done: inherits universal DoD from `02_WORKFLOW_STAGES.md`; add task-specific additions here:
 - Status: Not started | In progress | Blocked | Done
+- Blocker reason: (required if Status = Blocked)
+- Traceability links: (required if Status = Done)
 - Progress notes:
 
 ## 4. XP and DDD Checks

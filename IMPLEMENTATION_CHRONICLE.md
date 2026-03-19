@@ -1,5 +1,15 @@
 # Implementation Chronicle
 
+Plain-language purpose:
+
+- This file explains why something was implemented the way it was.
+- It records decisions that are not obvious from the final code or docs.
+- It helps another person rebuild the same result later if the code is lost.
+- In short:
+  - Project brief = what we want
+  - Formal spec = how it should behave
+  - Implementation chronicle = how we actually chose to build it and what we learned
+
 ## 1. Chronicle Metadata
 
 - Chronicle ID: CHR-GOV-STARTUP
@@ -24,9 +34,9 @@
 ## 3. Implementation Decisions
 
 - Data structures chosen and why:
-  - N/A (policy text updates only).
+  - Not applicable for document-only governance change. TODO for coding projects.
 - Algorithms chosen and why:
-  - N/A.
+  - Not applicable for document-only governance change. TODO for greenfield coding projects.
 - Control-flow structure chosen and why:
   - Added explicit "first question" rule in workflow and bootstrap docs.
 - Boundary and interface decisions:
@@ -102,8 +112,8 @@
 
 ## 10. Approval / Review
 
-- Reviewed by: Pending
-- Review date: Pending
+- Reviewed by: Lefty
+- Review date: 2026-03-19
 - Notes:
   - Linked to task T-001 and requirement FR-001.
 
@@ -133,6 +143,11 @@
   - Enforcement represented as governance policy text.
 
 ### 3. Implementation Decisions
+
+- Data structures chosen and why:
+  - Not applicable for document-only governance change. TODO for coding projects.
+- Algorithms chosen and why:
+  - Not applicable for document-only governance change. TODO for greenfield coding projects.
 
 - Control-flow structure chosen and why:
   - Added denial-reason logging requirement to both policy (`01_DECISION_POLICY.md`) and enforcement (`02_WORKFLOW_STAGES.md`) to avoid single-file drift.
@@ -180,7 +195,91 @@
 
 ### 10. Approval / Review
 
-- Reviewed by: Pending
-- Review date: Pending
+- Reviewed by: Lefty
+- Review date: 2026-03-19
 - Notes:
   - Linked to task T-002 and requirements FR-002/NFR-001.
+
+---
+
+## Chronicle Entry: CHR-GOV-TASK-DISCIPLINE
+
+### 1. Chronicle Metadata
+
+- Chronicle ID: CHR-GOV-TASK-DISCIPLINE
+- Source task ID: T-003
+- Source spec sections: FORMAL_SPEC.md section 4 (FR-003)
+- Source requirements: FR-003
+- Module / component name: Practical task status flow
+- Implementation language: Markdown policy artifacts
+- Author: GitHub Copilot
+- Date: 2026-03-19
+- Status: Final
+
+### 2. Intent to Implementation Mapping
+
+- What this unit implements from the behavioral spec:
+  - Clear per-task status flow with mandatory blocker reasons and done-state traceability links.
+- What must remain functionally equivalent across languages:
+  - Status transition rules and required status metadata must be consistent.
+- What is intentionally language-specific in this implementation:
+  - Enforcement represented in markdown workflow and task templates.
+
+### 3. Implementation Decisions
+
+- Data structures chosen and why:
+  - Not applicable for document-only governance change. TODO for coding projects.
+- Algorithms chosen and why:
+  - Not applicable for document-only governance change. TODO for greenfield coding projects.
+- Control-flow structure chosen and why:
+  - Defined explicit transition paths: Not started -> In progress -> (Blocked | Done), with guarded transitions for blocked/done states.
+- Boundary and interface decisions:
+  - Status rules live in `02_WORKFLOW_STAGES.md`; per-task capture fields live in `templates/TASK_LIST_TEMPLATE.md`.
+- Error-handling strategy:
+  - Invalid status transitions are denied and reasons must be recorded in task notes.
+
+### 4. Alternatives Considered
+
+- Alternative 1: Keep status rules implicit in DoR/DoD only.
+- Why rejected:
+  - Teams can still drift without explicit transition rules and required status fields.
+
+### 5. Derived Invariants and Constraints
+
+- Invariant 1:
+  - Blocked status always includes blocker reason.
+- Invariant 2:
+  - Done status always includes traceability links.
+
+### 6. Divergences and Clarifications
+
+- Where the spec was ambiguous:
+  - FR-003 did not explicitly state blocker-reason and traceability-link requirements.
+- How the ambiguity was resolved in code:
+  - FR-003 updated, workflow transition rules added, task template fields added.
+
+### 7. Testing Notes
+
+- Unit tests added:
+  - Not executable; validated rule/field consistency across spec, workflow, and task template.
+- Integration tests added:
+  - Not executable; sample task lifecycle recorded in task list.
+
+### 8. Reconstruction Notes
+
+- If the code were lost, what another implementer must know to rebuild this unit faithfully:
+  - Recreate explicit status transitions in workflow docs and required blocker/traceability fields in task templates.
+
+### 9. Known Limitations
+
+- Limitation 1:
+  - No automated linter yet to enforce missing blocker or traceability fields.
+- Revisit trigger:
+  - Add policy checks during automation-layer implementation.
+
+### 10. Approval / Review
+
+- Reviewed by: Lefty
+- Review date: 2026-03-19
+- Notes:
+  - Linked to task T-003 and requirement FR-003.

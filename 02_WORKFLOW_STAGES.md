@@ -54,6 +54,20 @@ For Brownfield tasks, add:
 
 ---
 
+## Task Status Flow (Operational)
+
+Use this status flow for every task in task records:
+
+- Not started -> In progress: allowed only when DoR is met.
+- In progress -> Blocked: requires a blocker reason in the task record.
+- Blocked -> In progress: requires unblock note in progress notes.
+- In progress -> Done: allowed only when DoD is met and traceability links are present.
+- Done -> In progress: allowed only with explicit reopen reason logged.
+
+Task records must include enough context for another participant to understand current state without additional chat context.
+
+---
+
 ## Stage-Level Done Criteria
 
 A stage is done only when:

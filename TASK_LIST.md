@@ -81,8 +81,14 @@
 - DoR met? Yes
 - Definition of done: inherits universal DoD from `02_WORKFLOW_STAGES.md`; add task-specific additions here:
   - Include one example task lifecycle record from start to done.
-- Status: Not started
+- Status: Done
 - Progress notes:
+  - Added explicit task status transition rules in `02_WORKFLOW_STAGES.md`.
+  - Added required `Blocker reason` and `Traceability links` fields in `templates/TASK_LIST_TEMPLATE.md`.
+  - Updated FR-003 to require blocker reason and done-state traceability.
+  - Chronicle entry recorded: CHR-GOV-TASK-DISCIPLINE in `IMPLEMENTATION_CHRONICLE.md`.
+  - Example lifecycle: Not started -> In progress -> Blocked (missing chronicle link) -> In progress (unblocked after link added) -> Done.
+  - Example traceability links: FR-003 -> T-003 -> TASK_LIST_TEMPLATE status fields -> CHR-GOV-TASK-DISCIPLINE.
 
 4. T-004: Implement cross-agent clarification routing
 - Description: Enforce remit-holder consultation before escalation to Lefty.

@@ -79,14 +79,17 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
 
 ## 2026-03-19 Status Snapshot 006
 
+
+## 2026-03-19 Status Snapshot 068
+
 - Timestamp: 2026-03-19
-- Current stage: Guardrails refinement
-- Completed since last update: Updated rules to auto-advance through itemized task lists after each completed item.
-- In progress: Refining item 2 rule precedence wording.
-- Decisions made: No per-item permission prompt required once a list is established.
+- Current stage: Stage 4 Build in progress.
+- Completed since last update: Chronicle intro accepted.
+- In progress: Opening implementation chronicle file in editor on user request.
+- Decisions made: None.
 - Open questions: None.
 - Blockers: None.
-- Next step: Finalize precedence wording in interaction guardrails and decision policy.
+- Next step: Continue with T-003 task tracker flow.
 
 ## 2026-03-19 Status Snapshot 007
 
@@ -720,3 +723,47 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
 - Open questions: None.
 - Blockers: None.
 - Next step: Commit and proceed to T-003 (task tracker flow).
+
+## 2026-03-19 Status Snapshot 064
+
+- Timestamp: 2026-03-19
+- Current stage: Stage 4 Build in progress.
+- Completed since last update: T-001 and T-002 completed and committed.
+- In progress: Clarifying chronicle notation where implementation-decision fields show N/A for documentation-only changes.
+- Decisions made: None yet.
+- Open questions: Whether to replace N/A wording with clearer "not applicable for this task type" wording.
+- Blockers: None.
+- Next step: Explain rationale and optionally refine chronicle wording style.
+
+## 2026-03-19 Status Snapshot 065
+
+- Timestamp: 2026-03-19
+- Current stage: Stage 4 Build in progress.
+- Completed since last update: Updated implementation chronicle wording to replace vague N/A with explicit document-only applicability plus TODO guidance for coding projects.
+- In progress: Awaiting confirmation on revised wording style.
+- Decisions made: Chronicle sections now distinguish policy-only tasks from code-implementation tasks more clearly.
+- Open questions: None.
+- Blockers: None.
+- Next step: Continue with T-003 task tracker flow.
+
+## 2026-03-19 Status Snapshot 066
+
+- Timestamp: 2026-03-19
+- Current stage: Stage 4 Build in progress.
+- Completed since last update: Chronicle wording made more explicit for document-only governance tasks.
+- In progress: Explaining the purpose of the implementation chronicle in plain language.
+- Decisions made: None yet.
+- Open questions: Whether to simplify the chronicle structure after explanation.
+- Blockers: None.
+- Next step: Clarify purpose and decide whether to refactor the document format.
+
+## 2026-03-19 Status Snapshot 067
+
+- Timestamp: 2026-03-19
+- Current stage: Stage 4 Build in progress.
+- Completed since last update: Implementation chronicle approved by user; T-003 completed with explicit status transition rules, blocker-reason requirement, and done-state traceability-link requirement across workflow/spec/template/task/chronicle artifacts.
+- In progress: Saving and committing T-003 milestone updates.
+- Decisions made: Status flow now explicitly enforced as: Not started -> In progress -> (Blocked | Done), with guarded transitions and required status metadata.
+- Open questions: None.
+- Blockers: None.
+- Next step: Commit T-003 and move to T-004 (cross-agent clarification routing).

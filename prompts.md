@@ -320,3 +320,32 @@ so what is next?
 
 ### Prompt 070
 go
+
+### Prompt 071
+why do we have an NA here:
+## 3. Implementation Decisions
+
+- Data structures chosen and why:
+	- N/A (policy text updates only).
+- Algorithms chosen and why:
+	- N/A.
+
+### Prompt 072
+Lets make all those sections even more direct and say something like:
+
+Data structures chosen and why: Not applicable for document-only governance change. TODO for coding projects
+Algorithms chosen and why: Not applicable for document-only governance change. TODO for greenfield coding projects
+
+or something along those lines
+
+### Prompt 073
+sorry this document does not makes sensto me at all... can you explain its purpose
+
+### Prompt 074
+okay, I accept it with the caveat that you put this reason in plain language at the beginning of th doc
+
+### Prompt 075
+ok, can youopen it for me
+
+### Prompt 076
+this entire document is approved lets move onto the next major step

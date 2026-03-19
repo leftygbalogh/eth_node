@@ -158,10 +158,13 @@ Example startup transcript (Brownfield):
   - Task start or task completion event
 - Expected behavior:
   - Start allowed only when DoR is met
+  - Transition to Blocked requires explicit blocker reason
   - Done allowed only when DoD is met
+  - Done state requires traceability links (spec -> task -> tests -> chronicle)
 - Postconditions:
   - Task status reflects real quality gate status
 - Error handling:
+  - Invalid status transition is denied with reason recorded in task notes
   - Task moves or remains Blocked with missing criteria listed
 
 ### FR-004 Collaboration behavior
