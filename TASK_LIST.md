@@ -61,8 +61,11 @@
 - DoR met? Yes
 - Definition of done: inherits universal DoD from `02_WORKFLOW_STAGES.md`; add task-specific additions here:
   - Include audit example showing allowed and denied transitions.
-- Status: Not started
+- Status: Done
 - Progress notes:
+  - Stage transition denial now requires explicit denial-reason logging in policy and workflow docs.
+  - FR-002 error handling now includes approval-missing and commit-missing denial logging.
+  - Chronicle entry recorded: CHR-GOV-STAGE-GATE in `IMPLEMENTATION_CHRONICLE.md`.
 
 3. T-003: Add practical task tracker flow
 - Description: Implement simple per-task status flow (To do, In progress, Blocked, Done) with clear blocker reason capture.

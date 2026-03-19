@@ -224,3 +224,4 @@ Quality pack activation:
 - Stage-level done requires all tasks in the stage to meet the universal task-level DoD.
 - Any role may raise a DoR or DoD violation; it must be resolved before work continues.
 - After stage completion is approved, save and create a stage-completion commit before any next-stage work begins.
+- If transition is denied, the denial reason must be logged in `memory.md` and the active stage artifact.

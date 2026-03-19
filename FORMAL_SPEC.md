@@ -148,7 +148,8 @@ Example startup transcript (Brownfield):
 - Postconditions:
   - Approval and commit recorded
 - Error handling:
-  - Without explicit yes, transition denied
+  - Without explicit yes, transition denied and denial reason logged in stage records
+  - Without stage-completion commit, transition denied and denial reason logged in stage records
 
 ### FR-003 Task discipline behavior
 - Preconditions:

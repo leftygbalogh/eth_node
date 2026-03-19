@@ -50,6 +50,7 @@ Request explicit approval before acting when any of the following applies:
 - Pause at stage end and request explicit approval before next stage.
 - No cross-stage work without approval.
 - Silence or lack of objection is not approval; next-stage work requires an explicit yes.
+- If a stage transition is denied, record the denial reason in stage records (`memory.md` and relevant task/stage artifact).
 
 ## Commit Cadence Policy
 
