@@ -654,3 +654,36 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
 - Open questions: None.
 - Blockers: None.
 - Next step: Commit Stage 3 artifacts and start T-001 in Build stage.
+
+## 2026-03-19 Status Snapshot 058
+
+- Timestamp: 2026-03-19
+- Current stage: Stage 4 Build not started yet; status requested.
+- Completed since last update: Stage 3 artifacts committed and approved; language selection checkpoint codified.
+- In progress: Providing concise overall progress summary.
+- Decisions made: None new.
+- Open questions: None.
+- Blockers: None.
+- Next step: Start Build with T-001 (mode-first startup flow).
+
+## 2026-03-19 Status Snapshot 059
+
+- Timestamp: 2026-03-19
+- Current stage: Stage 4 not yet started; policy clarification in progress.
+- Completed since last update: User requested location of rule requiring project-specific governance copy in new projects.
+- In progress: Providing exact file locations and wording references.
+- Decisions made: None.
+- Open questions: Whether to make the "use as working governance directory" wording more explicit.
+- Blockers: None.
+- Next step: Point to current sources and propose explicit wording update if desired.
+
+## 2026-03-19 Status Snapshot 060
+
+- Timestamp: 2026-03-19
+- Current stage: Stage 4 pending; governance wording update in progress.
+- Completed since last update: Added explicit rule that copied project-specific governance folder becomes active working governance directory.
+- In progress: Saving and committing wording update.
+- Decisions made: Working-governance-directory behavior is now explicitly documented in both README and copilot bootstrap rules.
+- Open questions: None.
+- Blockers: None.
+- Next step: Commit update and proceed to next item in Build.

@@ -38,6 +38,7 @@ Read and apply files in this order:
 - For new projects based on this template:
   - Initialize a git repository.
   - Copy this folder as project-specific governance folder.
+  - Use that copied project-specific governance folder as the active working governance directory for the project.
   - Run a guided Q&A to customize all required documents.
 
 ## Usage in New Projects

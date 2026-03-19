@@ -303,3 +303,14 @@ At what stage do you ask what is the languuage of coding? Is it before this task
 
 ### Prompt 065
 please do and #file:TASK_LIST.md  is accepted, lets move on
+
+### Prompt 066
+can you give me a progress status overall? What have we done and what is left. Just a very short version.
+
+### Prompt 067
+cool, thank you
+
+somewhat unrelated,  can you just remind me where we specify the action that the agent after reading the AI_Governance_template must make a project specific copy of it and use it as its working directory for the forject governance?
+
+### Prompt 068
+please do, and then save, commit, lets move onto next item

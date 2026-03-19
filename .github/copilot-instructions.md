@@ -54,6 +54,7 @@ For projects initialized from this template:
 
 - Ensure git repository is initialized.
 - Keep governance folder project-specific and complete the document Q&A.
+- Use the copied project-specific governance folder as the active working governance directory for all project governance decisions and artifacts.
 - Treat this template as the master governance source; project-local improvements should be fed back here when approved.
 - Use simple manual versioning and short changelog updates for the master template.
 - Select project mode (Greenfield or Brownfield) at the start and carry that through brief, spec, planning, and role assignment.
