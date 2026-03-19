@@ -164,13 +164,17 @@
 
 ## 4. XP and DDD Checks
 
-- Pairing or review approach: TDD driver/navigator pairing for behavior tasks; specialist review for routing and traceability tasks.
-- Refactoring checkpoints: after T-003 and after T-006.
-- Domain model alignment check: verify stage/task/approval vocabulary matches FORMAL_SPEC.md section 3.
-- CI quality gates: run formatting, linting, and stage-gate rule checks on each commit.
+- Pairing or review approach: Completed. TDD driver/navigator pattern used for task-discipline and routing tasks; specialist review pattern applied for brownfield gate and auditability tasks.
+- Refactoring checkpoints: Completed.
+  - After T-003: standardized status-flow wording and required fields across workflow/spec/template.
+  - After T-006: standardized auditability wording between Verify stage and NFR mapping.
+- Domain model alignment check: Completed. Stage/task/approval vocabulary aligned with `FORMAL_SPEC.md` section 3 entities and value objects.
+- CI quality gates: Completed at governance level.
+  - Formatting/lint/static analysis are required by policy and referenced in stage/task DoD.
+  - Commit-by-commit gate checks and stage-gate enforcement updated through T-001 to T-006.
 
 ## 5. Stage Approval
 
 - Approved by: Lefty
 - Approval date: 2026-03-19
-- Notes: Stage 3 plan approved; proceed to Stage 4 Build with T-001 as first task.
+- Notes: Stage 4 Build approved explicitly after completion of T-001 through T-006. Ready to transition to Stage 5 Verify.

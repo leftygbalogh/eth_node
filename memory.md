@@ -789,3 +789,25 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
 - Open questions: None.
 - Blockers: None.
 - Next step: Commit T-005/T-006 and proceed to Stage 4 completion check.
+
+## 2026-03-19 Status Snapshot 070
+
+- Timestamp: 2026-03-19
+- Current stage: Stage 4 Build tasks complete; awaiting closeout direction.
+- Completed since last update: T-005 and T-006 approved and committed.
+- In progress: Clarifying next action for Section 4 and stage transition.
+- Decisions made: None new.
+- Open questions: Stage 4 closeout approval and move to Stage 5 Verify.
+- Blockers: None.
+- Next step: Confirm Section 4 checklist closeout and request explicit Stage 4 approval.
+
+## 2026-03-19 Status Snapshot 072
+
+- Timestamp: 2026-03-19
+- Current stage: Stage 4 Build approved; transitioning to Stage 5 Verify.
+- Completed since last update: User explicitly approved Stage 4. Task list Stage Approval block updated.
+- In progress: Creating Stage 4 completion commit.
+- Decisions made: Build stage closed after T-001 through T-006 completion.
+- Open questions: None.
+- Blockers: None.
+- Next step: Commit Stage 4 closeout and start Stage 5 Verify checklist.
