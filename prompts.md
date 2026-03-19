@@ -355,3 +355,8 @@ please open up that section for me
 
 ### Prompt 078
 looks good
+
+### Prompt 079
+T5 and T6 both look good.
+
+QQ: do we have logging specified anywhere in our requirements?
