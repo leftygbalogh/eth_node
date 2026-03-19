@@ -278,3 +278,22 @@ yes I approve stage one, and as it is now complete, lets save and commit. Is thi
 
 ### Prompt 058
 yes, please make it explicit. I had this issue in the past that our rollback points were not frequent enough, so overall, I'd prefer to have more smaller commits than less, and after each major milestone, definitely a clear - this is done kind of commit
+
+### Prompt 059
+Okay, I am trying to publish this branch, I may need your help, please stand by
+
+### Prompt 060
+we are good, it worked. Private for now.
+
+so what is our next step according to the plan?
+
+### Prompt 061
+okay, please keep it less abstract and intellectual: I prefer examples over hyperintellectual specificity
+
+### Prompt 062
+lets go through this doc subsection by subsection because for instance I do not understand 1.1 brownfield bits. So lets start with 1.1 and give me a bit of an explanatio of what this means in a real project, say we are building a snake game in cli / or we are refactoring a cli snake game - lets use this as our working examples throughout the discussion in this section
+
+### Prompt 063
+awesome the rest are okay, so feel free to lock it in and move on
+
+QQ: is there a way for me to communicate with you in speaking, verbally?

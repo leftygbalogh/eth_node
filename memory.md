@@ -566,3 +566,58 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
 - Open questions: None for this policy change.
 - Blockers: None.
 - Next step: Commit policy updates and proceed to Stage 2 Specify.
+
+## 2026-03-19 Status Snapshot 050
+
+- Timestamp: 2026-03-19
+- Current stage: Transition point after Stage 1 completion; waiting for branch publish outcome.
+- Completed since last update: Stage-completion commit policy codified and committed.
+- In progress: Standby support for publishing current branch.
+- Decisions made: None new.
+- Open questions: None.
+- Blockers: None.
+- Next step: Assist with publish/push troubleshooting if any issue appears.
+
+## 2026-03-19 Status Snapshot 051
+
+- Timestamp: 2026-03-19
+- Current stage: Stage 1 complete and branch published; ready to start Stage 2 Specify.
+- Completed since last update: Branch publish succeeded (private).
+- In progress: Confirming next planned action sequence.
+- Decisions made: Proceed with Stage 2 formal specification drafting from approved brief.
+- Open questions: None blocking; Stage 2 approval will be requested after spec draft.
+- Blockers: None.
+- Next step: Draft formal behavioral specification and request explicit Stage 2 approval.
+
+## 2026-03-19 Status Snapshot 052
+
+- Timestamp: 2026-03-19
+- Current stage: Stage 2 Specify draft prepared.
+- Completed since last update: Created initial formal specification draft with plain-language, example-first structure.
+- In progress: Stage 2 review with user.
+- Decisions made: Communication style preference locked to practical examples over abstract phrasing.
+- Open questions: Stage 2 approval yes/no after review of FORMAL_SPEC.md.
+- Blockers: None.
+- Next step: Present draft summary and request explicit Stage 2 approval or edits.
+
+## 2026-03-19 Status Snapshot 053
+
+- Timestamp: 2026-03-19
+- Current stage: Stage 2 review walkthrough in progress.
+- Completed since last update: User requested subsection-by-subsection explanation starting at 1.1, with concrete Snake CLI examples (new build and refactor).
+- In progress: Explaining section 1.1 in practical terms.
+- Decisions made: Use snake-game examples consistently for this walkthrough.
+- Open questions: Whether section 1.1 wording should be edited after explanation.
+- Blockers: None.
+- Next step: Deliver plain-language explanation of 1.1 and confirm before moving to 1.2.
+
+## 2026-03-19 Status Snapshot 054
+
+- Timestamp: 2026-03-19
+- Current stage: Stage 2 Specify approved.
+- Completed since last update: User approved remaining sections; FR-001 startup wording corrected to mode-first question flow; formal spec marked approved.
+- In progress: Stage-completion commit for Stage 2.
+- Decisions made: Move forward to Stage 3 Plan after stage-completion commit.
+- Open questions: Voice interaction options in current environment.
+- Blockers: None.
+- Next step: Commit Stage 2 artifact, then draft Stage 3 task list.
