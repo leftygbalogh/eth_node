@@ -297,3 +297,9 @@ lets go through this doc subsection by subsection because for instance I do not 
 awesome the rest are okay, so feel free to lock it in and move on
 
 QQ: is there a way for me to communicate with you in speaking, verbally?
+
+### Prompt 064
+At what stage do you ask what is the languuage of coding? Is it before this tasklist kicks in during the spec discovery?
+
+### Prompt 065
+please do and #file:TASK_LIST.md  is accepted, lets move on

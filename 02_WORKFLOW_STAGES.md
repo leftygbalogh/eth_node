@@ -9,6 +9,14 @@ Select one mode at project start and record it in project artifacts:
 
 Mode selection changes priorities, role emphasis, and validation strategy.
 
+## Implementation Language Selection
+
+Declare intended implementation language(s) during Stage 1 Discover.
+
+- Record at least one primary implementation language before Stage 3 Plan approval.
+- Optional secondary language(s) may be declared for parity or migration scenarios.
+- Behavioral specification remains language-agnostic; language choice guides tooling, owners, and task planning.
+
 ---
 
 ## Universal Definition of Ready (DoR) — Task Level
@@ -67,6 +75,7 @@ Definition of done:
 - Domain understanding captured
 - Open questions listed and resolved or deferred
 - Scope boundaries documented
+- Intended implementation language(s) declared (primary required, secondary optional)
 - Q3 module triggers declared (data quality, compliance) or explicitly ruled out
 
 Mode-specific done criteria:
@@ -94,6 +103,7 @@ Definition of done:
 - Functional and non-functional requirements defined
 - Interfaces, behaviors, and constraints specified
 - Risks and assumptions documented
+- Language-specific implementation constraints documented without changing language-agnostic behavior contract
 - Behavioral specification rigor applied to core behaviors using statecharts, design by contract, and decision tables
 - Performance targets, reliability failure modes, and maintainability seams defined
 
@@ -120,6 +130,7 @@ Definition of done:
 
 - Numbered task list with dependencies
 - Work order and owners proposed
+- Task owners, tooling, and CI choices aligned to declared implementation language(s)
 - Test strategy per task defined
 - CI pipeline and contribution standards planned
 

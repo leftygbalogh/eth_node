@@ -4,6 +4,9 @@
 
 - Project name:
 - Project mode: Greenfield | Brownfield
+- Primary implementation language:
+- Secondary implementation language(s):
+- Language decision status: Fixed | Deferred (must be Fixed before Stage 3 Plan approval)
 - Problem statement:
 - Desired business/domain outcome:
 - In-scope goals:

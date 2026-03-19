@@ -5,6 +5,8 @@
 - Spec ID:
 - Version:
 - Project mode: Greenfield | Brownfield
+- Declared implementation language(s) from brief:
+- Language-specific constraints captured in this spec:
 - Source brief:
 - Status:
 - Author:

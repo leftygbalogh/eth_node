@@ -10,8 +10,9 @@
 
 - Plan ID: PLAN-AGT-001
 - Source formal spec: FORMAL_SPEC.md (FSP-AGT-001 v1.0)
-- Version: 0.1-draft
+- Version: 1.0
 - Project mode: Greenfield
+- Implementation language(s): Markdown for governance artifacts; PowerShell/Bash for automation scripts
 - Owner: Lefty
 - Date: 2026-03-19
 
@@ -137,6 +138,6 @@
 
 ## 5. Stage Approval
 
-- Approved by: Pending
-- Approval date: Pending
-- Notes: Draft task plan generated from approved Stage 2 formal specification.
+- Approved by: Lefty
+- Approval date: 2026-03-19
+- Notes: Stage 3 plan approved; proceed to Stage 4 Build with T-001 as first task.

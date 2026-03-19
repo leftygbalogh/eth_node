@@ -632,3 +632,25 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
 - Open questions: Stage 3 approval yes/no after task list review.
 - Blockers: None.
 - Next step: Review TASK_LIST.md and request explicit Stage 3 approval or revisions.
+
+## 2026-03-19 Status Snapshot 056
+
+- Timestamp: 2026-03-19
+- Current stage: Stage 3 task-plan review in progress.
+- Completed since last update: User asked when coding language selection should happen relative to spec/task list flow.
+- In progress: Clarifying exact stage placement and recommending deterministic rule.
+- Decisions made: None yet.
+- Open questions: Whether to codify language-selection checkpoint in Stage 1 and spec metadata.
+- Blockers: None.
+- Next step: Provide answer and propose doc update if approved.
+
+## 2026-03-19 Status Snapshot 057
+
+- Timestamp: 2026-03-19
+- Current stage: Stage 3 approved; preparing Stage 4 Build.
+- Completed since last update: Added explicit implementation-language checkpoint to workflow and templates. Task list accepted and marked approved.
+- In progress: Creating Stage 3 completion commit.
+- Decisions made: Language selection is now mandatory in Stage 1 (primary required before Stage 3 approval).
+- Open questions: None.
+- Blockers: None.
+- Next step: Commit Stage 3 artifacts and start T-001 in Build stage.
