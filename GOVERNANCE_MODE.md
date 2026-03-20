@@ -2,19 +2,13 @@
 
 ## Current Mode
 
-<!-- TOGGLE: uncomment exactly one Mode line below, comment the other -->
-
-<!-- - Mode: Template Development -->
 - Mode: Project
-- Project name: [set project name here]
 - Effective date: 2026-03-20
 - Owner: Lefty
 
 ## Meaning
 
-If Mode is `Project`, this repository is operating as a live software delivery project and stage-by-stage project execution is the active concern.
-
-If Mode is `Template Development`, this repository is operating as the master governance template under refinement, not as a live software delivery repository.
+this repository is operating as a live software delivery project and stage-by-stage project execution is the active concern.
 
 ## Agent Routing Rules
 
