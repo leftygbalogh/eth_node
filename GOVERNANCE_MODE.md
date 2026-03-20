@@ -2,13 +2,22 @@
 
 ## Current Mode
 
-- Mode: Template Development
+<!-- TOGGLE: uncomment exactly one Mode line below, comment the other -->
+
+<!-- - Mode: Template Development -->
+- Mode: Project
+- Project name: [set project name here]
 - Effective date: 2026-03-20
 - Owner: Lefty
 
 ## Meaning
 
+<!-- Meaning for Template Development mode (uncomment this block when Mode = Template Development):
 This repository is currently operating as the master template under refinement, not as a live software delivery repository.
+-->
+
+<!-- Meaning for Project mode (active): -->
+This repository is currently operating as a live software delivery project. Template refinement is not the active concern; stage-by-stage project delivery is.
 
 ## Agent Routing Rules
 
@@ -32,12 +41,14 @@ When Mode is `Project`, agents should:
 
 ## Switching Mode
 
-To switch from template refinement to live project execution, update this file:
+To switch mode, update this file:
 
-- Change `Mode` to `Project`
-- Set project name/context in this file
-- Record switch reason in `memory.md`
-- Commit mode switch before stage work continues
+1. In the **Current Mode** block: comment out the active `Mode` line and uncomment the target one.
+2. In the **Meaning** block: comment out the active meaning paragraph and uncomment the target one.
+3. Set `Project name` if switching to Project mode.
+4. Update `Effective date`.
+5. Record the switch reason in `memory.md`.
+6. Commit the mode switch before any stage work continues.
 
 ## Notes
 
