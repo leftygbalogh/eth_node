@@ -956,3 +956,14 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
 - Open questions: None.
 - Blockers: None.
 - Next step: Commit and push live-project improvements to master.
+
+## 2026-03-20 Status Snapshot 084
+
+- Timestamp: 2026-03-20
+- Current stage: Post-release template enhancement.
+- Completed since last update: Added `GOVERNANCE_MODE.md` and inserted it as the first discovery-order file in `README.md` to separate Template Development mode from Project mode routing.
+- In progress: Committing mode-routing improvements.
+- Decisions made: Mode flag now acts as first startup routing check before stage suggestions.
+- Open questions: None.
+- Blockers: None.
+- Next step: Commit and push mode-routing update.

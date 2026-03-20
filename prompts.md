@@ -407,3 +407,18 @@ Please read the feedback file and the changes it made to the templates, and DO N
 
 ### Prompt 094
 excellent, implement them the best way so we can avoid these in the future
+
+### Prompt 095
+Okay, some more feedback. When I gave the template to the project ai agent, it came back wit hthe following initial prompt:
+
+Next decision:
+
+1. Give me the next task inside this repo
+2. Ask me to review or improve any specific governance file
+3. Ask me to use this template against a real project and begin the mode-first discovery flow
+
+++++
+
+Is there a way to indicate that now this repo is for a real software projet vs we are in the meta phase refining the template itself?
+
+yes

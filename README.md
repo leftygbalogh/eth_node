@@ -12,19 +12,20 @@ This folder defines AI interaction rules, stage gates, team model, and project a
 
 Read and apply files in this order:
 
-1. `00_INTERACTION_GUARDRAILS.md`
-2. `01_DECISION_POLICY.md`
-3. `02_WORKFLOW_STAGES.md`
-4. `03_TEAM_MODEL_HANDOFFS.md`
-5. `04_PERSONA_DIRECTORY.md`
-6. `05_IDLE_AUTOMATION.md`
-7. `06_COMMAND_CHAIN_AND_PERSONALITY.md`
-8. `07_QUALITY_DIMENSIONS.md`
-9. `templates/PROJECT_BRIEF_TEMPLATE.md`
-10. `templates/FORMAL_SPEC_TEMPLATE.md`
-11. `templates/TASK_LIST_TEMPLATE.md`
-12. `templates/IMPLEMENTATION_CHRONICLE_TEMPLATE.md`
-13. `.github/copilot-instructions.md`
+1. `GOVERNANCE_MODE.md`
+2. `00_INTERACTION_GUARDRAILS.md`
+3. `01_DECISION_POLICY.md`
+4. `02_WORKFLOW_STAGES.md`
+5. `03_TEAM_MODEL_HANDOFFS.md`
+6. `04_PERSONA_DIRECTORY.md`
+7. `05_IDLE_AUTOMATION.md`
+8. `06_COMMAND_CHAIN_AND_PERSONALITY.md`
+9. `07_QUALITY_DIMENSIONS.md`
+10. `templates/PROJECT_BRIEF_TEMPLATE.md`
+11. `templates/FORMAL_SPEC_TEMPLATE.md`
+12. `templates/TASK_LIST_TEMPLATE.md`
+13. `templates/IMPLEMENTATION_CHRONICLE_TEMPLATE.md`
+14. `.github/copilot-instructions.md`
 
 ## Non-Negotiable Operating Rules
 
@@ -47,6 +48,7 @@ Read and apply files in this order:
 2. Rename it to project-specific governance folder name.
 3. Initialize git if not already initialized.
 4. Complete Q&A customization in this order:
+  - Read `GOVERNANCE_MODE.md` first and confirm whether this repo is in Template Development mode or Project mode
   - First question: determine project mode (Greenfield or Brownfield) before any domain-specific questions
    - Project brief
    - Formal specification
