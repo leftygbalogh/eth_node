@@ -31,6 +31,11 @@ Declare active Q3 modules at project start. Once declared, these become core exp
   - If yes, define capture method: screen-state capture + application-state capture (scripted helper or equivalent)
   - If yes, define storage location and naming convention for captured session artifacts:
 
+- Layered architecture constraint active? Yes | No
+  - Trigger: project uses a language with first-class module, type, and interface support (e.g. Rust, Python, TypeScript, Go, C# — not Bash, awk, or shell scripts)
+  - If yes, Q3-ARCH-01 (Interface → API → CLI → GUI hierarchy) is enforced at Stage 2 spec, Stage 4 build, and Stage 5 verify
+  - If no, layered architecture is an aspiration only; no gate check is applied
+
 Note: Q1 core pack (Problem Understanding, Architecture, Code Quality, Testing, Security, Process & Workflow) is always active. Q2 stage-unlocked dimensions activate automatically at their named stages. See `07_QUALITY_DIMENSIONS.md`.
 
 ## 2. Stakeholders and Users

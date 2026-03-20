@@ -1001,3 +1001,9 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
 - Blockers: None.
 - Next step: Commit and push CLI diagnostics governance updates.
 - Next step: Commit and push approval delegation workflow changes.
+
+### Snapshot 088
+Date: 2026-03-20
+Status: Implemented Q3-ARCH-01 layered architecture constraint (Interface ? API ? CLI ? GUI). Active when project declares language with first-class module support. Gate checks at Stage 2, 4, 5. 5 files updated. Committing now.
+Next step: None pending.
+

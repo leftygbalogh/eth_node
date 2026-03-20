@@ -191,10 +191,24 @@ Present in the template as optional plug-in governance. Inactive by default. Dec
 |---|-----------|-------------------|
 | 13 | Data Quality | Project declares persistent storage, schemas, or migrations |
 | 14 | Compliance & Auditability | Project declares regulatory scope (GDPR, HIPAA, SOC2, financial, healthcare, etc.) |
+| Q3-ARCH-01 | Layered Architecture Integrity | Project uses a language with first-class module, type, and interface support (Rust, Python, TypeScript, Go, C#, etc.) |
 
 ---
 
 ## Pack Definitions
+
+**Q3-ARCH-01 — Layered Architecture Integrity (Interface → API → CLI → GUI)**
+
+Active when: project brief Section 1.2 declares layered architecture trigger = Yes.
+
+Rule: Every module must expose a formally defined interface. Business logic must be reachable through an API layer that is callable from inside the application, from an external caller, or from a CLI invocation — without modification. The CLI is a thin consumer of the API only and must contain no business logic. A GUI, if present, is a visualisation layer that consumes the API and adds no logic of its own.
+
+Gate checks:
+- Stage 2 Specify: formal spec must identify (a) module interface boundaries, (b) the API surface, and (c) how each CLI entry point maps to an API call.
+- Stage 4 Build: no business logic may reside exclusively in the CLI or GUI layer. Any violation is a blocker.
+- Stage 5 Verify: API surface must be callable directly (e.g. via a test or script) independently of the CLI entry point.
+
+---
 
 **Core pack (Q1):** Always active, beginning at Stage 1 Discover. No project may bypass these dimensions. These are the baseline expectation for every agent, every review, and every stage gate in every project.
 

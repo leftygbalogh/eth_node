@@ -33,6 +33,7 @@ A task may not be started until all of the following are true. Any role may bloc
 7. No unresolved ambiguity that would require a stop mid-implementation. If ambiguity exists, resolve it first.
 8. For tasks with branching logic, interactive input, or persistence side effects, a branch matrix exists covering happy path, negative path, edge/boundary states, and illegal or unexpected user actions.
 9. For interactive CLI tasks, screen-state capture and application-state capture method are defined before implementation starts (script or equivalent mechanism), including how manual sessions produce reusable evidence.
+10. If Q3-ARCH-01 is active: the module interface and API surface are defined in the formal spec before implementation begins, and each CLI entry point is mapped to a specific API call in the spec.
 
 For Brownfield tasks, add:
 8. Legacy behavior evidence identified for touched areas (code/runtime traces/tests) and minimum local setup prerequisites verified.

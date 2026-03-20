@@ -79,6 +79,14 @@ Map each NFR to measurable criteria. Targets defined here are validated at Stage
 - Alternatives considered:
 - Consequences:
 
+### 7.1 Layered Architecture (required if Q3-ARCH-01 is active)
+
+- Module interface definitions: (list each module and its formally defined interface or trait/protocol)
+- API surface: (describe operations callable from inside the application, from an external caller, and from a CLI invocation)
+- CLI-to-API mapping: (for each CLI command or entry point, state which API call it delegates to)
+- GUI-to-API mapping: (for each GUI action, state which API call it delegates to — omit if no GUI)
+- Business logic placement constraint: No logic belonging to the domain may reside exclusively in the CLI or GUI layer. Any business logic found there during review is an architecture violation and a build blocker.
+
 ## 8. Test Strategy (TDD-aligned)
 
 - Unit test approach:

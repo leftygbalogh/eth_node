@@ -15,6 +15,7 @@ In-scope responsibilities:
 2. Define extension points and likely evolution scenarios.
 3. Set constraints that protect long-term maintainability.
 4. For interactive CLI projects, define diagnostics boundaries early: what screen-state and application-state must be capturable for manual-session debugging.
+5. If Q3-ARCH-01 is active: define the Interface → API → CLI → GUI boundary explicitly in the architecture decision set. The API surface must be callable independent of any CLI entry point. Flag any design that embeds business logic in the CLI or GUI layer as an architecture violation before it reaches implementation.
 
 Out-of-scope boundaries:
 

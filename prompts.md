@@ -438,3 +438,7 @@ This is CLI specific, so we need to figure out where this need to be mentioned, 
 CLI programs - always create screen state capture and application state capture helper scripts, or some other means,  so we can use them during manual testing. We run the application through the script, I interactively, manually test it the way I please and the recorded states and screen changes can help identify the bug.
 
 please do
+
+### Prompt 102
+Add layered architecture principle (Interface ? API ? CLI ? GUI) to governance template as Q3-ARCH-01 dimension. Confirmed Q3 scoping (not universal). Implemented across PROJECT_BRIEF_TEMPLATE, FORMAL_SPEC_TEMPLATE, 07_QUALITY_DIMENSIONS, greenfield-evolution-architect, and 02_WORKFLOW_STAGES.
+
