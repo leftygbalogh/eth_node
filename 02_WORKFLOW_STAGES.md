@@ -241,3 +241,4 @@ Quality pack activation:
 - Any role may raise a DoR or DoD violation; it must be resolved before work continues.
 - After stage completion is approved, save and create a stage-completion commit before any next-stage work begins.
 - If transition is denied, the denial reason must be logged in `memory.md` and the active stage artifact.
+- At every stage gate closure, any participant may append a proposal to the project `feedback.json` file (one entry per proposal) suggesting an addition, modification, or removal to any template document applicable to their current stage or any prior stage. Proposals are reviewed at the gate before the next stage begins. No template document is changed until the decision owner explicitly approves. Approved proposals are fed back into the master template before the next project begins.

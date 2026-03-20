@@ -85,6 +85,7 @@ Personality and command model reference:
 Documentation support role:
 
 - `agents/technical-writer-live-examples.md`
+- `agents/meta-prompter.md`
 
 Additional language implementation personas:
 

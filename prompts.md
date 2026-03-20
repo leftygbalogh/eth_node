@@ -392,4 +392,10 @@ yes
 
 ### Prompt 090
 thank you, please save, commit and push
+
+### Prompt 091
+here is one more role that I would like to have, a meta prompter who can hep me make my prompts clearer, more precise better formatted and more complete, can you create that role and also explain to me how I can use that agent here in this chat?
 yes i approve
+
+### Prompt 092
+Objective: Add a structured feedback mechanism that activates at every stage gate closure. Any participant can propose a change (add, modify, or remove) to any template document covering their current stage or any prior stage. All proposals for a project accumulate in a single feedback.json file and are reviewed at each gate before the next stage begins.

@@ -1,0 +1,29 @@
+{
+  "$schema": "feedback-schema-v1",
+  "description": "One file per project. Append one entry per proposal. All entries reviewed at stage gates. No template changes apply until explicitly approved by Lefty.",
+  "project_id": "",
+  "entries": [
+    {
+      "_comment": "SCHEMA REFERENCE — copy and fill this object for each proposal",
+      "stage": 0,
+      "role": "",
+      "doc": "",
+      "subsection": "",
+      "change_type": "add | modify | remove",
+      "before": null,
+      "after": "",
+      "reasoning": ""
+    },
+    {
+      "_comment": "WORKED EXAMPLE — from AI Governance Template v1.0 project",
+      "stage": 2,
+      "role": "greenfield-formal-spec-author",
+      "doc": "templates/FORMAL_SPEC_TEMPLATE.md",
+      "subsection": "4. Functional Requirements",
+      "change_type": "modify",
+      "before": "### FR-001\n- Description:\n- Normal flow:\n- Error handling:",
+      "after": "### FR-001\n> Concrete example: For a CLI snake game, FR-001 should describe the startup mode question (Greenfield vs Brownfield), not game mechanics. Lead with one real scenario before writing abstract rules.\n- Description:\n- Normal flow:\n- Error handling:",
+      "reasoning": "During Stage 2 on this project, the FR-001 wording was too abstract and required multiple walkthrough iterations before the intent was clear. Adding a concrete example line at the top of each FR block in the template would have reduced that back-and-forth significantly."
+    }
+  ]
+}

@@ -923,3 +923,25 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
 - Blockers: None.
 - Next step: Confirm push success and end session.
 - Next step: Finalize commit and confirm clean working tree.
+
+## 2026-03-20 Status Snapshot 081
+
+- Timestamp: 2026-03-20
+- Current stage: Post-release template enhancement.
+- Completed since last update: Added Meta Prompter role persona and workspace-invocable custom agent definition.
+- In progress: Explaining usage flow in current chat.
+- Decisions made: Meta Prompter is conversational-only (no tools) and focused on prompt quality improvements.
+- Open questions: None.
+- Blockers: None.
+- Next step: Commit these additions if approved.
+
+## 2026-03-20 Status Snapshot 082
+
+- Timestamp: 2026-03-20
+- Current stage: Post-release template enhancement.
+- Completed since last update: Added feedback.json schema template with worked example; added feedback submission rule to Stage Gate Enforcement in 02_WORKFLOW_STAGES.md.
+- In progress: Committing changes.
+- Decisions made: One feedback.json per project, appended at each gate, approved by Lefty before any template change applies.
+- Open questions: None.
+- Blockers: None.
+- Next step: Commit and push.
