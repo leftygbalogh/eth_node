@@ -374,4 +374,13 @@ compact our conversation and lets check where we are becuse you seem to be losin
 
 ### Prompt 084
 save and commit, we will start from here tomorrow
+
+### Prompt 085
+what's next?
+
+### Prompt 086
+ok
+
+### Prompt 087
+yes
 yes i approve
