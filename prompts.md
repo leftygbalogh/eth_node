@@ -442,3 +442,15 @@ please do
 ### Prompt 102
 Add layered architecture principle (Interface ? API ? CLI ? GUI) to governance template as Q3-ARCH-01 dimension. Confirmed Q3 scoping (not universal). Implemented across PROJECT_BRIEF_TEMPLATE, FORMAL_SPEC_TEMPLATE, 07_QUALITY_DIMENSIONS, greenfield-evolution-architect, and 02_WORKFLOW_STAGES.
 
+
+## 2026-03-20
+
+### Prompt 001
+please read everything that is in the AI_Governance_Template folder and act accordingly
+
+### Prompt 002
+Objective ... [Snake specification provided by sponsor in full].
+
+### Prompt 003
+no, I want you to follow the rules. delete prior code, restart and execute all stages.
+

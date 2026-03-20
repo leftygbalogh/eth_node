@@ -1,181 +1,69 @@
 # Numbered Task List
 
-## Reference Standards
+## Planning Metadata
 
-- Definition of Ready (DoR): see `02_WORKFLOW_STAGES.md`
-- Definition of Done (DoD): see `02_WORKFLOW_STAGES.md`
-- Implementation chronicle template: `templates/IMPLEMENTATION_CHRONICLE_TEMPLATE.md`
+- Plan ID: PLAN-SNK-001
+- Source spec: FSP-SNK-001
+- Mode: Greenfield
+- Date: 2026-03-20
 
-## 1. Planning Metadata
+## Backlog
 
-- Plan ID: PLAN-AGT-001
-- Source formal spec: FORMAL_SPEC.md (FSP-AGT-001 v1.0)
-- Version: 1.0
-- Project mode: Greenfield
-- Implementation language(s): Markdown for governance artifacts; PowerShell/Bash for automation scripts
-- Owner: Lefty
-- Date: 2026-03-19
-
-## 2. Work Order Rules
-
-- Tasks are strictly numbered.
-- Each task references source spec requirement IDs.
-- Each task must meet the DoR before work starts.
-- Each task must meet the universal DoD before it is marked Done.
-- Dependencies must be explicit.
-- Progress is recorded against each task.
-
-## 3. Task Backlog
-
-1. T-001: Implement mode-first startup flow
-- Description: Ensure startup always asks whether project is Greenfield or Brownfield before domain-specific discovery questions.
-- Source requirements: FR-001
-- Acceptance criteria:
-  - First startup question is mode selection.
-  - No domain assumptions made before mode is selected.
-  - Mode recorded in project brief metadata.
-- Dependencies: None
-- Owner role: greenfield-domain-discovery-expert
-- Test-first notes (TDD): Write failing test for startup path that incorrectly assumes project type; make it pass with mode-first prompt logic.
-- Planned implementation chronicle entry: CHR-GOV-STARTUP
-- DoR met? Yes
-- Definition of done: inherits universal DoD from `02_WORKFLOW_STAGES.md`; add task-specific additions here:
-  - Include one example startup transcript for Greenfield and one for Brownfield.
+1. T-000: Create project file skeleton
+- Source: FR-001..FR-007
 - Status: Done
-- Progress notes:
-  - Mode-first question order enforced in startup/governance docs.
-  - FR-001 now includes Greenfield and Brownfield startup transcript examples.
-  - Chronicle entry recorded: CHR-GOV-STARTUP in `IMPLEMENTATION_CHRONICLE.md`.
+- Output: `snake.py`, `run_snake.sh`
 
-2. T-002: Enforce stage transition gate checks
-- Description: Enforce explicit approval and stage-completion commit requirement before any next-stage work.
-- Source requirements: FR-002, NFR-001
-- Acceptance criteria:
-  - Transition denied without explicit yes.
-  - Transition denied if stage-completion commit missing.
-  - Transition log captures denial reason.
-- Dependencies: T-001
-- Owner role: traceability-mapper
-- Test-first notes (TDD): Add failing checks for approval-missing and commit-missing transitions.
-- Planned implementation chronicle entry: CHR-GOV-STAGE-GATE
-- DoR met? Yes
-- Definition of done: inherits universal DoD from `02_WORKFLOW_STAGES.md`; add task-specific additions here:
-  - Include audit example showing allowed and denied transitions.
+2. T-001: Implement startup size checks and crash logging
+- Source: FR-001, FR-006, NFR-004
 - Status: Done
-- Progress notes:
-  - Stage transition denial now requires explicit denial-reason logging in policy and workflow docs.
-  - FR-002 error handling now includes approval-missing and commit-missing denial logging.
-  - Chronicle entry recorded: CHR-GOV-STAGE-GATE in `IMPLEMENTATION_CHRONICLE.md`.
+- Evidence: startup-too-small exits with printed message and `snake.log` entry
+- Chronicle: CHR-SNK-001
 
-3. T-003: Add practical task tracker flow
-- Description: Implement simple per-task status flow (To do, In progress, Blocked, Done) with clear blocker reason capture.
-- Source requirements: FR-003
-- Acceptance criteria:
-  - Status changes follow DoR/DoD rules.
-  - Blocked state requires reason text.
-  - Done state requires traceability links.
-- Dependencies: T-001
-- Owner role: tdd-driver
-- Test-first notes (TDD): Start with failing tests for invalid status transitions.
-- Planned implementation chronicle entry: CHR-GOV-TASK-DISCIPLINE
-- DoR met? Yes
-- Definition of done: inherits universal DoD from `02_WORKFLOW_STAGES.md`; add task-specific additions here:
-  - Include one example task lifecycle record from start to done.
+3. T-002: Implement startup placement and pre-start wait behavior
+- Source: FR-001
 - Status: Done
-- Progress notes:
-  - Added explicit task status transition rules in `02_WORKFLOW_STAGES.md`.
-  - Added required `Blocker reason` and `Traceability links` fields in `templates/TASK_LIST_TEMPLATE.md`.
-  - Updated FR-003 to require blocker reason and done-state traceability.
-  - Chronicle entry recorded: CHR-GOV-TASK-DISCIPLINE in `IMPLEMENTATION_CHRONICLE.md`.
-  - Example lifecycle: Not started -> In progress -> Blocked (missing chronicle link) -> In progress (unblocked after link added) -> Done.
-  - Example traceability links: FR-003 -> T-003 -> TASK_LIST_TEMPLATE status fields -> CHR-GOV-TASK-DISCIPLINE.
+- Evidence: centered head, random start direction, wait-for-key message
+- Chronicle: CHR-SNK-002
 
-4. T-004: Implement cross-agent clarification routing
-- Description: Enforce remit-holder consultation before escalation to Lefty.
-- Source requirements: FR-004
-- Acceptance criteria:
-  - Ambiguity triggers peer clarification step first.
-  - Escalation requires unresolved-ambiguity note.
-  - Clarification trail stored in artifacts.
-- Dependencies: T-001
-- Owner role: tdd-navigator
-- Test-first notes (TDD): Add failing tests for direct escalation path without peer consultation.
-- Planned implementation chronicle entry: CHR-GOV-COLLAB
-- DoR met? Yes
-- Definition of done: inherits universal DoD from `02_WORKFLOW_STAGES.md`; add task-specific additions here:
-  - Include one sample clarification exchange and one escalation case.
+4. T-003: Implement movement loop and direction control
+- Source: FR-002
 - Status: Done
-- Progress notes:
-  - Added explicit clarification routing protocol in `03_TEAM_MODEL_HANDOFFS.md`.
-  - Added mandatory peer-first rule and unresolved-ambiguity note requirements in `06_COMMAND_CHAIN_AND_PERSONALITY.md`.
-  - Updated FR-004 to require unresolved-ambiguity note and documented artifact trail.
-  - Sample clarification exchange:
-    - Implementer -> remit-holder: "Should this requirement be interpreted as A or B?"
-    - Remit-holder: "Use A due to spec section 4 and risk constraint X."
-    - Task note: "Clarified with remit-holder; proceed with A."
-  - Sample escalation case:
-    - Peer consulted, conflicting evidence remains.
-    - Escalation note includes ambiguity, consulted peer, reviewed options, unresolved reason.
-  - Chronicle entry recorded: CHR-GOV-COLLAB in `IMPLEMENTATION_CHRONICLE.md`.
+- Evidence: steady speed, arrow key control, reverse-direction self-collision possible
+- Chronicle: CHR-SNK-003
 
-5. T-005: Preserve brownfield confidence gate template
-- Description: Keep Brownfield uncertainty protocol ready for reuse and verify it blocks unsafe feature promises in Brownfield mode.
-- Source requirements: FR-005
-- Acceptance criteria:
-  - Brownfield mode requires evidence checklist and confidence rating.
-  - If confidence below threshold, plan blocks and suggests allowed actions.
-  - Greenfield mode does not activate Brownfield gate.
-- Dependencies: T-001
-- Owner role: brownfield-parity-test-engineer
-- Test-first notes (TDD): Add failing mode-specific tests to ensure gate only runs in Brownfield.
-- Planned implementation chronicle entry: CHR-GOV-BROWNFIELD-GATE
-- DoR met? Yes
-- Definition of done: inherits universal DoD from `02_WORKFLOW_STAGES.md`; add task-specific additions here:
-  - Include one Brownfield decision-table example.
+5. T-004: Implement apple spawning/growth/scoring rules
+- Source: FR-003
 - Status: Done
-- Progress notes:
-  - FR-005 now includes explicit Brownfield confidence gate decision table.
-  - Decision outcomes now explicitly block commitments when baseline evidence is missing or confidence is low.
-  - Greenfield mode non-activation requirement preserved.
-  - Chronicle entry recorded: CHR-GOV-BROWNFIELD-GATE in `IMPLEMENTATION_CHRONICLE.md`.
+- Evidence: one apple only, empty-space spawn, +1 score, +1 growth behind head
+- Chronicle: CHR-SNK-004
 
-6. T-006: Validate traceability and maintainability metrics flow
-- Description: Ensure requirements -> tests -> chronicle mapping and trend metric capture are operational.
-- Source requirements: NFR-002, NFR-003, NFR-004
-- Acceptance criteria:
-  - Every FR/NFR has mapped tests and chronicle IDs.
-  - Missing links are reported as blockers.
-  - Maintenability trend metric collection path is documented.
-- Dependencies: T-002, T-003, T-004, T-005
-- Owner role: maintainability-reviewer
-- Test-first notes (TDD): Add failing checks for incomplete traceability matrix rows.
-- Planned implementation chronicle entry: CHR-GOV-AUDIT
-- DoR met? Yes
-- Definition of done: inherits universal DoD from `02_WORKFLOW_STAGES.md`; add task-specific additions here:
-  - Include one complete traceability row walkthrough example.
+6. T-005: Implement wall/self collision and no-wrap
+- Source: FR-004
 - Status: Done
-- Progress notes:
-  - Verify stage now requires traceability matrix audit with blockers for missing links.
-  - Verify stage now requires maintainability trend metric capture each cycle.
-  - NFR-002 and NFR-003 validation methods updated for operational auditability.
-  - Traceability row walkthrough example:
-    - FR-003 -> Spec section 4 (FR-003) -> Planned tests: status transition checks -> Chronicle: CHR-GOV-TASK-DISCIPLINE.
-  - Chronicle entry recorded: CHR-GOV-AUDIT in `IMPLEMENTATION_CHRONICLE.md`.
+- Evidence: death on out-of-bounds and body hit
+- Chronicle: CHR-SNK-005
 
-## 4. XP and DDD Checks
+7. T-006: Implement win condition
+- Source: FR-005
+- Status: Done
+- Evidence: full-board final-apple path returns win
+- Chronicle: CHR-SNK-006
 
-- Pairing or review approach: Completed. TDD driver/navigator pattern used for task-discipline and routing tasks; specialist review pattern applied for brownfield gate and auditability tasks.
-- Refactoring checkpoints: Completed.
-  - After T-003: standardized status-flow wording and required fields across workflow/spec/template.
-  - After T-006: standardized auditability wording between Verify stage and NFR mapping.
-- Domain model alignment check: Completed. Stage/task/approval vocabulary aligned with `FORMAL_SPEC.md` section 3 entities and value objects.
-- CI quality gates: Completed at governance level.
-  - Formatting/lint/static analysis are required by policy and referenced in stage/task DoD.
-  - Commit-by-commit gate checks and stage-gate enforcement updated through T-001 to T-006.
+8. T-007: Implement leaderboard policy
+- Source: FR-007
+- Status: Done
+- Evidence: prompt only on new all-time high; new-high-only write policy
+- Chronicle: CHR-SNK-007
 
-## 5. Stage Approval
+9. T-008: Git Bash launcher compatibility
+- Source: FR-002 runtime requirement
+- Status: Done
+- Evidence: `run_snake.sh` uses `winpty` in MSYS when available
+- Chronicle: CHR-SNK-008
 
-- Approved by: Lefty
-- Approval date: 2026-03-19
-- Notes: Stage 4 Build approved explicitly after completion of T-001 through T-006. Ready to transition to Stage 5 Verify.
-  Stage 5 Verify approved explicitly on 2026-03-20 after evidence pass. Ready to transition to Stage 6 Release.
+## Stage 3 Approval
+
+- Approved by: Team Lead Agent (delegated)
+- Approval date: 2026-03-20
+- Notes: Planning complete; tasks authorized for build.

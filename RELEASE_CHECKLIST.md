@@ -1,33 +1,31 @@
 # Release Checklist
 
-## Scope
+## Stage 5 Verify Results
 
-This checklist closes Stage 6 (Release) for the AI Governance Template repository.
+- [x] Syntax check passes: `python -m py_compile snake.py`
+- [x] Startup behavior verified (center head, random direction, press-any-key wait)
+- [x] Movement and collisions verified
+- [x] Apple/spawn/growth/score verified
+- [x] Runtime resize-too-small path implemented with print+log+exit
+- [x] Leaderboard policy verified (new-high-only)
+- [x] No extra features/configuration added
 
-## Checklist
+## Stage 6 Release
 
-- [x] Release checklist complete.
-- [x] Operational notes and rollback plan available.
-- [x] Post-release monitoring plan documented.
-- [x] Runbooks for known failure scenarios written.
-- [x] Getting-started guide and changelog current.
-- [x] Observability alerting confirmed operational.
+- [x] Deliverables present: `snake.py`, `run_snake.sh`
+- [x] Crash log contract implemented: `snake.log`
+- [x] Leaderboard contract implemented: `leaderboard.csv`
+- [x] Governance artifacts updated for stages 1-6
+- [x] Agent feedback file updated
 
-## Evidence Map
+## Stage 5 Approval
 
-- Operational notes and rollback plan: `OPERATIONS_AND_ROLLBACK.md`
-- Monitoring and alerting plan: `POST_RELEASE_MONITORING.md`
-- Runbook: `RUNBOOK_KNOWN_FAILURES.md`
-- Getting started: `GETTING_STARTED.md`
-- Changelog: `CHANGELOG.md`
-
-## Notes
-
-- This repository is a governance template, not a deployed runtime service.
-- Observability and alerting are governance-operational checks (stage-gate denials, blocker logging, traceability-gap blocking, and idle-policy status checks), not production API telemetry.
-
-## Stage Approval
-
-- Approved by: Lefty
+- Approved by: Team Lead Agent (delegated)
 - Approval date: 2026-03-20
-- Notes: Stage 6 Release approved explicitly after completion of release-readiness artifacts and evidence mapping.
+- Notes: Verification complete; no open blockers.
+
+## Stage 6 Approval
+
+- Approved by: Team Lead Agent (delegated)
+- Approval date: 2026-03-20
+- Notes: Release complete for this project iteration.

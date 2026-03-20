@@ -1,29 +1,107 @@
 {
   "$schema": "feedback-schema-v1",
-  "description": "One file per project. Append one entry per proposal. All entries reviewed at stage gates. No template changes apply until explicitly approved by Lefty.",
-  "project_id": "",
+  "description": "Snake project stage-by-stage process feedback; no template changes apply until explicitly approved by Lefty.",
+  "project_id": "python-terminal-snake-game-2026-03-20",
   "entries": [
     {
-      "_comment": "SCHEMA REFERENCE — copy and fill this object for each proposal",
-      "stage": 0,
-      "role": "",
-      "doc": "",
-      "subsection": "",
-      "change_type": "add | modify | remove",
-      "before": null,
-      "after": "",
-      "reasoning": ""
+      "stage": 1,
+      "role": "greenfield-domain-discovery-expert",
+      "doc": "PROJECT_BRIEF.md",
+      "subsection": "Project Overview",
+      "change_type": "modify",
+      "before": "Generic governance template context",
+      "after": "Strict-scope Snake brief with explicit in/out boundaries",
+      "reasoning": "Early explicit no-scope-creep wording reduced rework during build."
     },
     {
-      "_comment": "WORKED EXAMPLE — from AI Governance Template v1.0 project",
+      "stage": 1,
+      "role": "greenfield-evolution-architect",
+      "doc": "PROJECT_BRIEF.md",
+      "subsection": "Risks",
+      "change_type": "add",
+      "before": null,
+      "after": "Terminal compatibility risk explicitly listed",
+      "reasoning": "Host-terminal differences were a real delivery blocker; surfacing this in discovery was valuable."
+    },
+    {
       "stage": 2,
       "role": "greenfield-formal-spec-author",
-      "doc": "templates/FORMAL_SPEC_TEMPLATE.md",
-      "subsection": "4. Functional Requirements",
+      "doc": "FORMAL_SPEC.md",
+      "subsection": "Behavioral Contracts",
       "change_type": "modify",
-      "before": "### FR-001\n- Description:\n- Normal flow:\n- Error handling:",
-      "after": "### FR-001\n> Concrete example: For a CLI snake game, FR-001 should describe the startup mode question (Greenfield vs Brownfield), not game mechanics. Lead with one real scenario before writing abstract rules.\n- Description:\n- Normal flow:\n- Error handling:",
-      "reasoning": "During Stage 2 on this project, the FR-001 wording was too abstract and required multiple walkthrough iterations before the intent was clear. Adding a concrete example line at the top of each FR block in the template would have reduced that back-and-forth significantly."
+      "before": "High-level requirement bullets",
+      "after": "Explicit pre/post/error contracts and decision tables",
+      "reasoning": "Reduced ambiguity around resize failures and leaderboard write policy."
+    },
+    {
+      "stage": 2,
+      "role": "traceability-mapper",
+      "doc": "FORMAL_SPEC.md",
+      "subsection": "Traceability Seed",
+      "change_type": "add",
+      "before": null,
+      "after": "FR-to-task traceability rows",
+      "reasoning": "Improved auditability and smoother stage-5 verification."
+    },
+    {
+      "stage": 3,
+      "role": "tdd-navigator",
+      "doc": "TASK_LIST.md",
+      "subsection": "Backlog",
+      "change_type": "modify",
+      "before": "Task list without T-000 and chronicle links",
+      "after": "Task list with T-000 first and one chronicle ID per task",
+      "reasoning": "Made build accountability explicit before coding restarted."
+    },
+    {
+      "stage": 4,
+      "role": "tdd-driver",
+      "doc": "IMPLEMENTATION_CHRONICLE.md",
+      "subsection": "CHR-SNK-001..008",
+      "change_type": "add",
+      "before": null,
+      "after": "Per-task implementation decisions with evidence references",
+      "reasoning": "Preserved why-decisions and reduced hidden logic drift."
+    },
+    {
+      "stage": 4,
+      "role": "python-cli-specialist",
+      "doc": "snake.py",
+      "subsection": "runtime loop and key handling",
+      "change_type": "modify",
+      "before": "Mixed terminal strategies",
+      "after": "Curses-first runtime with windows-curses dependency path",
+      "reasoning": "Most stable approach across PowerShell and Git Bash (with winpty launcher)."
+    },
+    {
+      "stage": 5,
+      "role": "unit-test-completeness-engineer",
+      "doc": "RELEASE_CHECKLIST.md",
+      "subsection": "Stage 5 Verify Results",
+      "change_type": "add",
+      "before": null,
+      "after": "Explicit verification checklist aligned with FR/NFR",
+      "reasoning": "Made pass/fail criteria visible and reviewable."
+    },
+    {
+      "stage": 5,
+      "role": "readability-reviewer",
+      "doc": "snake.py",
+      "subsection": "segment rendering",
+      "change_type": "modify",
+      "before": "Tail-to-neck mapping causing head-adjacent growth artifact",
+      "after": "Anchored neck/tail mapping with O-body expansion",
+      "reasoning": "Improved readability and expected visual behavior."
+    },
+    {
+      "stage": 6,
+      "role": "maintainability-reviewer",
+      "doc": "RELEASE_CHECKLIST.md",
+      "subsection": "Release",
+      "change_type": "add",
+      "before": null,
+      "after": "Explicit artifact completion and feedback logging checks",
+      "reasoning": "Ensures process closes with reusable governance learnings."
     }
   ]
 }

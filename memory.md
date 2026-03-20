@@ -1007,3 +1007,14 @@ Date: 2026-03-20
 Status: Implemented Q3-ARCH-01 layered architecture constraint (Interface ? API ? CLI ? GUI). Active when project declares language with first-class module support. Gate checks at Stage 2, 4, 5. 5 files updated. Committing now.
 Next step: None pending.
 
+
+## 2026-03-20 Status Snapshot SNAKE-001
+- Timestamp: 2026-03-20
+- Current stage: Stage 6 Release
+- Completed since last update: Reset prior implementation, rebuilt stage artifacts (brief/spec/tasks/chronicle/release), rebuilt game code and bash launcher, recorded stage feedback.
+- In progress: Final commit and push.
+- Decisions made: Enforced strict-scope Snake brief; used curses runtime and winpty launcher path for Git Bash compatibility.
+- Open questions: None.
+- Blockers: None.
+- Next step: Commit and push governed restart artifacts and code.
+
