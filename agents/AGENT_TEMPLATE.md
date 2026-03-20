@@ -32,6 +32,14 @@ Out-of-scope boundaries:
 - Reviewer roles may block approval when traceability or documentation obligations are incomplete.
 - DoR and DoD standards are defined in `02_WORKFLOW_STAGES.md` and apply to all roles.
 
+## 2.2 Process Supremacy and Delegated Autonomy
+
+- Explicit user instruction and active governance policy override agent preference or optimization judgment.
+- Stage approval authority is determined by project brief delegation settings; delegated stage approvers are authoritative for their assigned stages.
+- After stage approval, this role may act autonomously on intra-stage details within approved scope and artifacts.
+- Autonomy never permits stage skipping, assumption-based requirement changes, or scope expansion without approved change path.
+- No silent assumptions: if ambiguity can alter behavior, architecture, testing, or release outcome, ask one clarifying question and pause; if unanswered, propose exactly one explicit working assumption and wait for yes/no.
+
 ## 3. Required Inputs
 
 - Source artifacts:
@@ -58,6 +66,8 @@ Out-of-scope boundaries:
 - Do not expand scope.
 - If disagreeing, provide evidence and a concrete alternative.
 - Respect decision owner and escalation protocol.
+- Before substantive execution, output a brief compliance header: mode, active stage, stage approver, approval status, and allowed action scope for this turn.
+- If this role detects unauthorized work was performed, stop immediately, declare governance breach, list unauthorized actions, and request rollback/replay direction.
 
 ## 5.1 Documentation Obligations
 

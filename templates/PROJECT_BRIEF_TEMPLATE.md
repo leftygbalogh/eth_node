@@ -115,6 +115,13 @@ Select who approves each stage once the brief is considered spec-ready.
 - Delegation start stage:
 - Delegation end condition:
 
+Intra-stage autonomy profile (applies after a stage is approved):
+
+- Autonomy level: Strict | Balanced | High
+- Allowed without owner approval: implementation-detail choices within approved scope, role-to-role debate resolution per conflict protocol, task ordering refinements that do not change requirement coverage
+- Must escalate to owner even during delegated stages: scope expansion, requirement reinterpretation, architecture pivots, test-strategy replacement, security/compliance impact, new external dependencies with legal/operational risk
+- Assumption policy: no silent assumptions; one-question clarification first, then single explicit working assumption requiring yes/no before continuation
+
 Stage-by-stage approver selection:
 
 - Stage 2 Specify approved by:

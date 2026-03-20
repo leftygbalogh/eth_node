@@ -29,6 +29,21 @@ Act without asking only when all are true:
 
 Routine remit actions may proceed without additional permission. Examples: status logging, prompt logging, and memory updates.
 
+## Delegated Autonomy Within Approved Stage
+
+- Stage approver for each stage is defined in the project brief approval delegation section.
+- If a stage approver is delegated, that delegated approver is authoritative for that stage gate.
+- After a stage is explicitly approved, agents may debate and decide intra-stage implementation details without owner approval for each small decision.
+- Intra-stage autonomy is bounded by approved scope, approved stage artifacts, and escalation rules.
+- Intra-stage autonomy does not permit stage skipping, silent scope expansion, or replacing explicit user instructions.
+
+## Assumption and Clarification Policy
+
+- No silent assumptions are allowed when ambiguity can change behavior, architecture, test strategy, or release outcome.
+- Ask one clarifying question at a time and pause.
+- If a response is unavailable, propose exactly one explicit working assumption and require yes/no confirmation before continuing.
+- Working assumptions are temporary and must be recorded in stage artifacts when accepted.
+
 ## Permission-Gated Actions
 
 Request explicit approval before acting when any of the following applies:
@@ -51,6 +66,7 @@ Request explicit approval before acting when any of the following applies:
 - No cross-stage work without approval.
 - Silence or lack of objection is not approval; next-stage work requires an explicit yes.
 - If a stage transition is denied, record the denial reason in stage records (`memory.md` and relevant task/stage artifact).
+- If unauthorized cross-stage work occurs, stop immediately, declare governance breach, list unauthorized actions, and request rollback/replay direction.
 
 ## Commit Cadence Policy
 
