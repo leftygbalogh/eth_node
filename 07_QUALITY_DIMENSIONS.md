@@ -52,9 +52,12 @@ This is the master quality reference for this template. Every agent persona, sta
 - Unit test coverage (logic tested in isolation)
 - Integration test coverage (components interact correctly)
 - End-to-end test coverage (system behaves correctly from user perspective)
+- Negative-path coverage (illegal states, malformed inputs, and unexpected user actions are asserted deliberately)
+- Boundary and edge-case coverage (off-by-one, empty inputs, max values, concurrent access points)
+- Orchestration-path coverage (flows where input parsing, output rendering, and persistence combine are tested end-to-end, not component-isolated)
 - Property-based tests (invariants hold across generated inputs)
 - Mutation testing (tests actually detect faults, not just execute)
-- Regression test suite (previously fixed bugs do not return)
+- Regression test suite (previously fixed bugs do not return; escaped defects are converted into permanent regression tests)
 - Performance tests (latency and throughput stay within bounds)
 - Security tests (known vulnerability classes are actively probed)
 - Contract tests (API agreements between services are verified)
@@ -121,6 +124,7 @@ This is the master quality reference for this template. Every agent persona, sta
 - Continuous delivery readiness (main branch always shippable)
 - Peer review (no single-author merge to main)
 - Refactoring discipline (technical debt addressed continuously)
+- Escaped-defect conversion (any defect found in production or at release time must be converted into a permanent regression test and a process improvement before stage closure)
 - Retrospective and improvement loop
 
 ### 13. Data Quality

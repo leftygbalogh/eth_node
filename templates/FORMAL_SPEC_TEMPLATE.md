@@ -44,9 +44,10 @@ All specifications use the default tooling: statecharts + design by contract + d
 
 ## 4. Functional Behavior
 
-For each requirement from brief:
+For each requirement from brief, lead with one concrete real-world example before abstract rules:
 
 - Requirement ID:
+- Example: (one concrete scenario from the target domain or use case; orients the reader before rules are stated)
 - Preconditions:
 - Trigger:
 - Expected behavior:

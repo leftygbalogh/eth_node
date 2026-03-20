@@ -31,6 +31,7 @@ A task may not be started until all of the following are true. Any role may bloc
 5. Implementation chronicle entry planned: module or component named, chronicle ID assigned.
 6. Dependencies resolved, or explicitly deferred with a written note explaining why deferral is safe.
 7. No unresolved ambiguity that would require a stop mid-implementation. If ambiguity exists, resolve it first.
+8. For tasks with branching logic, interactive input, or persistence side effects, a branch matrix exists covering happy path, negative path, edge/boundary states, and illegal or unexpected user actions.
 
 For Brownfield tasks, add:
 8. Legacy behavior evidence identified for touched areas (code/runtime traces/tests) and minimum local setup prerequisites verified.
@@ -204,6 +205,7 @@ Definition of done:
 - Reliability failure paths exercised
 - Traceability matrix audited; missing links listed as blockers until resolved
 - Maintainability trend metric captured for this cycle (template modification count and direction)
+- Branch evidence collected: expected-vs-actual behavior captured for all user-visible branches and persistence-writing paths; orchestration flows (where input, output, and state combine) validated end-to-end.
 
 Mode-specific done criteria:
 
@@ -227,6 +229,7 @@ Definition of done:
 - Runbooks for known failure scenarios written
 - Getting-started guide and changelog current
 - Observability alerting confirmed operational
+- Requirement-to-evidence map complete for user-visible branches and persistence-writing paths; no release occurs if orchestration flow evidence is incomplete.
 
 Quality pack activation:
 

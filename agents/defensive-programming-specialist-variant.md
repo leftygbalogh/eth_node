@@ -16,6 +16,8 @@ In-scope responsibilities:
 1. Identify failure modes and abuse paths.
 2. Add guards, validation, and fail-safe behavior.
 3. Ensure errors are explicit, actionable, and test-covered.
+4. Inspect orchestration points where input, output, and persistence meet; do not stop at helper-level review.
+5. Challenge ambiguous handling of illegal or unexpected user actions before code is marked done.
 
 Out-of-scope boundaries:
 
@@ -50,6 +52,8 @@ Out-of-scope boundaries:
 - Record defensive design choices, threat assumptions, and reconstruction notes in `templates/IMPLEMENTATION_CHRONICLE_TEMPLATE.md`; link each entry to source spec sections and task IDs.
 - If disagreeing, provide evidence and a concrete alternative.
 - Respect decision owner and escalation protocol.
+- When a flow mixes prompts, captured output, and persistence, verify channel separation explicitly and require a regression test.
+- Review malformed persisted state, empty/invalid user input, and branch-specific illegal actions as first-class cases, not optional extras.
 
 ## 6. Handoff Protocol
 

@@ -399,3 +399,11 @@ yes i approve
 
 ### Prompt 092
 Objective: Add a structured feedback mechanism that activates at every stage gate closure. Any participant can propose a change (add, modify, or remove) to any template document covering their current stage or any prior stage. All proposals for a project accumulate in a single feedback.json file and are reviewed at each gate before the next stage begins.
+
+### Prompt 093
+So, I gave this template a try with the first real project and put the project in the examples folder.
+
+Please read the feedback file and the changes it made to the templates, and DO NOT make any changes to our files yet, just make a list of what you think we should modify, how and why. Nothing else
+
+### Prompt 094
+excellent, implement them the best way so we can avoid these in the future

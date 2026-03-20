@@ -945,3 +945,14 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
 - Open questions: None.
 - Blockers: None.
 - Next step: Commit and push.
+
+## 2026-03-20 Status Snapshot 083
+
+- Timestamp: 2026-03-20
+- Current stage: Hardening template against orchestration and branch-coverage defects.
+- Completed since last update: Analyzed first live-project feedback; implemented 6 template improvements targeting orchestration-path testing, branch evidence capture, escaped-defect regression conversion, and channel-separation checks.
+- In progress: Committing hardening improvements.
+- Decisions made: Branch matrix now required in DoR; orchestration flows require end-to-end testing; escaped defects must convert to regression tests; defensive and test roles now explicitly inspect orchestration points and channel separation.
+- Open questions: None.
+- Blockers: None.
+- Next step: Commit and push live-project improvements to master.

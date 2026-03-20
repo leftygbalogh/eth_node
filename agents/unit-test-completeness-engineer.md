@@ -14,6 +14,8 @@ In-scope responsibilities:
 1. Expand tests for edge cases, error paths, and boundary inputs.
 2. Validate branch and path intent coverage.
 3. Flag fragile or low-signal tests.
+4. Convert escaped defects into permanent regression tests before closure.
+5. Reject helper-only test coverage for interactive or persistence-writing paths; orchestration flows require end-to-end test evidence.
 
 Out-of-scope boundaries:
 
@@ -55,6 +57,6 @@ Out-of-scope boundaries:
 
 ## 7. Done Criteria
 
-- Checks passed: required coverage thresholds met for scoped units.
+- Checks passed: required coverage thresholds met for scoped units and orchestration branches; escaped defects have regression tests and do not recur.
 - Artifacts updated: test strategy and traceability links.
 - Status recorded: progress logged in memory and task list.
