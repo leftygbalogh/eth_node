@@ -98,6 +98,7 @@ Definition of done:
 - Scope boundaries documented
 - Intended implementation language(s) declared (primary required, secondary optional)
 - Discovery questions explicitly cover all required fields in `PROJECT_BRIEF.md` sections 1 through 8.2; unanswered fields are marked `TBD` with named follow-up owners
+- If easter egg logging is enabled, policy fields in project brief section 1.3 are fully specified; otherwise section 1.3 is explicitly set to No
 - Q3 module triggers declared (data quality, compliance) or explicitly ruled out
 - Approval authority selection completed for Stage 2 through Stage 6 (owner-only or delegated approver per stage)
 - If delegation is enabled, exception list and prototype handback trigger are documented in the project brief
@@ -224,6 +225,7 @@ Definition of done:
 - For interactive CLI projects, a terminal environment validation matrix is captured in `docs/evidence/` (target environments, pass/fail/not-tested status, and artifact paths); untested environments are logged as explicit release risks.
 - Pair-programming session log (if applicable) is audited for each task: proposal, critique, decision, and linked evidence are complete; unresolved disagreements are listed as blockers.
 - Escaped-defect check: any defect discovered during Stage 5 must be converted into a permanent regression test and linked process/spec improvement before Stage 5 closes.
+- If easter egg logging is enabled, verification confirms: no easter eggs in excluded channels, rate limits and per-run caps enforced, structured fields valid, kill switch works immediately, and deterministic selection works under test seed.
 
 Mode-specific done criteria:
 
@@ -254,6 +256,7 @@ Definition of done:
 - Security and production-readiness loop is complete: identified security/ops risks are converted into mitigation tasks, reflected in specs/runbooks, verified with evidence, and closed before release approval.
 - Repository identity gate is complete before any publish command: remotes are listed, intended push target is explicitly confirmed, and proof is stored in `docs/evidence/release-remote-proof.md`.
 - If multiple remotes exist (or template-clone ancestry makes target uncertain), release remains blocked until owner or delegated approver confirms the exact remote and branch.
+- If easter egg logging is enabled, release evidence includes approved quote source/provenance confirmation, parser/alerting compatibility check, production-safe frequency confirmation, and a documented disable procedure in operations docs.
 
 ## Official Iterative Hardening Loops
 

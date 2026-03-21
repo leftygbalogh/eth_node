@@ -2,7 +2,7 @@
 
 ## Current Mode
 
-- Mode: Project
+- Mode: Template Development
 - Effective date: 2026-03-20
 - Owner: Lefty
 

@@ -101,6 +101,7 @@ This is the master quality reference for this template. Every agent persona, sta
 - Alerting on meaningful signals (not noise)
 - Runbooks for known failure scenarios
 - For interactive CLI projects, screen-state and application-state capture artifacts are retained with clear naming and path conventions for post-failure analysis
+- Log novelty controls: decorative log content must be channel-scoped, rate-limited, and machine-filterable so operational telemetry remains reliable
 
 ### 10. Documentation
 - Architecture decision records (why decisions were made, not just what)
@@ -111,6 +112,7 @@ This is the master quality reference for this template. Every agent persona, sta
 - Getting-started guide for contributors
 - Glossary of domain terms
 - Changelog
+- If easter egg logging is enabled, document policy, source curation, kill switch, and operational disable procedure
 
 ### 11. Developer Experience
 - Build time acceptable
@@ -144,6 +146,7 @@ This is the master quality reference for this template. Every agent persona, sta
 - Audit trail completeness
 - Data residency requirements met
 - License compliance for dependencies
+- Non-essential log content must never reduce audit clarity or violate licensing/attribution obligations
 
 ### 15. Maintainability Over Time
 - Seams for change exist (new behavior added without rewriting old)

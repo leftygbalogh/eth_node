@@ -45,6 +45,21 @@ Declare active Q3 modules at project start. Once declared, these become core exp
 
 Note: Q1 core pack (Problem Understanding, Architecture, Code Quality, Testing, Security, Process & Workflow) is always active. Q2 stage-unlocked dimensions activate automatically at their named stages. See `07_QUALITY_DIMENSIONS.md`.
 
+## 1.3 Easter Egg Logging Module (Optional)
+
+- Easter egg logging active? Yes | No
+- Default: No
+- If Yes, define:
+  - allowed log channels (info-only)
+  - excluded channels (error/audit/security/compliance/incident)
+  - rate policy (minimum interval and max per run)
+  - kill switch variable name and default state
+  - approved quote library path
+  - quote provenance rule (public domain, original, or rights-cleared only)
+  - determinism/test mode seed strategy
+- Approval note:
+  - Owner acknowledges this is a non-functional delight feature and can be disabled at any time without behavior impact.
+
 ## 2. Stakeholders and Users
 
 - Sponsor:

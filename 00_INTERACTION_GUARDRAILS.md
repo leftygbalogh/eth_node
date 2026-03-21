@@ -85,10 +85,11 @@
 - Record a short changelog entry whenever governance is materially improved.
 - Baseline approval: Approved v1 baseline
 - Changelog:
+	- v1.3 (2026-03-21): added easter-egg logging guardrail with opt-in policy, channel restrictions, rate limits, and rights-safe quote requirements.
 	- v1.2 (2026-03-21): added repository identity and push-target verification guardrail, requiring explicit remote confirmation and release evidence before publish.
 	- v1.1 (2026-03-21): added Linux compliance baseline for line endings, shell conventions, and path style.
 	- v1.0 (2026-03-19): consolidated governance framework, mode model, command chain, personality model, Rust-primary and Python-secondary persona packs.
-- Version: 1.2
+- Version: 1.3
 - Last updated: 2026-03-21
 
 ## 12. Linux Compliance Baseline
@@ -104,3 +105,18 @@
 - If remote target is uncertain (for example: template clone, multiple remotes, or renamed remotes), pause and request owner confirmation before publish.
 - Never rely on default `origin` assumptions for release publishing.
 - Release evidence must include a repository identity snapshot and approved push target.
+
+## 14. Easter Egg Logging Guardrail
+
+- Easter egg log messages are optional and disabled by default.
+- Easter eggs may appear only in informational, human-facing application logs.
+- Easter eggs are forbidden in security, audit, authentication, authorization, payment, incident, compliance, and error logs.
+- Easter egg injection must be rate-limited and deterministic under test seed.
+- Every project that enables this feature must define:
+	- enablement flag
+	- frequency and hard cap
+	- allowed log channels
+	- immediate kill switch
+	- approved quote source set and provenance
+- If quote rights or attribution status is unclear, that quote is excluded from production use.
+- No release may proceed if easter egg logging contaminates parsing, alerting, or audit pipelines.

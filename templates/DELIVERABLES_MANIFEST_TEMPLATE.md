@@ -24,6 +24,7 @@
 - docs/api/guide.md (API usage guide with worked examples)
 - Traceability report
 - docs/evidence/release-remote-proof.md (release remote proof snapshot)
+- docs/observability/easter-egg-logging-policy.md (required only if easter egg logging is enabled)
 - Security review report
 - Threat model
 - Performance benchmark report
