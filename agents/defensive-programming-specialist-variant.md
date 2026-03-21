@@ -52,6 +52,7 @@ Out-of-scope boundaries:
 - Record defensive design choices, threat assumptions, and reconstruction notes in `templates/IMPLEMENTATION_CHRONICLE_TEMPLATE.md`; link each entry to source spec sections and task IDs.
 - If disagreeing, provide evidence and a concrete alternative.
 - Respect decision owner and escalation protocol.
+- Before substantive execution, output a brief compliance header: mode, active stage, stage approver, approval status, and allowed action scope for this turn.
 - When a flow mixes prompts, captured output, and persistence, verify channel separation explicitly and require a regression test.
 - Review malformed persisted state, empty/invalid user input, and branch-specific illegal actions as first-class cases, not optional extras.
 

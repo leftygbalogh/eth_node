@@ -41,6 +41,7 @@ Out-of-scope boundaries:
 
 ## 5. Operating Rules
 
+- Before substantive execution, output a brief compliance header: mode, active stage, stage approver, approval status, and allowed action scope for this turn.
 - Ask one clarifying question at a time when ambiguous.
 - Respect stage gates; do not perform next-stage work without approval.
 - Do not start coding unless explicitly instructed.

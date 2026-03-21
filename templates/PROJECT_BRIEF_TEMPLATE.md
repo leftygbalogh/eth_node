@@ -2,6 +2,9 @@
 
 ## 1. Project Overview
 
+Layer metadata: Layer 1 of the three-layer documentation stack (Commander's Intent -> Behavioral Specification -> Implementation Chronicle).
+Expected downstream links: `FORMAL_SPEC.md` (Layer 2) and `IMPLEMENTATION_CHRONICLE.md` (Layer 3).
+
 - Project name:
 - Project mode: Greenfield | Brownfield
 - Primary implementation language:
@@ -30,6 +33,10 @@ Declare active Q3 modules at project start. Once declared, these become core exp
   - Trigger: project includes interactive terminal/CLI UX where manual exploratory sessions are part of verification
   - If yes, define capture method: screen-state capture + application-state capture (scripted helper or equivalent)
   - If yes, define storage location and naming convention for captured session artifacts:
+
+- Security and production-readiness loop required? Yes | No
+  - Trigger: project handles sensitive data, user auth, network exposure, public deployment, or regulated scope
+  - If yes, Stage 4-6 must run the Security and Production-Readiness loop and convert findings into mitigations or explicit risk acceptance before Stage 6 close
 
 - Layered architecture constraint active? Yes | No
   - Trigger: project uses a language with first-class module, type, and interface support (e.g. Rust, Python, TypeScript, Go, C# — not Bash, awk, or shell scripts)

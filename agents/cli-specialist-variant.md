@@ -51,6 +51,7 @@ Out-of-scope boundaries:
 - Record command-flow decisions, UX trade-offs, and reconstruction notes in `templates/IMPLEMENTATION_CHRONICLE_TEMPLATE.md`; link each entry to source spec sections and task IDs.
 - If disagreeing, provide evidence and a concrete alternative.
 - Respect decision owner and escalation protocol.
+- Before substantive execution, output a brief compliance header: mode, active stage, stage approver, approval status, and allowed action scope for this turn.
 - For interactive CLI flows, ensure capture helpers are usable by manual testers with minimal setup and documented invocation.
 
 ## 6. Handoff Protocol

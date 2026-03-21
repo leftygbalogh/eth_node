@@ -49,6 +49,7 @@ Out-of-scope boundaries:
 - Do not expand scope.
 - If disagreeing, provide evidence and a concrete alternative.
 - Respect decision owner and escalation protocol.
+- Before substantive execution, output a brief compliance header: mode, active stage, stage approver, approval status, and allowed action scope for this turn.
 
 ## 6. Handoff Protocol
 

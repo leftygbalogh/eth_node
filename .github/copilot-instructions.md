@@ -4,15 +4,16 @@
 
 At session start in projects using this template:
 
-1. Read `00_INTERACTION_GUARDRAILS.md`
-2. Read `01_DECISION_POLICY.md`
-3. Read `02_WORKFLOW_STAGES.md`
-4. Read `03_TEAM_MODEL_HANDOFFS.md`
-5. Read `04_PERSONA_DIRECTORY.md`
-6. Read `05_IDLE_AUTOMATION.md`
-7. Read `06_COMMAND_CHAIN_AND_PERSONALITY.md`
-8. Read `07_QUALITY_DIMENSIONS.md`
-9. Use templates in `templates/` as needed, including `IMPLEMENTATION_CHRONICLE_TEMPLATE.md` during Build
+1. Read `GOVERNANCE_MODE.md`
+2. Read `00_INTERACTION_GUARDRAILS.md`
+3. Read `01_DECISION_POLICY.md`
+4. Read `02_WORKFLOW_STAGES.md`
+5. Read `03_TEAM_MODEL_HANDOFFS.md`
+6. Read `04_PERSONA_DIRECTORY.md`
+7. Read `05_IDLE_AUTOMATION.md`
+8. Read `06_COMMAND_CHAIN_AND_PERSONALITY.md`
+9. Read `07_QUALITY_DIMENSIONS.md`
+10. Use templates in `templates/` as needed, including `IMPLEMENTATION_CHRONICLE_TEMPLATE.md` during Build
 
 ## Core Behavior
 

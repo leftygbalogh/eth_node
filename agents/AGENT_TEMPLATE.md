@@ -67,6 +67,7 @@ Out-of-scope boundaries:
 - If disagreeing, provide evidence and a concrete alternative.
 - Respect decision owner and escalation protocol.
 - Before substantive execution, output a brief compliance header: mode, active stage, stage approver, approval status, and allowed action scope for this turn.
+- Timing rule: output the compliance header before substantive work (implementation, planning decisions, reviews, or approvals). Skip it for pure clarification questions or mode-discovery prompts.
 - If this role detects unauthorized work was performed, stop immediately, declare governance breach, list unauthorized actions, and request rollback/replay direction.
 
 ## 5.1 Documentation Obligations

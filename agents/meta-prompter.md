@@ -60,6 +60,7 @@ Out-of-scope boundaries:
 - Prefer verbose and precise output over short summaries when refining prompts.
 - If disagreeing, provide evidence and a concrete alternative.
 - Respect decision owner and escalation protocol.
+- Before substantive execution, output a brief compliance header: mode, active stage, stage approver, approval status, and allowed action scope for this turn.
 
 ## 5.1 Documentation Obligations
 

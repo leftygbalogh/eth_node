@@ -2,13 +2,16 @@
 
 ## 1. Specification Metadata
 
+Layer metadata: Layer 2 of the three-layer documentation stack (Commander's Intent -> Behavioral Specification -> Implementation Chronicle).
+Required linkage: cite source `PROJECT_BRIEF.md` sections for intent and map implementation plans to `IMPLEMENTATION_CHRONICLE.md` entries.
+
 - Spec ID:
 - Version:
 - Project mode: Greenfield | Brownfield
 - Declared implementation language(s) from brief:
 - Language-specific constraints captured in this spec:
 - Source brief:
-- Approval authority source (from brief section 8.2):
+- Approval authority source (from project brief delegation section):
 - Status:
 - Author:
 - Reviewers:
@@ -101,7 +104,16 @@ Map each NFR to measurable criteria. Targets defined here are validated at Stage
 - GUI-to-API mapping: (for each GUI action, state which API call it delegates to — omit if no GUI)
 - Business logic placement constraint: No logic belonging to the domain may reside exclusively in the CLI or GUI layer. Any business logic found there during review is an architecture violation and a build blocker.
 
-## 8. Test Strategy (TDD-aligned)
+## 8. Quality Dimension Targets (Q2 Pack)
+
+Targets defined here are mandatory for Stage 2 closure and are validated at Stage 5 Verify.
+
+- Performance and efficiency targets (latency, throughput, memory budget, startup budget):
+- Reliability and resilience targets (failure modes, degradation behavior, recovery constraints):
+- Maintainability over time targets (change seams, extension points, deprecation/refactor constraints):
+- Not-applicable declarations (if any dimension is N/A, state rationale and approval reference):
+
+## 9. Test Strategy (TDD-aligned)
 
 - Unit test approach:
 - Integration test approach:
@@ -113,21 +125,21 @@ Map each NFR to measurable criteria. Targets defined here are validated at Stage
   - Manual session execution path (how testers run app through capture helpers):
   - Artifact storage path and naming convention:
 
-## 8.1 Downstream Implementation Chronicle Expectations
+## 9.1 Downstream Implementation Chronicle Expectations
 
 - Required chronicle entries or modules:
 - Implementation constraints that must be recorded by coders:
 - Areas where implementation alternatives are expected and should be justified:
 - Reconstruction-critical details future coders must preserve:
 
-## 8.2 Deterministic Test Vector Appendix
+## 9.2 Deterministic Test Vector Appendix
 
 - Canonical deterministic vectors (fixed seeds, fixed inputs, expected outputs):
 - Expected persistence snapshots for terminal/end-state scenarios:
 - Expected rendered/output snapshots for key user-visible states:
 - Replay procedure for regression confirmation:
 
-## 9. Traceability Matrix
+## 10. Traceability Matrix
 
 Map requirements to spec sections, tests, and implementation chronicles.
 
@@ -136,7 +148,7 @@ Map requirements to spec sections, tests, and implementation chronicles.
 - Planned tests:
 - Planned implementation chronicle entry:
 
-## 10. Stage Approval
+## 11. Stage Approval
 
 - Approved by:
 - Approval date:

@@ -18,6 +18,19 @@
 - Out-of-scope:
   - Menus, settings, modes, visual effects, variants, QoL additions
 
+## 1.2 Quality Module Declarations
+
+- Data Quality module active? Yes
+  - Rationale: leaderboard persistence in `leaderboard.csv`
+- Compliance and Auditability module active? No
+  - Rationale: no regulated domain scope
+- Interactive CLI diagnostics required? Yes
+  - Rationale: interactive terminal gameplay and runtime resize behavior verification
+- Security and production-readiness loop required? No
+  - Rationale: local single-user terminal application with no network surface or sensitive data processing
+- Layered architecture constraint active? Yes
+  - Rationale: Python project with first-class module and interface boundaries
+
 ## 2. Stakeholders and Authority
 
 - Sponsor: Lefty

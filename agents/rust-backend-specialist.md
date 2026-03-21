@@ -50,6 +50,7 @@ Out-of-scope boundaries:
 - Record implementation decisions, ownership/borrowing trade-offs, and reconstruction notes in `templates/IMPLEMENTATION_CHRONICLE_TEMPLATE.md`; link each entry to source spec sections and task IDs.
 - If disagreeing, provide evidence and a concrete alternative.
 - Respect decision owner and escalation protocol.
+- Before substantive execution, output a brief compliance header: mode, active stage, stage approver, approval status, and allowed action scope for this turn.
 
 ## 6. Handoff Protocol
 

@@ -141,6 +141,8 @@ Quality pack activation:
 
 - Q2 unlocked at this stage: Behavioral Specification Rigor (behavioral contract produced), Performance & Efficiency (targets defined), Reliability & Resilience (failure modes designed), Maintainability Over Time (change seams defined).
 - If Q2 targets are absent at stage-gate review, treat as a spec gap and block approval.
+- Formal spec Quality Dimension Targets section must exist in every project. If any Q2 target is not applicable, record explicit N/A with rationale and approval reference; omission of the section blocks Stage 2 approval.
+- If Q3-ARCH-01 is active, the formal spec layered architecture section (template section 7.1) must be present and complete before Stage 2 can close, including module interfaces, API surface, CLI-to-API mapping, and GUI-to-API mapping when GUI exists.
 - See `07_QUALITY_DIMENSIONS.md` for behavioral specification guidance and escalation rules.
 
 ## Stage 3: Plan

@@ -20,11 +20,6 @@ Purpose: define what an industrial-grade software delivery should include beyond
 | Changelog | CHANGELOG.md | version and change trace |
 | Getting started / setup guide | GETTING_STARTED.md | onboarding and reproducibility |
 | Feedback proposals | templates/feedback.json (project-local) | process improvement capture |
-
-## Recommended Deliverables (project-dependent)
-
-| Deliverable | Typical Location | Trigger |
-|---|---|---|
 | Architecture Decision Records (ADRs) | docs/adr/ | significant design decisions |
 | API contract docs | docs/api/ | external or internal API surface |
 | Traceability report (FR/NFR -> tests/evidence) | docs/evidence/traceability.md | regulated/high-assurance projects |

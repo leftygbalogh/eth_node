@@ -13,7 +13,7 @@
 - Version:
 - Project mode: Greenfield | Brownfield
 - Implementation language(s):
-- Stage approval authority reference (from brief section 8.2):
+- Stage approval authority reference (from project brief delegation section):
 - Owner:
 - Date:
 
@@ -59,8 +59,10 @@
 - Owner role: team lead or architect
 - Test-first notes (TDD): N/A — structural task; verify by visual inspection and CI path alignment
 - Planned implementation chronicle entry: record chosen convention and any project-specific deviations with rationale
+- Chronicle entry ID (required once Done):
 - DoR met? Yes (no prerequisites)
 - Status: Not started
+- Evidence summary (required once Done):
 - Traceability links: —
 - Progress notes:
 
@@ -72,10 +74,12 @@
 - Owner role:
 - Test-first notes (TDD):
 - Planned implementation chronicle entry:
+- Chronicle entry ID (required once Done):
 - DoR met? Yes | No | Blocked on: [what]
 - Definition of done: inherits universal DoD from `02_WORKFLOW_STAGES.md`; add task-specific additions here:
 - Status: Not started | In progress | Blocked | Done
 - Blocker reason: (required if Status = Blocked)
+- Evidence summary: (required if Status = Done)
 - Traceability links: (required if Status = Done)
 - Progress notes:
 
@@ -87,10 +91,12 @@
 - Owner role:
 - Test-first notes (TDD):
 - Planned implementation chronicle entry:
+- Chronicle entry ID (required once Done):
 - DoR met? Yes | No | Blocked on: [what]
 - Definition of done: inherits universal DoD from `02_WORKFLOW_STAGES.md`; add task-specific additions here:
 - Status: Not started | In progress | Blocked | Done
 - Blocker reason: (required if Status = Blocked)
+- Evidence summary: (required if Status = Done)
 - Traceability links: (required if Status = Done)
 - Progress notes:
 
@@ -102,10 +108,12 @@
 - Owner role:
 - Test-first notes (TDD):
 - Planned implementation chronicle entry:
+- Chronicle entry ID (required once Done):
 - DoR met? Yes | No | Blocked on: [what]
 - Definition of done: inherits universal DoD from `02_WORKFLOW_STAGES.md`; add task-specific additions here:
 - Status: Not started | In progress | Blocked | Done
 - Blocker reason: (required if Status = Blocked)
+- Evidence summary: (required if Status = Done)
 - Traceability links: (required if Status = Done)
 - Progress notes:
 
