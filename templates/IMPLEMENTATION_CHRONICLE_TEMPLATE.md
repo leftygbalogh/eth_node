@@ -81,6 +81,11 @@
 - Reviewed by:
 - Review date:
 - Notes:
+- Pair-programming references (if applicable):
+  - Session log path:
+  - Driver role(s):
+  - Navigator/reviewer role(s):
+  - Key disagreement and resolution summary:
 
 ## 11. Reconstruction Bundle (required at Stage 4 close for major modules)
 

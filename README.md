@@ -25,9 +25,10 @@ Read and apply files in this order:
 11. `templates/FORMAL_SPEC_TEMPLATE.md`
 12. `templates/TASK_LIST_TEMPLATE.md`
 13. `templates/IMPLEMENTATION_CHRONICLE_TEMPLATE.md`
-14. `.github/copilot-instructions.md`
-15. `REQUIREMENTS_SPEC_MANIFEST.md`
-16. `DELIVERABLES_MANIFEST.md`
+14. `templates/PAIR_PROGRAMMING_LOG_TEMPLATE.md`
+15. `.github/copilot-instructions.md`
+16. `REQUIREMENTS_SPEC_MANIFEST.md`
+17. `DELIVERABLES_MANIFEST.md`
 
 ## Non-Negotiable Operating Rules
 
@@ -86,3 +87,4 @@ Idle-time actions (save/update/commit after inactivity) are policy requirements.
 - Changelog: `CHANGELOG.md`
 - Requirements/spec index: `REQUIREMENTS_SPEC_MANIFEST.md`
 - Deliverables set baseline: `DELIVERABLES_MANIFEST.md`
+- Pair-programming evidence log (when pair/subagent collaboration is used): `docs/evidence/pair-programming-log.md`

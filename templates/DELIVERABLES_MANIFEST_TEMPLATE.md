@@ -16,9 +16,7 @@
 - CHANGELOG.md
 - GETTING_STARTED.md
 - feedback.json (project-local)
-
-## Recommended Deliverables (conditional)
-
+- docs/evidence/pair-programming-log.md
 - ADR set
 - API contract docs
 - Traceability report

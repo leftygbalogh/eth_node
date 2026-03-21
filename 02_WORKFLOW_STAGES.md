@@ -191,6 +191,7 @@ Definition of done:
 - ADRs written for all significant design decisions
 - API documentation current
 - Implementation chronicle entry written for each significant task or module and linked to source spec/task IDs
+- Pair-programming evidence captured in `docs/evidence/pair-programming-log.md` whenever more than one build-capable contributor or subagent participates in implementation/review cycles.
 
 Mode-specific done criteria:
 
@@ -220,6 +221,7 @@ Definition of done:
 - Branch evidence collected: expected-vs-actual behavior captured for all user-visible branches and persistence-writing paths; orchestration flows (where input, output, and state combine) validated end-to-end.
 - For interactive CLI projects, manual exploratory session evidence includes screen-state and application-state capture artifacts linked to observed defects or pass confirmations.
 - For interactive CLI projects, a terminal environment validation matrix is captured in `docs/evidence/` (target environments, pass/fail/not-tested status, and artifact paths); untested environments are logged as explicit release risks.
+- Pair-programming session log (if applicable) is audited for each task: proposal, critique, decision, and linked evidence are complete; unresolved disagreements are listed as blockers.
 - Escaped-defect check: any defect discovered during Stage 5 must be converted into a permanent regression test and linked process/spec improvement before Stage 5 closes.
 
 Mode-specific done criteria:
