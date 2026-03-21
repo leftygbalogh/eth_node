@@ -1,45 +1,45 @@
 # Runbook for Known Failure Scenarios
 
-## Scenario 1: Stage Transition Denied
+## Scenario 1: Startup terminal too small
 
-- Symptom: Attempt to move to next stage is blocked.
-- Expected action:
-  1. Record denial reason in active stage artifact and `memory.md`.
-  2. Resolve missing approval or missing stage-completion commit.
-  3. Re-run stage gate checks.
+- Symptom: game exits immediately at startup.
+- Expected behavior: print size error, append snake.log entry, exit code non-zero.
+- Action:
+  1. Check current terminal dimensions.
+  2. Confirm width >= 11 and height >= 11.
+  3. Re-run via run_snake.sh.
 
-## Scenario 2: Verify Traceability Gap
+## Scenario 2: Runtime resize crash
 
-- Symptom: FR/NFR link to task/test/chronicle is missing.
-- Expected action:
-  1. Mark gap as blocker.
-  2. Update `FORMAL_SPEC.md` traceability matrix.
-  3. Update `TASK_LIST.md` or `IMPLEMENTATION_CHRONICLE.md` links.
-  4. Re-run Verify checklist.
+- Symptom: game exits during session after terminal resize.
+- Expected behavior: print size error, append snake.log entry with runtime reason.
+- Action:
+  1. Inspect latest snake.log line.
+  2. Validate that terminal was reduced below fixed startup board size.
+  3. Re-open larger terminal and restart game.
 
-## Scenario 3: Brownfield Confidence Below Threshold
+## Scenario 3: Launcher does not run in current shell
 
-- Symptom: Baseline evidence incomplete or confidence low.
-- Expected action:
-  1. Block new feature commitments.
-  2. Execute allowed actions from Brownfield decision table.
-  3. Re-assess confidence and document in `memory.md`.
+- Symptom: run_snake.sh cannot execute.
+- Action:
+  1. Confirm Bash runtime is available.
+  2. For Git Bash on Windows, ensure winpty exists in PATH if required.
+  3. Validate script path and executable permissions in Linux/WSL hosts.
+  4. Check docs/evidence/environment-matrix.md for known gaps.
 
-## Scenario 4: Logging Drift
+## Scenario 4: Leaderboard unexpected behavior
 
-- Symptom: Missing or stale prompt/status snapshots.
-- Expected action:
-  1. Append missing user prompt to `prompts.md`.
-  2. Add current status snapshot to `memory.md`.
-  3. Commit checkpoint before further stage actions.
+- Symptom: name prompt appears without new high score, or leaderboard writes non-record score.
+- Action:
+  1. Reproduce with controlled score values.
+  2. Verify previous_high and record_new_high call conditions.
+  3. Run cargo test -q and inspect src/main.rs endgame branch.
 
-## Scenario 5: Stage Collapse Under Detailed Brief
+## Scenario 5: Governance breach or stage drift
 
-- Symptom: Agent receives a detailed technical brief and starts coding before Stage 2/3 artifacts and approvals.
-- Expected action:
-  1. Stop implementation immediately.
-  2. Log violation and impact in `memory.md`.
-  3. Revert invalid implementation commits using non-destructive `git revert`.
-  4. Complete missing Stage 1/2/3 artifacts and obtain explicit approvals.
-  5. Restart Stage 4 build from approved task list.
-  6. Append process feedback entry to `templates/feedback.json`.
+- Symptom: stage moved forward without proper approval evidence.
+- Action:
+  1. Stop further changes.
+  2. Log breach in memory.md.
+  3. Revert unauthorized commits with git revert.
+  4. Replay affected stage with correct approvals.
