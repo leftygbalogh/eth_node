@@ -1,69 +1,70 @@
+
 # Numbered Task List
 
 ## Planning Metadata
 
-- Plan ID: PLAN-SNK-001
-- Source spec: FSP-SNK-001
-- Mode: Greenfield
-- Date: 2026-03-20
+- Plan ID: [Insert plan ID]
+- Source spec: [Insert source spec or requirements reference]
+- Mode: [Greenfield/Brownfield]
+- Date: [YYYY-MM-DD UTC]
 
 ## Backlog
 
 1. T-000: Create project file skeleton
-- Source: FR-001..FR-007
-- Status: Done
-- Output: `snake.py`, `run_snake.sh`
+	- Source: [Reference requirements or spec sections]
+	- Status: [Not started/In progress/Done]
+	- Output: [List of initial files or deliverables]
 
-2. T-001: Implement startup size checks and crash logging
-- Source: FR-001, FR-006, NFR-004
-- Status: Done
-- Evidence: startup-too-small exits with printed message and `snake.log` entry
-- Chronicle: CHR-SNK-001
+2. T-001: Implement startup checks and logging
+	- Source: [Reference requirements or spec sections]
+	- Status: [Not started/In progress/Done]
+	- Evidence: [Describe expected behavior or output]
+	- Chronicle: [Link to implementation chronicle entry]
 
-3. T-002: Implement startup placement and pre-start wait behavior
-- Source: FR-001
-- Status: Done
-- Evidence: centered head, random start direction, wait-for-key message
-- Chronicle: CHR-SNK-002
+3. T-002: Implement core initialization and pre-start behavior
+	- Source: [Reference requirements or spec sections]
+	- Status: [Not started/In progress/Done]
+	- Evidence: [Describe expected behavior or output]
+	- Chronicle: [Link to implementation chronicle entry]
 
-4. T-003: Implement movement loop and direction control
-- Source: FR-002
-- Status: Done
-- Evidence: steady speed, arrow key control, reverse-direction self-collision possible
-- Chronicle: CHR-SNK-003
+4. T-003: Implement main control loop or workflow
+	- Source: [Reference requirements or spec sections]
+	- Status: [Not started/In progress/Done]
+	- Evidence: [Describe expected behavior or output]
+	- Chronicle: [Link to implementation chronicle entry]
 
-5. T-004: Implement apple spawning/growth/scoring rules
-- Source: FR-003
-- Status: Done
-- Evidence: one apple only, empty-space spawn, +1 score, +1 growth behind head
-- Chronicle: CHR-SNK-004
+5. T-004: Implement primary feature logic
+	- Source: [Reference requirements or spec sections]
+	- Status: [Not started/In progress/Done]
+	- Evidence: [Describe expected behavior or output]
+	- Chronicle: [Link to implementation chronicle entry]
 
-6. T-005: Implement wall/self collision and no-wrap
-- Source: FR-004
-- Status: Done
-- Evidence: death on out-of-bounds and body hit
-- Chronicle: CHR-SNK-005
+6. T-005: Implement error handling and edge cases
+	- Source: [Reference requirements or spec sections]
+	- Status: [Not started/In progress/Done]
+	- Evidence: [Describe expected behavior or output]
+	- Chronicle: [Link to implementation chronicle entry]
 
-7. T-006: Implement win condition
-- Source: FR-005
-- Status: Done
-- Evidence: full-board final-apple path returns win
-- Chronicle: CHR-SNK-006
+7. T-006: Implement success/failure conditions
+	- Source: [Reference requirements or spec sections]
+	- Status: [Not started/In progress/Done]
+	- Evidence: [Describe expected behavior or output]
+	- Chronicle: [Link to implementation chronicle entry]
 
-8. T-007: Implement leaderboard policy
-- Source: FR-007
-- Status: Done
-- Evidence: prompt only on new all-time high; new-high-only write policy
-- Chronicle: CHR-SNK-007
+8. T-007: Implement policy or business logic
+	- Source: [Reference requirements or spec sections]
+	- Status: [Not started/In progress/Done]
+	- Evidence: [Describe expected behavior or output]
+	- Chronicle: [Link to implementation chronicle entry]
 
-9. T-008: Git Bash launcher compatibility
-- Source: FR-002 runtime requirement
-- Status: Done
-- Evidence: `run_snake.sh` uses `winpty` in MSYS when available
-- Chronicle: CHR-SNK-008
+9. T-008: Platform or environment compatibility
+	- Source: [Reference requirements or spec sections]
+	- Status: [Not started/In progress/Done]
+	- Evidence: [Describe expected behavior or output]
+	- Chronicle: [Link to implementation chronicle entry]
 
 ## Stage 3 Approval
 
-- Approved by: Team Lead Agent (delegated)
-- Approval date: 2026-03-20
+- Approved by: [Team Lead Agent or designated approver]
+- Approval date: [YYYY-MM-DD UTC]
 - Notes: Planning complete; tasks authorized for build.
