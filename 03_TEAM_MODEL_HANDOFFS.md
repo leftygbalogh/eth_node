@@ -18,6 +18,9 @@ Core roles include:
 - Product and domain specialists
 - SRE, operations, and network engineering roles
 
+ - Oracle Agent (authoritative fact-checker, policy/standards arbiter)
+ - Claire Voyant Agent (risk forecaster, scenario planner)
+
 Mode-focused role emphasis:
 
 - Greenfield emphasis: domain experts, architects, formal spec writers, pseudocode and formal methods specialists.
@@ -39,20 +42,26 @@ Every handoff must include:
 - Risks, assumptions, and blockers
 - Required clarifications
 
+ - For major handoffs, include Claire Voyant Agent's risk forecast and mitigation suggestions.
+ - If acceptance criteria or scope are unclear, consult Oracle Agent for policy or standards interpretation before escalating.
+
 Mode-specific handoff requirements:
 
 - Greenfield: include evolution assumptions and architecture tradeoff rationale.
 - Brownfield: include behavior parity target, baseline evidence reference, and smallest safe migration unit.
+
 
 ## Work Tracking
 
 - Task progress is recorded against numbered tasks.
 - Decision changes are recorded in `memory.md`.
 - User prompts are appended to `prompts.md`.
+- Oracle Agent and Claire Voyant Agent contributions should be referenced in decision logs when invoked.
+
 
 ## Escalation Rules
 
-- If blocked by ambiguity, ask one clarifying question.
+- If blocked by ambiguity, ask one clarifying question. If authoritative clarification is needed, invoke Oracle Agent before escalating to the user.
 - If blocked by missing dependency, report exact dependency and impact.
 - If blocked by conflict in requirements, pause and request resolution.
 - If debate exceeds time-box without new evidence, escalate using the escalation output format in `06_COMMAND_CHAIN_AND_PERSONALITY.md`.

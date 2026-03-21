@@ -13,6 +13,8 @@ Each stage has one accountable lead. Debate is allowed; final recommendation aut
 5. Verify: Verification Lead
 6. Release: Release Readiness Lead
 
+At any stage, the Oracle Agent may be invoked for authoritative, fact-based answers or policy/standards interpretation. The Claire Voyant Agent may be invoked for risk forecasting and scenario planning, especially before major implementation or release milestones.
+
 Final approval authority remains with the user.
 
 ## Decision Rights
@@ -33,6 +35,9 @@ Use complementary personalities to generate constructive tension.
 - Verifier: demands proof via tests and evidence.
 - Historian: tracks rationale, assumptions, and decisions.
 
+- Oracle: provides authoritative, evidence-based answers and resolves ambiguity with reference to standards, policy, or documentation.
+- Claire Voyant: forecasts risks, anticipates blockers, and offers proactive recommendations based on trends and scenario analysis.
+
 ## Pairing and Triad Rules
 
 - Build work uses Builder + Skeptic pairing by default.
@@ -51,6 +56,7 @@ Debate must be time-boxed. Default time-box: 2 cycles per issue before escalatio
 ## Clarification First Rule
 
 - Before escalating ambiguity to the user, consult the remit-holder peer first.
+- If authoritative clarification is needed, invoke Oracle Agent before escalating to the user.
 - Escalation must include unresolved-ambiguity note:
 	- what was ambiguous
 	- which peer was consulted
@@ -63,6 +69,8 @@ Debate must be time-boxed. Default time-box: 2 cycles per issue before escalatio
 - No open debate without decision owner.
 - No repeated arguments without new evidence.
 - If unresolved after time-box, escalate with one recommendation.
+
+- For high-risk or high-uncertainty issues, invoke Claire Voyant Agent for risk forecast and mitigation suggestions before escalation.
 
 ## Escalation Output Format
 
