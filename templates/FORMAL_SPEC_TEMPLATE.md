@@ -72,6 +72,20 @@ Map each NFR to measurable criteria. Targets defined here are validated at Stage
 - API or protocol definitions:
 - Versioning strategy:
 
+## 6.1 Exact Data Formats (required when files/log streams are part of behavior)
+
+- File/log grammar (field order, delimiter, timestamp format, encoding):
+- Record limits and ordering rules:
+- Malformed-row or malformed-payload handling:
+- Render-frame/output format contract (if user-visible rendering exists):
+
+## 6.2 API Signature and Side-Effect Contract
+
+- Stable signatures for key operations (inputs, outputs, error contract):
+- Side-effect declaration per operation (files, network, stdout/stderr, persistence):
+- Purity declaration (pure vs side-effecting):
+- Async/runtime context constraints (for calls sensitive to event-loop or threading context):
+
 ## 7. Architecture and Design Decisions
 
 - Decision:
@@ -105,6 +119,13 @@ Map each NFR to measurable criteria. Targets defined here are validated at Stage
 - Implementation constraints that must be recorded by coders:
 - Areas where implementation alternatives are expected and should be justified:
 - Reconstruction-critical details future coders must preserve:
+
+## 8.2 Deterministic Test Vector Appendix
+
+- Canonical deterministic vectors (fixed seeds, fixed inputs, expected outputs):
+- Expected persistence snapshots for terminal/end-state scenarios:
+- Expected rendered/output snapshots for key user-visible states:
+- Replay procedure for regression confirmation:
 
 ## 9. Traceability Matrix
 

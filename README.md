@@ -26,6 +26,8 @@ Read and apply files in this order:
 12. `templates/TASK_LIST_TEMPLATE.md`
 13. `templates/IMPLEMENTATION_CHRONICLE_TEMPLATE.md`
 14. `.github/copilot-instructions.md`
+15. `REQUIREMENTS_SPEC_MANIFEST.md`
+16. `DELIVERABLES_MANIFEST.md`
 
 ## Non-Negotiable Operating Rules
 
@@ -78,3 +80,5 @@ Idle-time actions (save/update/commit after inactivity) are policy requirements.
 - Failure runbook: `RUNBOOK_KNOWN_FAILURES.md`
 - Getting-started guide: `GETTING_STARTED.md`
 - Changelog: `CHANGELOG.md`
+- Requirements/spec index: `REQUIREMENTS_SPEC_MANIFEST.md`
+- Deliverables set baseline: `DELIVERABLES_MANIFEST.md`

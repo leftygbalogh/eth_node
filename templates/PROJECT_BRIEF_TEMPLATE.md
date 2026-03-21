@@ -63,6 +63,27 @@ List each requirement with stable identifiers.
 - Maintainability:
 - Compliance/regulatory:
 
+## 4.1 Determinism and Rebuild Constraints
+
+- Deterministic constants that must not drift (tick rates, bounds, limits, defaults):
+- RNG contract (where randomness is allowed, test seed strategy, replay expectations):
+- Tie/ordering policy for ranking flows (if applicable):
+- I/O contract (file names/paths/formats/encoding and malformed-data behavior):
+- Target runtime environment matrix and support tiers (required vs optional):
+
+## 4.2 Acceptance Scenarios (User-Visible)
+
+Capture concrete Given/When/Then scenarios for critical outcomes, especially failure and boundary end states.
+
+1. Scenario ID:
+  - Given:
+  - When:
+  - Then:
+2. Scenario ID:
+  - Given:
+  - When:
+  - Then:
+
 ## 5. Domain Constraints and Assumptions
 
 - Constraint 1:

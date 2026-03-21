@@ -32,6 +32,7 @@ A task may not be started until all of the following are true. Any role may bloc
 6. Dependencies resolved, or explicitly deferred with a written note explaining why deferral is safe.
 7. No unresolved ambiguity that would require a stop mid-implementation. If ambiguity exists, resolve it first.
 8. For tasks with branching logic, interactive input, or persistence side effects, a branch matrix exists covering happy path, negative path, edge/boundary states, and illegal or unexpected user actions.
+	- For async runtime/orchestration layers, this matrix must be defined at that layer (not inherited from subcomponents) and enumerate terminal states, per-branch side effects, async-context-sensitive calls, and execution context at each call site.
 9. For interactive CLI tasks, screen-state capture and application-state capture method are defined before implementation starts (script or equivalent mechanism), including how manual sessions produce reusable evidence.
 10. If Q3-ARCH-01 is active: the module interface and API surface are defined in the formal spec before implementation begins, and each CLI entry point is mapped to a specific API call in the spec.
 
@@ -52,6 +53,7 @@ A task is done only when all of the following are true. Any role may block done-
 6. No new technical debt accepted silently: any debt is logged in the task with a rationale and a revisit trigger.
 7. Code quality gates pass: linting, formatting, and static analysis clean.
 8. For interactive CLI tasks, at least one exploratory/manual session is run through capture helpers (or equivalent mechanism), and resulting screen/state artifacts are stored and linked for debugging traceability.
+	- For interactive CLI tasks that drive a finite-state runtime, automated tests must cover each terminal state and validate post-state behavior (side effects, output, and persistence), not only transition logic.
 
 For Brownfield tasks, add:
 9. Behavior parity confirmed against baseline for any changed behavior.
@@ -125,6 +127,7 @@ Definition of done:
 - Functional and non-functional requirements defined
 - Interfaces, behaviors, and constraints specified
 - Risks and assumptions documented
+- Requirements/specification artifact index is complete and current (`REQUIREMENTS_SPEC_MANIFEST.md`)
 - Language-specific implementation constraints documented without changing language-agnostic behavior contract
 - Behavioral specification rigor applied to core behaviors using statecharts, design by contract, and decision tables
 - Performance targets, reliability failure modes, and maintainability seams defined
@@ -214,6 +217,8 @@ Definition of done:
 - Maintainability trend metric captured for this cycle (template modification count and direction)
 - Branch evidence collected: expected-vs-actual behavior captured for all user-visible branches and persistence-writing paths; orchestration flows (where input, output, and state combine) validated end-to-end.
 - For interactive CLI projects, manual exploratory session evidence includes screen-state and application-state capture artifacts linked to observed defects or pass confirmations.
+- For interactive CLI projects, a terminal environment validation matrix is captured in `docs/evidence/` (target environments, pass/fail/not-tested status, and artifact paths); untested environments are logged as explicit release risks.
+- Escaped-defect check: any defect discovered during Stage 5 must be converted into a permanent regression test and linked process/spec improvement before Stage 5 closes.
 
 Mode-specific done criteria:
 
@@ -236,9 +241,30 @@ Definition of done:
 - Post-release monitoring plan documented
 - Runbooks for known failure scenarios written
 - Getting-started guide and changelog current
+- Deliverables manifest is complete and matches produced artifacts (`DELIVERABLES_MANIFEST.md`)
 - Observability alerting confirmed operational
 - Requirement-to-evidence map complete for user-visible branches and persistence-writing paths; no release occurs if orchestration flow evidence is incomplete.
 - For interactive CLI projects, runbook includes how to execute capture helpers and where captured session artifacts are stored for post-failure diagnosis.
+- For interactive CLI projects, runbook includes a Known Environment Gaps section for unvalidated terminal/shell combinations, with risk notes and post-release validation steps.
+- Security and production-readiness loop is complete: identified security/ops risks are converted into mitigation tasks, reflected in specs/runbooks, verified with evidence, and closed before release approval.
+
+## Official Iterative Hardening Loops
+
+The following loops are mandatory and may repeat within Stage 4-6 until closure criteria are met.
+
+1. Manual Testing and Requirements Loop
+	- Run manual/exploratory testing with evidence capture.
+	- Convert findings into defects/tasks.
+	- Fix code and add/expand automated regression tests.
+	- Update requirements/specification text where ambiguity enabled the defect.
+	- Re-verify behavior and traceability before closure.
+
+2. Security and Production-Readiness Loop
+	- Run security and operational-readiness checks.
+	- Convert findings into mitigation tasks.
+	- Update code, specs, runbooks, and release evidence.
+	- Re-verify mitigations and operational signals.
+	- Close only when unresolved high-risk items are either fixed or explicitly accepted by the approver.
 
 Quality pack activation:
 

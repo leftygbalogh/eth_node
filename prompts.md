@@ -454,3 +454,20 @@ Objective ... [Snake specification provided by sponsor in full].
 ### Prompt 003
 no, I want you to follow the rules. delete prior code, restart and execute all stages.
 
+
+### Prompt 103
+This was significantly better.
+
+I have several separate requests that I want you to implement:
+
+#1 do we have a Requirement and specifications Manifest? A document that list the titles, locations, contents and purpose of all the files that make up the technical specs of the project. If not, can you make one pleae.
+
+#2 Do we have a deliverables manifest - like all the thing that large industrial software gets delivered with? Could you make a list of suggestions from spec to testreports, everything that makes sense.
+
+#3 Please review the suggestions and changes in the Python_Terminal_Snake_Game2 folder. They are really good, I would like you to consider them for inclusion.
+
+#4 Can we expand our cycle so that we officially include a manual testing - feedback - fix code AND improve specs and requirements definitions iterative cycle?
+
+#5 Same cycle for security and production readyness?
+
+When done, save, commit and push

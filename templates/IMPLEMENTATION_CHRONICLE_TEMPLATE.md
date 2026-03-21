@@ -26,6 +26,9 @@
 - Boundary and interface decisions:
 - Error-handling strategy:
 - Performance or memory trade-offs accepted:
+- File map (concrete files changed/created):
+- Public symbols introduced/changed:
+- Signature snapshot (functions/classes/types and key fields):
 
 ## 4. Alternatives Considered
 
@@ -40,6 +43,7 @@
 - Invariant 2:
 - Constraints inherited from the spec:
 - Additional implementation constraints introduced:
+- Boundary behavior and terminal/end-state rules:
 
 ## 6. Divergences and Clarifications
 
@@ -55,6 +59,8 @@
 - Property-based tests added:
 - Edge cases covered:
 - Failure modes exercised:
+- Runtime/orchestration branch evidence covered:
+- Golden input/output examples captured:
 
 ## 8. Reconstruction Notes
 
@@ -62,6 +68,7 @@
 - Order of implementation steps that mattered:
 - Non-obvious pitfalls discovered during implementation:
 - What not to change without updating the behavioral spec:
+- Side effects and external touchpoints (files/network/stdout/runtime context):
 
 ## 9. Known Limitations
 
@@ -74,3 +81,11 @@
 - Reviewed by:
 - Review date:
 - Notes:
+
+## 11. Reconstruction Bundle (required at Stage 4 close for major modules)
+
+- Source tree manifest relevant to this module:
+- Import/dependency graph expectations:
+- Recommended reconstruction order:
+- Post-rebuild validation commands:
+- Expected validation outputs/pass criteria:

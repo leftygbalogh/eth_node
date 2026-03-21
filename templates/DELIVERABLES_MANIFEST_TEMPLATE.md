@@ -1,0 +1,36 @@
+# Deliverables Manifest Template
+
+## Core Deliverables (required)
+
+- Source code
+- Test suites
+- Build/dependency configuration
+- PROJECT_BRIEF.md
+- FORMAL_SPEC.md
+- TASK_LIST.md
+- IMPLEMENTATION_CHRONICLE.md
+- RELEASE_CHECKLIST.md
+- RUNBOOK_KNOWN_FAILURES.md
+- OPERATIONS_AND_ROLLBACK.md
+- POST_RELEASE_MONITORING.md
+- CHANGELOG.md
+- GETTING_STARTED.md
+- feedback.json (project-local)
+
+## Recommended Deliverables (conditional)
+
+- ADR set
+- API contract docs
+- Traceability report
+- Security review report
+- Threat model
+- Performance benchmark report
+- Environment validation matrix
+- Manual test report
+- SBOM/license report
+
+## Project-Specific Overrides
+
+- Additional required deliverables:
+- Deferred deliverables and rationale:
+- Release gating notes:

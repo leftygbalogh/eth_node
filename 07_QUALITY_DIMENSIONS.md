@@ -55,6 +55,7 @@ This is the master quality reference for this template. Every agent persona, sta
 - Negative-path coverage (illegal states, malformed inputs, and unexpected user actions are asserted deliberately)
 - Boundary and edge-case coverage (off-by-one, empty inputs, max values, concurrent access points)
 - Orchestration-path coverage (flows where input parsing, output rendering, and persistence combine are tested end-to-end, not component-isolated)
+- FSM exit-state completeness (for runtime/event-loop layers, every terminal state has at least one automated test that exercises post-processing, side effects, and observable output)
 - Interactive CLI reproducibility coverage (manual sessions capture screen-state and application-state artifacts so observed defects can be replayed and triaged)
 - Property-based tests (invariants hold across generated inputs)
 - Mutation testing (tests actually detect faults, not just execute)
@@ -128,6 +129,8 @@ This is the master quality reference for this template. Every agent persona, sta
 - Refactoring discipline (technical debt addressed continuously)
 - Escaped-defect conversion (any defect found in production or at release time must be converted into a permanent regression test and a process improvement before stage closure)
 - Retrospective and improvement loop
+- Manual test feedback loop (manual finding -> defect capture -> fix code -> tighten requirements/spec -> add regression evidence)
+- Security and production-readiness loop (security finding or operational risk -> mitigation task -> spec/runbook update -> verify -> release-gate evidence)
 
 ### 13. Data Quality
 - Schema correctness and version discipline
