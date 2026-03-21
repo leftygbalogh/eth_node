@@ -7,7 +7,7 @@ Expected downstream links: `FORMAL_SPEC.md` (Layer 2) and `IMPLEMENTATION_CHRONI
 
 ## How to Use This Brief During Discovery
 
-- Do not leave Snake-game defaults or any prior project examples in this file.
+- Do not leave any prior project examples or template defaults in this file. All content must be filled in based on the current project brief and stage instructions.
 - Fill sections in order during Stage 1 questioning.
 - If an item is unknown, mark it `TBD` and add a specific follow-up question.
 - Stage 1 cannot close until all mandatory fields are either filled or explicitly deferred with rationale.
