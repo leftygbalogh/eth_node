@@ -1029,3 +1029,25 @@ Next step: None pending.
 - Open questions: None.
 - Blockers: None.
 - Next step: Commit and push manifest + iterative hardening updates.
+
+## 2026-03-22 Status Snapshot 090
+
+- Timestamp: 2026-03-22
+- Current stage: Template Development (new session start).
+- Completed since last update: Full governance re-read completed. Template at v1.1.0. All Stage 1–6 artifacts complete as of 2026-03-20.
+- In progress: Awaiting direction from Lefty on next template improvement area.
+- Decisions made: Mode confirmed as Template Development; no project discovery flow started.
+- Open questions: None yet — awaiting Lefty input on next improvement priority.
+- Blockers: None.
+- Next step: User directs next template improvement task or approves a proposed one.
+
+## 2026-03-22 Status Snapshot 091
+
+- Timestamp: 2026-03-22
+- Current stage: Template Development — governance hardening complete.
+- Completed since last update: Discussed and abstracted all 9 rules from Competitor Spy V1 feedback one by one with Lefty; implemented all across: FORMAL_SPEC_TEMPLATE (section 6.3), 00_INTERACTION_GUARDRAILS (fix-verification rule, v1.4), copilot-instructions, GOVERNANCE_MODE (project remote URL step), 02_WORKFLOW_STAGES (Stage 2/5/6 DoD + Stage-Level Done Criteria), 01_DECISION_POLICY (Commit Cadence Policy), 07_QUALITY_DIMENSIONS (Testing + Observability), RELEASE_CHECKLIST, agents/powershell-automation-engineer, CHANGELOG (v1.2.0).
+- In progress: Save and commit.
+- Decisions made: Item 8 subsumed by item 6. Remote URL for Template mode is never questioned; Project mode always asks for one explicitly.
+- Open questions: None.
+- Blockers: None.
+- Next step: Save, commit, and push.

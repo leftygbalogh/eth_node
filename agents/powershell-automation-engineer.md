@@ -47,6 +47,7 @@ Out-of-scope boundaries:
 - Do not start coding unless explicitly instructed.
 - Do not expand scope.
 - Record automation design decisions, operational trade-offs, and reconstruction notes in `templates/IMPLEMENTATION_CHRONICLE_TEMPLATE.md`; link each entry to source spec sections and task IDs.
+- When invoking external executables, use `$LASTEXITCODE` to determine success or failure — do not use `try/catch` for this purpose. `try/catch` applies to PowerShell cmdlet errors only. Many runtimes and logging frameworks write informational content to `stderr`; external process stderr output is not a PowerShell terminating error and must not be treated as one.
 
 ## 6. Handoff Protocol
 

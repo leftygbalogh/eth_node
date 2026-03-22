@@ -74,6 +74,7 @@ Request explicit approval before acting when any of the following applies:
 - After a stage is marked complete and explicitly approved, save and create a stage-completion commit before starting the next stage.
 - If stage-completion work required several commits, end with one clear milestone commit that marks stage completion.
 - Keep rollback points frequent; do not delay commits until large bundles accumulate.
+- For projects using a compiled or packaged build step (compiled binary, container image, bundled assets, or any packaged artifact), rebuild from current HEAD before any push operation. The artifact timestamp must post-date the latest commit. Pushing without a fresh build is a protocol violation.
 
 ## Itemized Workflow Policy
 

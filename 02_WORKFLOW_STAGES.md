@@ -79,6 +79,7 @@ Task records must include enough context for another participant to understand c
 A stage is done only when:
 - Every task in the stage meets the task-level DoD above.
 - Stage-specific done criteria below are satisfied.
+- All participating agents have written any improvement suggestions observed during this stage to `templates/feedback.json` before stage approval is given.
 - Explicit user approval is given. Silence is not approval.
 
 ---
@@ -133,6 +134,8 @@ Definition of done:
 - Language-specific implementation constraints documented without changing language-agnostic behavior contract
 - Behavioral specification rigor applied to core behaviors using statecharts, design by contract, and decision tables
 - Performance targets, reliability failure modes, and maintainability seams defined
+- For every external integration point in scope (API, service, message queue, external data source), a contract table entry exists in the spec (section 6.3): protocol operation, required request fields, and expected response schema. Any contract unknown at Stage 1 close must be resolved via a dedicated spike before Stage 2 starts; Stage 2 cannot start with unresolved integration unknowns.
+- For CLI projects, real-time structured progress output to `stderr` is specified as a default design requirement: events logged, and suppression mechanism (e.g. `--quiet` flag) defined.
 
 Mode-specific done criteria:
 
@@ -225,6 +228,8 @@ Definition of done:
 - For interactive CLI projects, a terminal environment validation matrix is captured in `docs/evidence/` (target environments, pass/fail/not-tested status, and artifact paths); untested environments are logged as explicit release risks.
 - Pair-programming session log (if applicable) is audited for each task: proposal, critique, decision, and linked evidence are complete; unresolved disagreements are listed as blockers.
 - Escaped-defect check: any defect discovered during Stage 5 must be converted into a permanent regression test and linked process/spec improvement before Stage 5 closes.
+- For any system integrating with external data sources, the live E2E acceptance criteria include a non-empty data assertion: at least one real data record is present in the output from at least one live integration point. A structurally valid but empty result is a failure unless empty output is explicitly the expected scenario for that test. If live credentials or access are unavailable, the gap is documented with a named owner and follow-up trigger — not recorded as a pass.
+- For projects using a compiled or packaged build step, a fresh rebuild from HEAD is completed immediately before every live E2E run or exploratory test handover. The artifact timestamp must post-date the last commit. Running a live test against a stale artifact invalidates the result.
 - If easter egg logging is enabled, verification confirms: no easter eggs in excluded channels, rate limits and per-run caps enforced, structured fields valid, kill switch works immediately, and deterministic selection works under test seed.
 
 Mode-specific done criteria:
@@ -256,6 +261,8 @@ Definition of done:
 - Security and production-readiness loop is complete: identified security/ops risks are converted into mitigation tasks, reflected in specs/runbooks, verified with evidence, and closed before release approval.
 - Repository identity gate is complete before any publish command: remotes are listed, intended push target is explicitly confirmed, and proof is stored in `docs/evidence/release-remote-proof.md`.
 - If multiple remotes exist (or template-clone ancestry makes target uncertain), release remains blocked until owner or delegated approver confirms the exact remote and branch.
+- For projects using a compiled or packaged build step, a fresh rebuild from HEAD is completed immediately before the release commit and push. The artifact timestamp must post-date the last commit.
+- Joint post-mortem complete: the agent has written all improvement suggestions observed across all stages to `templates/feedback.json`, presented a consolidated summary to the product owner, and the product owner has responded (with additions or an explicit pass). Stage 6 approval is withheld until both parties have contributed and the feedback file is committed.
 - If easter egg logging is enabled, release evidence includes approved quote source/provenance confirmation, parser/alerting compatibility check, production-safe frequency confirmation, and a documented disable procedure in operations docs.
 
 ## Official Iterative Hardening Loops

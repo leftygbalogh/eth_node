@@ -85,12 +85,13 @@
 - Record a short changelog entry whenever governance is materially improved.
 - Baseline approval: Approved v1 baseline
 - Changelog:
+	- v1.4 (2026-03-22): added fix-verification rule; external integration contract table requirement and spike policy; live E2E non-empty data assertion; project-mode remote URL step; rebuild-before-push/E2E rule; joint Stage 6 post-mortem and continuous stage-gate feedback; outbound request assertion requirement; CLI real-time stderr logging default; PowerShell LASTEXITCODE rule.
 	- v1.3 (2026-03-21): added easter-egg logging guardrail with opt-in policy, channel restrictions, rate limits, and rights-safe quote requirements.
 	- v1.2 (2026-03-21): added repository identity and push-target verification guardrail, requiring explicit remote confirmation and release evidence before publish.
 	- v1.1 (2026-03-21): added Linux compliance baseline for line endings, shell conventions, and path style.
 	- v1.0 (2026-03-19): consolidated governance framework, mode model, command chain, personality model, Rust-primary and Python-secondary persona packs.
-- Version: 1.3
-- Last updated: 2026-03-21
+- Version: 1.4
+- Last updated: 2026-03-22
 
 ## 12. Linux Compliance Baseline
 
@@ -98,6 +99,13 @@
 - Path examples in governance artifacts should use POSIX-style separators (`/`) unless documenting a Windows-specific command.
 - Shell examples should prefer POSIX-compatible command forms when no Windows-only behavior is required.
 - Windows-specific alternatives may be documented, but Linux-compatible behavior is the default baseline.
+
+## 13. Fix Verification Rule
+
+- After applying any code fix, the agent must run a full verification step before stating the fix is complete.
+- Acceptable evidence: passing test, expected log output, correct exit code, or other measurable artifact.
+- If the agent cannot run the verification (credentials, environment, or access not available), it must explicitly state that limitation, describe what verification is needed, and hand the step to the user with a clear instruction.
+- Declaring a fix done before producing verification evidence is a governance violation.
 
 ## 13. Repository Identity and Publish Safety
 

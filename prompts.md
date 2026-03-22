@@ -471,3 +471,53 @@ I have several separate requests that I want you to implement:
 #5 Same cycle for security and production readyness?
 
 When done, save, commit and push
+
+## 2026-03-22
+
+### Prompt 001
+[User pasted initial_prompt.md content as session initializer — requesting full governance re-read and mode-appropriate next action.]
+
+### Prompt 002
+do as proposed, that is exactly what I had in mind for task one.
+
+### Prompt 003
+lets discuss these one by one because you seem to take the literal suggestion instead of abstracting them away so they would match any project, not just this particular one.
+
+### Prompt 004
+[Item 1 discussion] Instead of "If any of these are unknown at spec time, that must be flagged explicitly as a blocker before the adapter task can start (DoR enforcement)." - if they are unknown, they should be discovered during the discovery or they need to have their own spike before the main project can start and the result of the spike or spikes needs to be factored into the stage 2 technical specs
+
+### Prompt 005
+[Item 1 wording fixes applied inline by Lefty — "before Stage 1 closes", "before Stage 2 can be started", "Stage 2 cannot start without them".]
+
+### Prompt 006
+[Item 1 locked] yes
+
+### Prompt 007
+[Item 2] yes, this is good
+
+### Prompt 008
+[Item 3] perfect
+
+### Prompt 009
+[Item 4] nope, I want to explicitly state that the template improvements uses this git repo that we are on and not ask me to confirm. BUT the project governance mode must trigger the agent to explicitly ask for one, not confirm. You can display it and I can use it again, but it should ask for one and update the records with it.
+
+### Prompt 010
+[Item 4 locked] yes
+
+### Prompt 011
+[Item 5] also, one more condition when we must rebuild. Always rebuild before a save, commit, push process step
+
+### Prompt 012
+[Item 6] Let me extend that a little: [extended joint post-mortem sequence with continuous feedback at every stage gate]
+
+### Prompt 013
+[Item 6 locked] yes
+
+### Prompt 014
+[Item 7 locked] yes
+
+### Prompt 015
+[Item 9 locked] perfect
+
+### Prompt 016
+[Item 10] good

@@ -10,6 +10,8 @@
 - [x] All runtime error and edge-case handling paths are implemented and verified per requirements.
 - [x] Scoring, output, and artifact requirements are implemented as specified.
 - [x] No extra features/configuration added beyond the approved spec.
+- [ ] For projects with a compiled or packaged build step: release artifact rebuilt from HEAD immediately before this verification run; artifact timestamp verified to post-date the last commit.
+- [ ] For projects integrating with external data sources: live E2E produced at least one non-empty real data record from at least one live integration point; zero-record results are recorded as failures unless explicitly expected for the test scenario.
 
 ## Stage 6 Release
 
@@ -17,9 +19,11 @@
 - [x] All logging, output, and artifact requirements are implemented as specified.
 - [x] Governance artifacts updated for stages 1-6
 - [x] Agent feedback file updated
+- [ ] For projects with a compiled or packaged build step: release artifact rebuilt from HEAD immediately before this release commit and push; artifact timestamp verified to post-date the last commit.
 - [ ] Push target verified immediately before publish: `git remote -v` captured in evidence
 - [ ] Intended remote and branch explicitly stated and approved before push
 - [ ] Release remote proof snapshot saved: `docs/evidence/release-remote-proof.md`
+- [ ] Joint post-mortem complete: agent improvement entries written to `templates/feedback.json` for all stages; product owner consulted and response recorded (additions or explicit pass); feedback file committed.
 
 ## Stage 5 Approval
 

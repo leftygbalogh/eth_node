@@ -21,6 +21,7 @@ When Mode is `Template Development`, agents should:
 
 When Mode is `Project`, agents should:
 
+0. Before any discovery questions: run `git remote -v`, display the result for reference, and ask the user: "What is the target remote repository URL for this project?" Set the user-provided URL as origin and record it in `memory.md`. Stage 1 discovery does not begin until this step is complete.
 1. Run mode-first project discovery for that project.
 2. Execute stages against project artifacts in stage order.
 3. Treat this governance folder as the active working governance directory.

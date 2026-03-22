@@ -89,6 +89,19 @@ Map each NFR to measurable criteria. Targets defined here are validated at Stage
 - Purity declaration (pure vs side-effecting):
 - Async/runtime context constraints (for calls sensitive to event-loop or threading context):
 
+## 6.3 External Integration Contracts (required for every external integration point)
+
+For every external adapter, API, service dependency, message queue, or external data source in scope, a contract table entry must exist here before the integration task may start. If any entry is unknown at Stage 1 close, a dedicated spike must be completed before Stage 2 starts — Stage 2 cannot be approved with unresolved integration unknowns.
+
+- Integration point name:
+- Protocol and operation: (HTTP method + path, gRPC method, queue name, SQL endpoint, etc.)
+- Required request fields/parameters: (name, type, required or optional, for each field)
+- Expected response schema: (returned fields, types, and error responses)
+- Authentication method:
+- Spike required? Yes | No — if Yes, spike task ID and result reference:
+
+Repeat for each integration point. Any integration point without a complete contract table entry blocks Stage 2 approval.
+
 ## 7. Architecture and Design Decisions
 
 - Decision:

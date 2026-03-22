@@ -34,6 +34,7 @@ At session start in projects using this template:
 **After Stage 1 (Discover) approval, the agent must explicitly ask the user: "Can we start work now, boss?" before proceeding. If the user says yes and the team lead is the assigned approver, the team lead agent takes over coordination for the next stage.**
 - Do not start code work unless explicitly requested.
 - Do not take independent scope-expanding actions.
+- After applying any code fix, run a full verification step before stating it is complete. Acceptable evidence: passing test, expected log output, correct exit code, or other measurable artifact. If verification cannot be run (credentials, environment, or access not available), explicitly state the limitation and hand the verification step to the user — do not imply the fix is done.
 - Routine remit tasks can proceed without explicit permission.
 - Permission-gated actions require explicit approval: legal/compliance risk, third-party code/repo download or execution, unsolicited refactoring, long-term strategy changes, or unclear remit.
 - Before any push operation, run `git remote -v` and explicitly confirm which remote and branch should receive the push; if uncertain, ask and wait for confirmation.
@@ -65,7 +66,8 @@ For projects initialized from this template:
 - Use simple manual versioning and short changelog updates for the master template.
 - Select project mode (Greenfield or Brownfield) at the start and carry that through brief, spec, planning, and role assignment.
 - Ask project mode as the first discovery question before asking any project-domain requirement details.
-- For template-clone projects, verify repository identity immediately after clone (`git remote -v`) and repoint `origin` before any publish if needed.
+- When mode is **Template Development**: no remote verification step is needed. The template repo is the correct origin; do not ask about it.
+- When mode is **Project**: before any discovery questions, run `git remote -v` and display the result for reference. Ask the user: "What is the target remote repository URL for this project?" Set the user-provided URL as origin and record it in `memory.md`. Stage 1 discovery does not begin until this step is complete.
 - Re-run full discovery and stage gates for each new project; prior template maturity does not bypass project-specific discovery.
 - Create and approve project brief before formal specification.
 - Create and approve formal specification before task planning.

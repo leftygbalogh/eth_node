@@ -63,6 +63,7 @@ This is the master quality reference for this template. Every agent persona, sta
 - Performance tests (latency and throughput stay within bounds)
 - Security tests (known vulnerability classes are actively probed)
 - Contract tests (API agreements between services are verified)
+- Outbound request assertions (for any component that constructs and sends requests to an external system — HTTP adapter, message queue producer, RPC client, or query builder — tests assert on the outgoing request: required fields are present, values match inputs, and no required input is silently discarded; mocking the response without asserting on the request body is insufficient coverage)
 - Test independence (tests do not depend on each other's state)
 - Test readability (tests are documentation of intended behavior)
 
@@ -102,6 +103,7 @@ This is the master quality reference for this template. Every agent persona, sta
 - Runbooks for known failure scenarios
 - For interactive CLI projects, screen-state and application-state capture artifacts are retained with clear naming and path conventions for post-failure analysis
 - Log novelty controls: decorative log content must be channel-scoped, rate-limited, and machine-filterable so operational telemetry remains reliable
+- For CLI projects at V1, real-time structured progress output to `stderr` is the default design requirement: events (start, per-step progress, outcomes, warnings, completion) are logged as they occur; output is suppressible via a flag (e.g. `--quiet` or `--log-level error`); this requirement must be in the Stage 2 spec — not added ad hoc in Stage 4
 
 ### 10. Documentation
 - Architecture decision records (why decisions were made, not just what)
