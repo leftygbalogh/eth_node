@@ -22,6 +22,23 @@ Use this file to persist current status, key decisions, blockers, and next actio
 
 Note: Idle-triggered behavior requires host/editor automation to enforce consistently.
 
+## 2026-03-25 Project Start
+
+- Timestamp: 2026-03-25
+- Current stage: Stage 1 — Discover (in progress)
+- Project: Ethereum Node in Rust
+- Remote: https://github.com/leftygbalogh/eth_node.git
+- Mode: Project — **Greenfield** (confirmed by user)
+- Decisions made:
+  - Remote set to eth_node.git
+  - Greenfield mode confirmed
+  - Primary goal: **learning project** — explore and understand the Rust Ethereum ecosystem by building a node
+  - Primary user: Lefty (solo developer / learner)
+- Stage 1 progress: Q1 (mode) ✓, Q2 (goal/user) ✓ — session paused, continuing later
+- Next step: Resume Stage 1 discovery (Q3+) — scope, target network, Ethereum layer, key libraries.
+
+---
+
 ## 2026-03-26 Status Snapshot (v1.6)
 
 - Timestamp: 2026-03-26

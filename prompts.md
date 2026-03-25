@@ -563,3 +563,19 @@ Also, give them explicit right to push back and request a reconsideration of the
 Excellent.
 
 Now something new. In Project progress during manual testing and fix session, we do not seem to be using the frequent save and commit. Can we enforce a save and commit after each individual fix cadence somehow in this late stage?
+
+## 2026-03-25 — Project: eth_node (Ethereum Node in Rust)
+
+### Prompt 001
+Please read the initial_prompt.md and act accordingly.
+
+### Prompt 002
+https://github.com/leftygbalogh/eth_node.git
+
+### Prompt 003
+green,
+
+### Prompt 004
+I want to learn about the rust eth ecosystem, so I'd like to see how it works.
+
+please save state, commit and push, we will continue later
