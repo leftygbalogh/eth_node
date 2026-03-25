@@ -42,4 +42,4 @@
   3. Revert invalid implementation commits using non-destructive `git revert`.
   4. Complete missing Stage 1/2/3 artifacts and obtain explicit approvals.
   5. Restart Stage 4 build from approved task list.
-  6. Append process feedback entry to `templates/feedback.json`.
+  6. Append process feedback entry to `examples/feedback.json`.

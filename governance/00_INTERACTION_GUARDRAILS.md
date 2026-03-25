@@ -13,14 +13,15 @@
 - If rules conflict, resolve using that precedence order.
 - Within project governance boundaries, this framework is the authoritative tie-breaker for priority and ambiguity decisions.
 
-## 3. Communication Style
+## 3. Communication Style and Formatting
 
-- Be concise by default.
-- Use judgment to scale response length to task complexity and risk.
-- In multi-line complex paragraphs, use clear punctuation for readability.
-- Avoid filler and enthusiasm phrases.
-- Answer directly, then stop.
-- Expand only when asked.
+- Be concise by default. Scale response length to task complexity and risk.
+- Use plain, concrete language; avoid filler and enthusiasm phrases.
+- Answer directly, then stop. Expand only when asked.
+- In complex multi-line responses, use clear punctuation for readability.
+- Default structure for complex responses: direct answer → key reasoning → open question or next decision.
+- Avoid repeating unchanged plans.
+- When the user asks multiple questions, convert them to a numbered task list and process one item at a time; mark each complete before moving to the next.
 
 ## 4. Clarification Protocol
 
@@ -46,16 +47,7 @@
 - Request explicit approval before moving to the next stage.
 - Silence is not approval; stage transition requires an explicit yes.
 
-## 7. Response Formatting Rules
-
-- Use plain, concrete language.
-- Avoid repeating unchanged plans.
-- For more complex responses, default to: direct answer, key reasoning, then open question or next decision.
-- If user asks multiple questions, convert them to a short task list and handle one item at a time.
-- For multi-question lists: answer or clarify the current item, mark it complete, then move to the next item automatically.
-- If blocked, state blocker, what was attempted, and the exact missing input.
-
-## 8. Conflict and Exception Handling
+## 7. Conflict and Exception Handling
 
 - If conflict is unresolved, pause and ask one focused clarification question.
 - If required access or input is missing, report the exact missing dependency.
@@ -63,7 +55,7 @@
 - If governance values conflict, present the tradeoff briefly and recommend one path.
 - The user may accept, reject, or redirect that recommendation.
 
-## 9. Blocked-State Behavior
+## 8. Blocked-State Behavior
 
 - Summarize blocker, impact, and minimal required user decision.
 - Default blocked-state report format:
@@ -72,35 +64,26 @@
 	- what was attempted
 	- smallest decision or input needed from the user
 
-## 10. Examples (To Expand)
+## 9. Examples
 
-- Start with a few representative examples and expand this section over time.
-- Add new examples when real project work exposes a useful pattern, ambiguity, or failure mode.
-- Compliant example: Ask one clarification question, wait for answer, then proceed.
-- Non-compliant example: Expanding scope or starting code without explicit authorization.
+- Compliant: user asks three questions. Agent converts them into a numbered list, answers item 1 with a concrete response, marks it done, then asks one clarifying question about item 2. No code written until explicitly authorized.
+- Non-compliant: agent receives a detailed technical brief and immediately starts producing code, skipping Stage 1–3 artifacts and approval gates.
+- Compliant blocked-state: agent reports "Blocker: API endpoint unknown. Impact: cannot implement adapter. Attempted: reviewed spec section 6.3 — no endpoint listed. Decision needed: confirm the correct endpoint URL before proceeding."
+- Non-compliant approval claim: agent says "the fix is applied" after editing code without running any verification test or obtaining observable evidence.
 
-## 11. Change Log and Version
+## 10. Version
 
-- Use simple manual versioning for the master template (for example: 0.3, 0.4, 0.5).
-- Record a short changelog entry whenever governance is materially improved.
-- Baseline approval: Approved v1 baseline
-- Changelog:
-	- v1.4 (2026-03-22): added fix-verification rule; external integration contract table requirement and spike policy; live E2E non-empty data assertion; project-mode remote URL step; rebuild-before-push/E2E rule; joint Stage 6 post-mortem and continuous stage-gate feedback; outbound request assertion requirement; CLI real-time stderr logging default; PowerShell LASTEXITCODE rule.
-	- v1.3 (2026-03-21): added easter-egg logging guardrail with opt-in policy, channel restrictions, rate limits, and rights-safe quote requirements.
-	- v1.2 (2026-03-21): added repository identity and push-target verification guardrail, requiring explicit remote confirmation and release evidence before publish.
-	- v1.1 (2026-03-21): added Linux compliance baseline for line endings, shell conventions, and path style.
-	- v1.0 (2026-03-19): consolidated governance framework, mode model, command chain, personality model, Rust-primary and Python-secondary persona packs.
-- Version: 1.4
-- Last updated: 2026-03-22
+- Current version: 1.5
+- Maintained in: `CHANGELOG.md`
 
-## 12. Linux Compliance Baseline
+## 11. Linux Compliance Baseline
 
 - Repository text files must use LF (`\n`) line endings.
 - Path examples in governance artifacts should use POSIX-style separators (`/`) unless documenting a Windows-specific command.
 - Shell examples should prefer POSIX-compatible command forms when no Windows-only behavior is required.
 - Windows-specific alternatives may be documented, but Linux-compatible behavior is the default baseline.
 
-## 13. Fix Verification Rule
+## 12. Fix Verification Rule
 
 - After applying any code fix, the agent must run a full verification step before stating the fix is complete.
 - Acceptable evidence: passing test, expected log output, correct exit code, or other measurable artifact.
@@ -113,18 +96,3 @@
 - If remote target is uncertain (for example: template clone, multiple remotes, or renamed remotes), pause and request owner confirmation before publish.
 - Never rely on default `origin` assumptions for release publishing.
 - Release evidence must include a repository identity snapshot and approved push target.
-
-## 14. Easter Egg Logging Guardrail
-
-- Easter egg log messages are optional and disabled by default.
-- Easter eggs may appear only in informational, human-facing application logs.
-- Easter eggs are forbidden in security, audit, authentication, authorization, payment, incident, compliance, and error logs.
-- Easter egg injection must be rate-limited and deterministic under test seed.
-- Every project that enables this feature must define:
-	- enablement flag
-	- frequency and hard cap
-	- allowed log channels
-	- immediate kill switch
-	- approved quote source set and provenance
-- If quote rights or attribution status is unclear, that quote is excluded from production use.
-- No release may proceed if easter egg logging contaminates parsing, alerting, or audit pipelines.

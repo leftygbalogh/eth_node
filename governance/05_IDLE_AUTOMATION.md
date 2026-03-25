@@ -27,21 +27,9 @@ chmod +x scripts/idle-guard.sh
 ./scripts/idle-guard.sh
 ```
 
-## Optional Timing Overrides
-
-Windows:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/idle-guard.ps1 -PollSeconds 30 -SaveAfterMinutes 5 -CommitAfterMinutes 15
-```
-
-Linux:
-
-```bash
-POLL_SECONDS=30 SAVE_AFTER_MINUTES=5 COMMIT_AFTER_MINUTES=15 ./scripts/idle-guard.sh
-```
-
 ## Important Note
 
 This automation tracks repository inactivity (file-change inactivity), which is a practical proxy for user idle time.
 It supplements, but does not replace, explicit stage-completion milestone commits.
+
+Timing overrides (poll interval, save threshold, commit threshold) are configurable via parameters; see the script headers for details.

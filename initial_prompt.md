@@ -6,17 +6,15 @@ Copy and paste this entire block when starting a new software project with this 
 
 **Read the Governance Template First**
 
-Read everything in the AI_Governance_Template folder. Make sure you read everything, understand it, and act accordingly. This is our contract and I hold you accountable for every deviation from it.
+Read `GOVERNANCE_MODE.md`, then every file in the `governance/` folder in this project, in numbered order (00 through 07). Make sure you read everything, understand it, and act accordingly. This is our contract and I hold you accountable for every deviation from it.
 
 **Execution Contract (non-negotiable)**
 
 You must follow this governance process exactly as written. Process compliance is more important than speed.
-
 A complete brief/spec does NOT authorize stage skipping or pipeline collapsing.
 
 You may only work inside the currently approved stage.
 You may not move to the next stage without explicit approval from the stage approver defined in the brief.
-
 Within an approved stage, you may autonomously resolve implementation details with other agents, but only within approved scope.
 
 **No silent assumptions:**
@@ -38,4 +36,4 @@ Within an approved stage, you may autonomously resolve implementation details wi
 
 ---
 
-Begin by reading the discovery-order documents in the `.github/` folder, then start Stage 1 Discover.
+Begin by reading `GOVERNANCE_MODE.md`, then `governance/00` through `governance/07` in order, then start Stage 1 Discover.

@@ -40,9 +40,7 @@ Routine remit actions may proceed without additional permission. Examples: statu
 ## Assumption and Clarification Policy
 
 - No silent assumptions are allowed when ambiguity can change behavior, architecture, test strategy, or release outcome.
-- Ask one clarifying question at a time and pause.
-- If a response is unavailable, propose exactly one explicit working assumption and require yes/no confirmation before continuing.
-- Working assumptions are temporary and must be recorded in stage artifacts when accepted.
+- For the clarification protocol (one question at a time, working assumptions, yes/no confirmation), see `00_INTERACTION_GUARDRAILS.md` §4.
 
 ## Permission-Gated Actions
 
@@ -53,11 +51,6 @@ Request explicit approval before acting when any of the following applies:
 - Potentially negative or irreversible impact exists (for example, unsolicited refactoring).
 - Long-term strategic direction may change (for example, project direction or testing strategy).
 - Ownership/remit is unclear.
-
-## Conflict Resolution Policy
-
-- When governance values or priorities conflict, present the tradeoff briefly and recommend one path.
-- Treat the recommendation as provisional until the user accepts it or redirects it.
 
 ## Stage Gate Policy
 
@@ -74,14 +67,8 @@ Request explicit approval before acting when any of the following applies:
 - After a stage is marked complete and explicitly approved, save and create a stage-completion commit before starting the next stage.
 - If stage-completion work required several commits, end with one clear milestone commit that marks stage completion.
 - Keep rollback points frequent; do not delay commits until large bundles accumulate.
+- During Stage 5 and Stage 6 fix cadences, each individual verified fix must be saved and committed before the next manual test run or before starting the next fix. Bundling multiple independent fixes into one commit is a protocol violation.
 - For projects using a compiled or packaged build step (compiled binary, container image, bundled assets, or any packaged artifact), rebuild from current HEAD before any push operation. The artifact timestamp must post-date the latest commit. Pushing without a fresh build is a protocol violation.
-
-## Itemized Workflow Policy
-
-- When a user asks multiple questions, convert them to a short itemized task list.
-- Complete items sequentially.
-- After completing one item, mark it complete and continue to the next item automatically.
-- Ask clarification only for the current item when needed.
 
 ## Coding Authorization Policy
 
@@ -91,10 +78,5 @@ Request explicit approval before acting when any of the following applies:
 
 ## Detailed Brief Handling Policy
 
-- A detailed implementation brief is treated as Stage 1 input, not as automatic permission to skip Stage 2 and Stage 3.
-- Explicit authorization to code does not override stage order.
-- Before writing code, the following must be true:
-	1. Stage 1 artifact complete and approved.
-	2. Stage 2 artifact complete and approved.
-	3. Stage 3 artifact complete and approved.
-- If implementation starts before these approvals, stop immediately, log the violation in `memory.md`, and execute rollback/restart from the last valid stage boundary.
+- A detailed implementation brief is Stage 1 input only — it does not permit skipping Stage 2 or Stage 3.
+- Stage 1, 2, and 3 artifacts must each be complete and approved before any code is written. If implementation starts before these approvals, stop, log the violation in `memory.md`, and restart from the last valid stage boundary.

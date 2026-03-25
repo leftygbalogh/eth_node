@@ -521,3 +521,45 @@ lets discuss these one by one because you seem to take the literal suggestion in
 
 ### Prompt 016
 [Item 10] good
+
+### Prompt 017
+not sure. if I pull the entire project folder tree in the examples, can you find it out?
+
+### Prompt 018
+C:\Users\geb\Documents\VScode\competitor_spy2
+
+### Prompt 019
+but now, I had to do the same for you to read those files and I could approve for all files for this session
+
+### Prompt 020
+can you explain to me on a tree using the C:\Users\geb\Documents\VScode\competitor_spy2 as an example please
+
+### Prompt 021
+okay, but where was the matchers.rs file so that it was outside the C:\Users\geb\Documents\VScode\competitor_spy2 folder?
+
+### Prompt 022
+yes, check it
+
+### Prompt 023
+sure
+
+### Prompt 024
+okay, than you.
+
+I would like to explicitly use the oracle and the claire voyant agends at certain stages. Where would you recommenrd and for what pusposes?
+
+### Prompt 025
+I would also like them more involved in planning of testing, somethign there?
+
+### Prompt 026
+sounds good, pease put them in the files and I'll check the details there
+
+### Prompt 027
+Can you finetrune the wording do that these two challenge a little more the assumptions and boundaries, they push back a little to see if the thinking bubble pops and needs to be revised.
+
+Also, give them explicit right to push back and request a reconsideration of the given topic based on their input.
+
+### Prompt 028
+Excellent.
+
+Now something new. In Project progress during manual testing and fix session, we do not seem to be using the frequent save and commit. Can we enforce a save and commit after each individual fix cadence somehow in this late stage?

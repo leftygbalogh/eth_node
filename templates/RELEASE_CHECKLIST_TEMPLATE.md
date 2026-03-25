@@ -18,12 +18,11 @@
 - [x] All deliverables listed in the project brief are present.
 - [x] All logging, output, and artifact requirements are implemented as specified.
 - [x] Governance artifacts updated for stages 1-6
-- [x] Agent feedback file updated
-- [ ] For projects with a compiled or packaged build step: release artifact rebuilt from HEAD immediately before this release commit and push; artifact timestamp verified to post-date the last commit.
+- [x] Agent feedback file updated- [ ] Repo root layout audit: no stray generated files (PDFs, test artifacts, data dumps) in repo root; `output/` and `build/` directories are confirmed gitignored; governance, source code, and runtime output are in clearly separated folders.- [ ] For projects with a compiled or packaged build step: release artifact rebuilt from HEAD immediately before this release commit and push; artifact timestamp verified to post-date the last commit.
 - [ ] Push target verified immediately before publish: `git remote -v` captured in evidence
 - [ ] Intended remote and branch explicitly stated and approved before push
 - [ ] Release remote proof snapshot saved: `docs/evidence/release-remote-proof.md`
-- [ ] Joint post-mortem complete: agent improvement entries written to `templates/feedback.json` for all stages; product owner consulted and response recorded (additions or explicit pass); feedback file committed.
+- [ ] Joint post-mortem complete: agent improvement entries written to `examples/feedback.json` for all stages; product owner consulted and response recorded (additions or explicit pass); feedback file committed.
 
 ## Stage 5 Approval
 

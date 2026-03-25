@@ -68,6 +68,16 @@ Map each NFR to measurable criteria. Targets defined here are validated at Stage
 - Target:
 - Validation method:
 
+## 5.1 Observability and CLI UX (required for CLI projects)
+
+For V1 CLI projects, real-time structured log output to `stderr` is the default design requirement. Suppress only with an explicit flag (e.g. `--quiet` or `--log-level error`).
+
+- Events logged to stderr during a run: (e.g., adapter start, geocoding result, record count per source, warnings, outcome summary)
+- Log format: (structured JSON | human-readable key=value | other)
+- Suppression mechanism: (flag name and behavior when set)
+- Log level default: (e.g., info)
+- Non-applicable declaration: if stderr logging does not apply, state reason and approval reference here
+
 ## 6. Data and Interface Contracts
 
 - Input schemas/contracts:
@@ -101,6 +111,14 @@ For every external adapter, API, service dependency, message queue, or external 
 - Spike required? Yes | No — if Yes, spike task ID and result reference:
 
 Repeat for each integration point. Any integration point without a complete contract table entry blocks Stage 2 approval.
+
+## 6.4 Credential Model (required when the project handles secrets, API keys, or passphrases)
+
+- Credential acquisition order: (e.g., environment variable first, then interactive prompt, then keystore)
+- Interactive prompt suppression in test contexts: (state how prompts are suppressed — env var override, test flag, or no-op mock)
+- Acceptance criterion: automated tests must complete without blocking on stdin; any test run that hangs waiting for a credential prompt is a build failure
+- Secret storage mechanism: (env var | encrypted store | OS keyring | other — state which)
+- Credential rotation and expiry handling:
 
 ## 7. Architecture and Design Decisions
 

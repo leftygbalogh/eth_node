@@ -22,6 +22,47 @@ Use this file to persist current status, key decisions, blockers, and next actio
 
 Note: Idle-triggered behavior requires host/editor automation to enforce consistently.
 
+## 2026-03-26 Status Snapshot (v1.6)
+
+- Timestamp: 2026-03-26
+- Current stage: Template Development — complete (v1.6.0)
+- Completed since last update:
+  - Pass 4 simplification complete (v1.6.0):
+    - `01_DECISION_POLICY.md`: Conflict Resolution Policy removed (duplicate); Detailed Brief Handling Policy condensed to 2 sentences.
+    - `02_WORKFLOW_STAGES.md`: Final easter egg DoD line removed; Stage Gate Enforcement de-duplicated with cross-reference to `01`; specialist agent prompts condensed from paragraphs to one-line challenge focus across all 5 stages; Universal DoR conditional items (8–10) moved under `### Conditional Extensions` header with inline trigger labels.
+- In progress: None.
+- Decisions made: Quoted agent prompts removed from governance — challenge focus retained; agent files in `agents/` hold full persona detail.
+- Open questions: None.
+- Blockers: None.
+- Next step: User review and commit.
+
+## 2026-03-26 Status Snapshot
+
+- Timestamp: 2026-03-26
+- Current stage: Template Development — complete (v1.5.0)
+- Completed since last update:
+  - Repository restructure: `governance/`, `src/`, `config/`, `build/`, `output/` layout established.
+  - Snake-game artifacts fully removed.
+  - All 6 `examples/feedback.json` improvements applied (v1.3.1).
+  - Three-pass simplification complete (v1.5.0): stale refs fixed, easter egg cruft removed, duplicate sections deleted, §3+§7 merged in `00`, persona directory collapsed, idle automation trimmed, personality archetypes condensed to table.
+- In progress: None.
+- Decisions made: Hardcoded language priority (Rust/Python) removed; template is now language-agnostic for persona selection.
+- Open questions: None.
+- Blockers: None.
+- Next step: User review and commit.
+
+## 2026-03-25 Status Snapshot
+
+- Timestamp: 2026-03-25
+- Current stage: Template Development — complete
+- Completed since last update: Applied all feedback.json improvements (verification_artifact field, Stage 4 live E2E gate, release checklist layout audit, formal spec credential model + observability sections, T-000 output/build dirs). All changes committed to CHANGELOG as v1.3.1.
+- In progress: Awaiting user review.
+- Decisions made: All 6 feedback items addressed; PowerShell LASTEXITCODE rule was already present from v1.2.
+- Open questions: None.
+- Blockers: None.
+- Next step: User review and approval; commit.
+
+
 ## 2026-03-19 Status Snapshot 001
 
 - Timestamp: 2026-03-19
@@ -1051,3 +1092,14 @@ Next step: None pending.
 - Open questions: None.
 - Blockers: None.
 - Next step: Save, commit, and push.
+
+## 2026-03-22 Status Snapshot 092
+
+- Timestamp: 2026-03-22
+- Current stage: Template Development — governance refinement in progress.
+- Completed since last update: Added explicit Oracle and Claire Voyant stage invocations in Stage 1-5; strengthened wording to require stronger assumption/boundary challenge; added explicit Right to Challenge sections in `agents/oracle-agent.md` and `agents/claire-voyant-agent.md`; configured global Copilot additional read access paths for Cargo/Rustup external files.
+- In progress: Enforcing late-stage per-fix commit cadence.
+- Decisions made: During Stage 5/6 manual testing and fix loops, each verified fix must be saved and committed before next test pass or next fix; bundling independent fixes into one commit is prohibited.
+- Open questions: None.
+- Blockers: None.
+- Next step: Review wording with Lefty and commit when approved.

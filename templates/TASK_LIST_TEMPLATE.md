@@ -39,16 +39,18 @@
   - `src/` — all source files
   - `tests/` — integration tests
   - `benches/` — benchmarks (if applicable)
-  - `docs/` — project documentation
+  - `docs/` — project documentation and ADR evidence
   - `config/` — configuration files
   - `data/` — static or seed data
+  - `output/` — runtime-generated reports, exports, artefacts (gitignored)
+  - `build/` — compiled binaries and packages (gitignored)
   - `logs/` — runtime log output (gitignored)
   - `scripts/` — helper, diagnostic, and build scripts
   - `assets/` — static assets (if applicable)
 - Common language overrides:
-  - Python: `src/<package>/`, `tests/`, `docs/`, `config/`, `data/`, `logs/`, `scripts/`
-  - Node/TypeScript: `src/`, `test/`, `docs/`, `config/`, `dist/` (gitignored), `logs/` (gitignored)
-  - Bash/shell: `bin/` or root-level script entry point, `lib/` for shared functions, `tests/`, `logs/`, `data/`, `docs/`
+  - Python: `src/<package>/`, `tests/`, `docs/`, `config/`, `data/`, `output/` (gitignored), `build/` (gitignored), `logs/` (gitignored), `scripts/`
+  - Node/TypeScript: `src/`, `test/`, `docs/`, `config/`, `dist/` (gitignored), `output/` (gitignored), `logs/` (gitignored)
+  - Bash/shell: `bin/` or root-level script entry point, `lib/` for shared functions, `tests/`, `output/` (gitignored), `logs/` (gitignored), `data/`, `docs/`
 - Acceptance criteria:
   - All top-level directories created and committed with a `.gitkeep` or equivalent placeholder where empty
   - `logs/` and build output dirs are added to `.gitignore`

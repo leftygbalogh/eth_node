@@ -62,6 +62,16 @@
 - Runtime/orchestration branch evidence covered:
 - Golden input/output examples captured:
 
+## 7.1 Verification Artifact (mandatory — entry is incomplete without this field)
+
+State the observable evidence that confirms this task is done. Acceptable forms:
+- Terminal output snippet showing passing tests or expected log/exit-code output
+- Test name(s) with explicit pass result
+- Record count or structured output from a live run
+- If verification is deferred: state the reason, name the owner, and set a revisit trigger
+
+Verification artifact:
+
 ## 8. Reconstruction Notes
 
 - If the code were lost, what another implementer must know to rebuild this unit faithfully:

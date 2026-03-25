@@ -5,15 +5,15 @@
 At session start in projects using this template:
 
 1. Read `GOVERNANCE_MODE.md`
-2. Read `00_INTERACTION_GUARDRAILS.md`
-3. Read `01_DECISION_POLICY.md`
-4. Read `02_WORKFLOW_STAGES.md`
-5. Read `03_TEAM_MODEL_HANDOFFS.md`
-6. Read `04_PERSONA_DIRECTORY.md`
-7. Read `05_IDLE_AUTOMATION.md`
-8. Read `06_COMMAND_CHAIN_AND_PERSONALITY.md`
-9. Read `07_QUALITY_DIMENSIONS.md`
-10. Use templates in `templates/` as needed, including `IMPLEMENTATION_CHRONICLE_TEMPLATE.md` during Build
+2. Read `governance/00_INTERACTION_GUARDRAILS.md`
+3. Read `governance/01_DECISION_POLICY.md`
+4. Read `governance/02_WORKFLOW_STAGES.md`
+5. Read `governance/03_TEAM_MODEL_HANDOFFS.md`
+6. Read `governance/04_PERSONA_DIRECTORY.md`
+7. Read `governance/05_IDLE_AUTOMATION.md`
+8. Read `governance/06_COMMAND_CHAIN_AND_PERSONALITY.md`
+9. Read `governance/07_QUALITY_DIMENSIONS.md`
+10. Use templates in `templates/` as needed, including `templates/IMPLEMENTATION_CHRONICLE_TEMPLATE.md` during Build
 
 ## Core Behavior
 
@@ -60,15 +60,16 @@ When in implementation stages, follow:
 For projects initialized from this template:
 
 - Ensure git repository is initialized.
-- Keep governance folder project-specific and complete the document Q&A.
-- Use the copied project-specific governance folder as the active working governance directory for all project governance decisions and artifacts.
-- Treat this template as the master governance source; project-local improvements should be fed back here when approved.
+- Treat `governance/` as the master policy layer; do not edit it mid-project. Raise a template amendment instead.
+- Treat this template repo as the master governance source; project-local improvements should be fed back here via `examples/feedback.json` at Stage 6 close.
 - Use simple manual versioning and short changelog updates for the master template.
 - Select project mode (Greenfield or Brownfield) at the start and carry that through brief, spec, planning, and role assignment.
 - Ask project mode as the first discovery question before asking any project-domain requirement details.
+- At session start: print the current working directory and confirm it matches the intended active project repo. When similarly-named directories exist, ask the user to confirm the correct one before issuing any build or git command.
 - When mode is **Template Development**: no remote verification step is needed. The template repo is the correct origin; do not ask about it.
 - When mode is **Project**: before any discovery questions, run `git remote -v` and display the result for reference. Ask the user: "What is the target remote repository URL for this project?" Set the user-provided URL as origin and record it in `memory.md`. Stage 1 discovery does not begin until this step is complete.
 - Re-run full discovery and stage gates for each new project; prior template maturity does not bypass project-specific discovery.
 - Create and approve project brief before formal specification.
 - Create and approve formal specification before task planning.
 - Create and approve numbered task list before implementation.
+- Repository layout convention: source code in `src/`, config in `config/`, generated output in `output/` (gitignored), build artifacts in `build/` (gitignored). Establish this layout as T-000 before creating any source files.

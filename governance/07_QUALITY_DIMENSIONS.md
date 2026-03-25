@@ -102,7 +102,7 @@ This is the master quality reference for this template. Every agent persona, sta
 - Alerting on meaningful signals (not noise)
 - Runbooks for known failure scenarios
 - For interactive CLI projects, screen-state and application-state capture artifacts are retained with clear naming and path conventions for post-failure analysis
-- Log novelty controls: decorative log content must be channel-scoped, rate-limited, and machine-filterable so operational telemetry remains reliable
+- Log content must be operationally meaningful: decorative, high-volume, or non-signal log output must be channel-scoped and filterable so telemetry remains reliable
 - For CLI projects at V1, real-time structured progress output to `stderr` is the default design requirement: events (start, per-step progress, outcomes, warnings, completion) are logged as they occur; output is suppressible via a flag (e.g. `--quiet` or `--log-level error`); this requirement must be in the Stage 2 spec — not added ad hoc in Stage 4
 
 ### 10. Documentation
@@ -114,7 +114,6 @@ This is the master quality reference for this template. Every agent persona, sta
 - Getting-started guide for contributors
 - Glossary of domain terms
 - Changelog
-- If easter egg logging is enabled, document policy, source curation, kill switch, and operational disable procedure
 
 ### 11. Developer Experience
 - Build time acceptable

@@ -26,17 +26,18 @@ Final approval authority remains with the user.
 
 ## Personality Archetypes
 
-Use complementary personalities to generate constructive tension.
+Assign complementary archetypes to generate constructive tension on a team.
 
-- Builder: fast delivery, concrete execution.
-- Skeptic: risk and failure-mode challenger.
-- Simplifier: removes complexity and abstraction overhead.
-- Guardian: protects readability and long-term maintainability.
-- Verifier: demands proof via tests and evidence.
-- Historian: tracks rationale, assumptions, and decisions.
-
-- Oracle: provides authoritative, evidence-based answers and resolves ambiguity with reference to standards, policy, or documentation.
-- Claire Voyant: forecasts risks, anticipates blockers, and offers proactive recommendations based on trends and scenario analysis.
+| Archetype | Focus |
+|-----------|-------|
+| Builder | Fast delivery and concrete execution |
+| Skeptic | Risk and failure-mode challenge |
+| Simplifier | Complexity and abstraction reduction |
+| Guardian | Readability and long-term maintainability |
+| Verifier | Proof through tests and evidence |
+| Historian | Rationale, assumption, and decision tracking |
+| Oracle | Authoritative fact-checking and policy arbitration |
+| Claire Voyant | Risk forecasting and scenario planning |
 
 ## Pairing and Triad Rules
 

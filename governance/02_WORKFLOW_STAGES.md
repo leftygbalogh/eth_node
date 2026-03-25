@@ -31,10 +31,12 @@ A task may not be started until all of the following are true. Any role may bloc
 5. Implementation chronicle entry planned: module or component named, chronicle ID assigned.
 6. Dependencies resolved, or explicitly deferred with a written note explaining why deferral is safe.
 7. No unresolved ambiguity that would require a stop mid-implementation. If ambiguity exists, resolve it first.
-8. For tasks with branching logic, interactive input, or persistence side effects, a branch matrix exists covering happy path, negative path, edge/boundary states, and illegal or unexpected user actions.
-	- For async runtime/orchestration layers, this matrix must be defined at that layer (not inherited from subcomponents) and enumerate terminal states, per-branch side effects, async-context-sensitive calls, and execution context at each call site.
-9. For interactive CLI tasks, screen-state capture and application-state capture method are defined before implementation starts (script or equivalent mechanism), including how manual sessions produce reusable evidence.
-10. If Q3-ARCH-01 is active: the module interface and API surface are defined in the formal spec before implementation begins, and each CLI entry point is mapped to a specific API call in the spec.
+
+### Conditional Extensions (apply when relevant)
+
+8. *(Branching logic, interactive input, or persistence side effects)* A branch matrix covers happy path, negative path, edge/boundary states, and illegal or unexpected user actions. For async runtime/orchestration layers, the matrix is defined at that layer and enumerates terminal states, per-branch side effects, async-context-sensitive calls, and execution context at each call site.
+9. *(Interactive CLI tasks)* Screen-state and application-state capture method are defined before implementation starts (script or equivalent mechanism), including how manual sessions produce reusable evidence.
+10. *(Q3-ARCH-01 active)* Module interface and API surface are defined in the formal spec before implementation begins; each CLI entry point is mapped to a specific API call.
 
 For Brownfield tasks, add:
 8. Legacy behavior evidence identified for touched areas (code/runtime traces/tests) and minimum local setup prerequisites verified.
@@ -79,7 +81,7 @@ Task records must include enough context for another participant to understand c
 A stage is done only when:
 - Every task in the stage meets the task-level DoD above.
 - Stage-specific done criteria below are satisfied.
-- All participating agents have written any improvement suggestions observed during this stage to `templates/feedback.json` before stage approval is given.
+- All participating agents have written any improvement suggestions observed during this stage to `examples/feedback.json` before stage approval is given.
 - Explicit user approval is given. Silence is not approval.
 
 ---
@@ -99,7 +101,6 @@ Definition of done:
 - Scope boundaries documented
 - Intended implementation language(s) declared (primary required, secondary optional)
 - Discovery questions explicitly cover all required fields in `PROJECT_BRIEF.md` sections 1 through 8.2; unanswered fields are marked `TBD` with named follow-up owners
-- If easter egg logging is enabled, policy fields in project brief section 1.3 are fully specified; otherwise section 1.3 is explicitly set to No
 - Q3 module triggers declared (data quality, compliance) or explicitly ruled out
 - Approval authority selection completed for Stage 2 through Stage 6 (owner-only or delegated approver per stage)
 - If delegation is enabled, exception list and prototype handback trigger are documented in the project brief
@@ -116,6 +117,11 @@ Quality pack activation:
 - Q3 modules declared here become active for the duration of the project.
 - See `07_QUALITY_DIMENSIONS.md` for full dimension definitions and pack rules.
 
+Specialist agent invocations:
+
+- **Oracle** (gate close): challenge unverified factual assumptions against documentation and prior project evidence; may block unresolved assumptions from passing the gate.
+- **Claire Voyant** (gate close): stress-test scope boundaries — identify the most dangerous unchallenged assumption; output feeds directly into spike decisions.
+
 ## Stage 2: Specify
 
 Purpose: Convert requirements into a formal specification.
@@ -130,7 +136,7 @@ Definition of done:
 - Functional and non-functional requirements defined
 - Interfaces, behaviors, and constraints specified
 - Risks and assumptions documented
-- Requirements/specification artifact index is complete and current (`REQUIREMENTS_SPEC_MANIFEST.md`)
+- Requirements and specification artifact index is complete and current (project's `REQUIREMENTS_SPEC_MANIFEST.md`, filled in from `templates/REQUIREMENTS_SPEC_MANIFEST_TEMPLATE.md`)
 - Language-specific implementation constraints documented without changing language-agnostic behavior contract
 - Behavioral specification rigor applied to core behaviors using statecharts, design by contract, and decision tables
 - Performance targets, reliability failure modes, and maintainability seams defined
@@ -141,6 +147,11 @@ Mode-specific done criteria:
 
 - Greenfield: architecture options and forward-evolution assumptions captured.
 - Brownfield: behavior parity requirements defined at function, class, and module levels where needed.
+
+Specialist agent invocations:
+
+- **Oracle** (on ambiguity; at sign-off): challenge spec interpretations under counter-examples — not just plausible readings, but deliberately break the chosen interpretation; may formally object to a section before sign-off.
+- **Claire Voyant** (before sign-off): identify which integration contract contingency assumptions are most likely wrong; may request a contingency revision or spike before sign-off.
 
 Quality pack activation:
 
@@ -172,6 +183,11 @@ Mode-specific done criteria:
 - Greenfield: foundation-first sequencing for architecture and domain boundaries.
 - Brownfield: tiny-increment slicing plan for parity-safe migration, refactor, or rewrite.
 
+Specialist agent invocations:
+
+- **Oracle** (before DoR sign-off): challenge whether planned tests can falsify the acceptance criteria or only exercise the happy path; may block DoR sign-off if the test plan is insufficient.
+- **Claire Voyant** (before task list is locked): identify where branch matrices give false confidence — not just gaps, but implicitly-assumed-away failure modes; may request matrix or task ordering revision.
+
 Quality pack activation:
 
 - Q2 unlocked at this stage: Developer Experience (CI pipeline planned, contribution standards defined, local dev setup defined).
@@ -197,11 +213,17 @@ Definition of done:
 - API documentation current
 - Implementation chronicle entry written for each significant task or module and linked to source spec/task IDs
 - Pair-programming evidence captured in `docs/evidence/pair-programming-log.md` whenever more than one build-capable contributor or subagent participates in implementation/review cycles.
+- For projects integrating with external live or paid APIs: at least one successful live end-to-end run producing non-zero records from at least one real adapter must be completed before Stage 4 is approved. Mock-green tests are necessary but not sufficient for Stage 4 closure. If live credentials are unavailable to the agent, document the gap with a named owner and require user confirmation of a passing live run before the stage closes.
 
 Mode-specific done criteria:
 
 - Greenfield: implementation conforms to approved specification and architecture constraints.
 - Brownfield: behavior parity maintained against baseline, with controlled and explicit deltas only.
+
+Specialist agent invocations:
+
+- **Oracle** (on governance questions; before done-state): challenge compliance with both letter and intent of applicable governance rules; may block done-state if the approach satisfies wording but violates intent.
+- **Claire Voyant** (mid-TDD on complex modules): identify where green tests give false confidence and where module complexity has created untested interaction paths; may request additional tests before task closure.
 
 Quality pack activation:
 
@@ -228,14 +250,18 @@ Definition of done:
 - For interactive CLI projects, a terminal environment validation matrix is captured in `docs/evidence/` (target environments, pass/fail/not-tested status, and artifact paths); untested environments are logged as explicit release risks.
 - Pair-programming session log (if applicable) is audited for each task: proposal, critique, decision, and linked evidence are complete; unresolved disagreements are listed as blockers.
 - Escaped-defect check: any defect discovered during Stage 5 must be converted into a permanent regression test and linked process/spec improvement before Stage 5 closes.
+- Per-fix commit cadence is enforced during Stage 5: after each individual fix is verified, save all related files and create a dedicated fix commit before the next manual/exploratory test pass or before starting another fix.
 - For any system integrating with external data sources, the live E2E acceptance criteria include a non-empty data assertion: at least one real data record is present in the output from at least one live integration point. A structurally valid but empty result is a failure unless empty output is explicitly the expected scenario for that test. If live credentials or access are unavailable, the gap is documented with a named owner and follow-up trigger — not recorded as a pass.
 - For projects using a compiled or packaged build step, a fresh rebuild from HEAD is completed immediately before every live E2E run or exploratory test handover. The artifact timestamp must post-date the last commit. Running a live test against a stale artifact invalidates the result.
-- If easter egg logging is enabled, verification confirms: no easter eggs in excluded channels, rate limits and per-run caps enforced, structured fields valid, kill switch works immediately, and deterministic selection works under test seed.
 
 Mode-specific done criteria:
 
 - Greenfield: acceptance tests validate intended new behavior.
 - Brownfield: differential and regression validation confirms same implemented behavior where parity is required.
+
+Specialist agent invocations:
+
+- **Claire Voyant** (before go/no-go): actively argue the case against releasing now — state the single most likely post-release failure with supporting evidence; may formally recommend a hold requiring named approver override.
 
 Quality pack activation:
 
@@ -253,7 +279,7 @@ Definition of done:
 - Post-release monitoring plan documented
 - Runbooks for known failure scenarios written
 - Getting-started guide and changelog current
-- Deliverables manifest is complete and matches produced artifacts (`DELIVERABLES_MANIFEST.md`)
+- Deliverables manifest is complete and matches produced artifacts (project's `DELIVERABLES_MANIFEST.md`, filled in from `templates/DELIVERABLES_MANIFEST_TEMPLATE.md`)
 - Observability alerting confirmed operational
 - Requirement-to-evidence map complete for user-visible branches and persistence-writing paths; no release occurs if orchestration flow evidence is incomplete.
 - For interactive CLI projects, runbook includes how to execute capture helpers and where captured session artifacts are stored for post-failure diagnosis.
@@ -262,8 +288,7 @@ Definition of done:
 - Repository identity gate is complete before any publish command: remotes are listed, intended push target is explicitly confirmed, and proof is stored in `docs/evidence/release-remote-proof.md`.
 - If multiple remotes exist (or template-clone ancestry makes target uncertain), release remains blocked until owner or delegated approver confirms the exact remote and branch.
 - For projects using a compiled or packaged build step, a fresh rebuild from HEAD is completed immediately before the release commit and push. The artifact timestamp must post-date the last commit.
-- Joint post-mortem complete: the agent has written all improvement suggestions observed across all stages to `templates/feedback.json`, presented a consolidated summary to the product owner, and the product owner has responded (with additions or an explicit pass). Stage 6 approval is withheld until both parties have contributed and the feedback file is committed.
-- If easter egg logging is enabled, release evidence includes approved quote source/provenance confirmation, parser/alerting compatibility check, production-safe frequency confirmation, and a documented disable procedure in operations docs.
+- Joint post-mortem complete: the agent has written all improvement suggestions observed across all stages to `examples/feedback.json`, presented a consolidated summary to the product owner, and the product owner has responded (with additions or an explicit pass). Stage 6 approval is withheld until both parties have contributed and the feedback file is committed.
 
 ## Official Iterative Hardening Loops
 
@@ -273,6 +298,7 @@ The following loops are mandatory and may repeat within Stage 4-6 until closure 
 	- Run manual/exploratory testing with evidence capture.
 	- Convert findings into defects/tasks.
 	- Fix code and add/expand automated regression tests.
+	- Save all changed files and create one dedicated commit for that fix before starting the next fix or test cycle.
 	- Update requirements/specification text where ambiguity enabled the defect.
 	- Re-verify behavior and traceability before closure.
 
@@ -290,12 +316,10 @@ Quality pack activation:
 
 ## Stage Gate Enforcement
 
-- Do not move to next stage without explicit user approval.
-- Explicit approval means an affirmative yes; silence is not approval.
+- Core gate rules (approval requirement, silence-is-not-approval, denial logging): see `01_DECISION_POLICY.md` — Stage Gate Policy.
 - Stage-level done requires all tasks in the stage to meet the universal task-level DoD.
 - Any role may raise a DoR or DoD violation; it must be resolved before work continues.
 - After stage completion is approved, save and create a stage-completion commit before any next-stage work begins.
-- If transition is denied, the denial reason must be logged in `memory.md` and the active stage artifact.
 - Before any push in Stage 6, publish target must be restated explicitly in release notes or checklist evidence; default-origin assumptions are not allowed.
 - At every stage gate closure, any participant may append a proposal to the project `feedback.json` file (one entry per proposal) suggesting an addition, modification, or removal to any template document applicable to their current stage or any prior stage. Proposals are reviewed at the gate before the next stage begins. No template document is changed until the decision owner explicitly approves. Approved proposals are fed back into the master template before the next project begins.
 - Stage gate approval authority follows project brief delegation settings for each stage; delegated approvers are authoritative within their assigned stage range.
