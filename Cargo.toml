@@ -22,6 +22,9 @@ alloy-rlp = "0.3"
 # Byte buffers (used by alloy-rlp byte-string decode)
 bytes = "1"
 
+# URL parsing (required by alloy_provider::ProviderBuilder::on_http)
+url = "2"
+
 # Async runtime
 tokio = { version = "1", features = ["full"] }
 

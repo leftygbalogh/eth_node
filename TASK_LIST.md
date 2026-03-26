@@ -166,12 +166,13 @@ Create the session capture wrapper scripts used by the Exploratory Tester for ma
 
 ---
 
-## T-004 — JSON-RPC Client Module
+## T-004 — JSON-RPC Client Module ✅ DONE
 
 **Owner:** Rust Backend Specialist + TDD Driver
 **Navigator:** TDD Navigator
 **Spec ref:** FORMAL_SPEC.md §4 FR-002, §6.3 integration contract, §5 NFR-001, NFR-003
 **Dependencies:** T-000, T-001 (uses `Address`, `H256`), T-002 (integration test fixture)
+**Committed:** T-004 commit (see git log)
 
 **Description:**
 Implement `eth_node::rpc` — typed JSON-RPC client over HTTP and WebSocket. All 11 methods in spec FR-002. Error classification (transient vs permanent).
