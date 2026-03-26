@@ -1008,6 +1008,28 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
   - bytes=1 and alloy-rlp=0.3 added to workspace deps
   - Key discovery: Vec<u8> decodes RLP as list; use bytes::Bytes for byte-string decode
   - CHR-001-primitives.md: Final
+
+## 2026-03-26 Status Snapshot — Stage 4 COMPLETE
+
+- Timestamp: 2026-03-26
+- Current stage: Stage 4 — Build (COMPLETE — all tasks done)
+- T-000 through T-010: all complete
+- Commits:
+  - T-000: 2d69ea6 (workspace scaffold)
+  - T-001: 79e3180 (primitives, 23 unit tests)
+  - T-002: 6d926a2 (Anvil fixture, 2 integration tests)
+  - T-003: ffe45ad (CI disabled for local dev)
+  - T-004: bd3bf26 (RPC client)
+  - T-005: bef590e (signer)
+  - T-006: 79092a6 (tx builder + broadcaster)
+  - T-007: ea7379a (events module)
+  - T-008: e76f102 (contract caller)
+  - T-009: 10d381e (CLI binary)
+  - T-010: (committed below)
+- Total tests: 94 (53 unit + 20 integration + 5 doc-test + 8 CLI unit + 8 CLI integration)
+- All ACs passing: AC-001 ✅ AC-002 ✅ AC-003 ✅ AC-004 ✅ AC-005 ⚠️(partial) AC-006 ✅
+- Gaps: G-001 (AC-005 no live contract decode), G-002 (NFR-001 fuzz not implemented) — both deferred to Phase 2
+- Next step: Stage 5 — Review (pending Lefty approval)
   - clippy -D warnings: clean
   - Committed: 79e3180
 - Next step: T-002 — AnvilInstance subprocess fixture (Developer in Test)

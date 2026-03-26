@@ -307,11 +307,7 @@ Implement `eth_node::events` — `Listener` with HTTP polling mode and WebSocket
 
 **Claire Voyant note:** *WebSocket reconnect under load is the highest-risk path. The 3-attempt cap and exponential backoff must be tested — not just the happy-path reconnect — because a silent infinite-loop reconnect would hang the stream without surfacing an error.*
 
-**Status:** `[ ]`
-
----
-
-## T-008 — ABI Contract Caller Module
+**Status:** `[x]` — DONE 2026-03-26 (commit `ea7379a`)
 
 **Owner:** Rust API Contract Serialization Specialist + TDD Driver
 **Navigator:** TDD Navigator
@@ -342,7 +338,7 @@ Implement `eth_node::contract` — `ContractCaller` with read (`eth_call`) and w
 4. `cargo clippy -- -D warnings` clean
 5. `chronicle/contract.md` entry complete
 
-**Status:** `[ ]`
+**Status:** `[x]` — DONE 2026-03-26 (commit `e76f102`)
 
 ---
 
@@ -380,7 +376,7 @@ Implement `eth_node_cli` binary. All 5 CLI commands (spec §7.1). JSON structure
 
 **TDD Navigator note:** Architecture violation test is not automated — it is a Stage 5 review item. Flag it explicitly in DoD so it is not forgotten.
 
-**Status:** `[ ]`
+**Status:** `[x]` — DONE 2026-03-26 (commit `10d381e`)
 
 ---
 
@@ -400,11 +396,7 @@ Run full traceability check: every AC maps to a passing test with a stored artif
 4. Gap report written and reviewed
 5. Traceability matrix in FORMAL_SPEC.md §10 updated with actual test names
 
-**Status:** `[ ]`
-
----
-
-## Dependency Graph
+**Status:** `[x]` — DONE 2026-03-26 (see output/T010_gap_report.md)
 
 ```
 T-000 (workspace)

@@ -524,24 +524,26 @@ Error (terminal — emit ListenerError, stream ends)
 
 ## 10. Traceability Matrix
 
-| ID | Spec section | Planned tests | Chronicle entry |
-|----|-------------|---------------|----------------|
-| FR-001 | §4 FR-001 | `primitives::tests::*`, `tests/integration_primitives.rs` | `chronicle/primitives.md` |
-| FR-002 | §4 FR-002 | `rpc::tests::*`, `tests/integration_rpc.rs` | `chronicle/rpc.md` |
-| FR-003 | §4 FR-003 | `tx::tests::builder_*`, `tests/integration_tx_build.rs` | `chronicle/tx.md` |
-| FR-004 | §4 FR-004 | `signer::tests::*`, `tests/integration_signer.rs` | `chronicle/signer.md` |
-| FR-005 | §4 FR-005 | `tx::tests::broadcaster_*`, `tests/integration_broadcast.rs` | `chronicle/tx.md` |
-| FR-006 | §4 FR-006 | `events::tests::*`, `tests/integration_events.rs` | `chronicle/events.md` |
-| FR-007 | §4 FR-007 | `contract::tests::*`, `tests/integration_contract.rs` | `chronicle/contract.md` |
-| AC-001 | §2 AC-001 | `tests/integration_rpc.rs::test_anvil_responds` | `chronicle/rpc.md` |
-| AC-002 | §2 AC-002 | `tests/integration_rpc.rs::test_balance_query` | `chronicle/rpc.md` |
-| AC-003 | §2 AC-003 | `tests/integration_broadcast.rs::test_send_confirmed` | `chronicle/tx.md` |
-| AC-004 | §2 AC-004 | `tests/integration_events.rs::test_event_received` | `chronicle/events.md` |
-| AC-005 | §2 AC-005 | `tests/integration_contract.rs::test_contract_call` | `chronicle/contract.md` |
-| AC-006 | §2 AC-006 | All integration tests passing in CI | All chronicle entries |
-| NFR-001 | §5 NFR-001 | `tests/fuzz_rpc_response.rs` | `chronicle/rpc.md` |
-| NFR-002 | §5 NFR-002 | `signer::tests::test_key_not_in_logs` | `chronicle/signer.md` |
-| Q3-ARCH-01 | §7.1 | Architecture review at Stage 5 | `chronicle/architecture.md` |
+_Updated after T-010 verification pass with actual test names (2026-03-26)._
+
+| ID | Spec section | Actual passing tests | Chronicle entry |
+|----|-------------|----------------------|----------------|
+| FR-001 | §4 FR-001 | `primitives::tests::abi_*` (7), `primitives::tests::address_*` (5), `primitives::tests::rlp_*` (5), `primitives::tests::u256_*` (3) | `chronicle/primitives.md` |
+| FR-002 | §4 FR-002 | `rpc::tests::new_accepts_valid_http_url`, `rpc::tests::new_rejects_bad_url`, `rpc_block_number_is_zero_on_fresh_anvil`, `rpc_chain_id_is_31337_for_anvil`, `rpc_gas_price_is_nonzero`, `rpc_get_balance_returns_initial_anvil_balance`, `rpc_nonce_is_zero_for_fresh_account`, `rpc_client_rejects_invalid_url` | `chronicle/rpc.md` |
+| FR-003 | §4 FR-003 | `tx::tests::builder_eip1559_fixed_inputs`, `tx::tests::builder_legacy_fixed_inputs`, `tx::tests::fee_conflict_*` (4), `tx::tests::invalid_fee_params_*` (1), `tx_send_eth_confirmed_eip1559`, `tx_send_eth_confirmed_legacy`, `tx_send_increments_block_number` | `chronicle/tx.md` |
+| FR-004 | §4 FR-004 | `signer::tests::from_env_missing_var_returns_credential_not_found`, `signer::tests::from_key_bad_hex_returns_invalid_key`, `signer::tests::from_key_derives_correct_address`, `signer::tests::from_key_short_key_returns_invalid_key`, `signer::tests::from_key_without_0x_prefix_works`, `signer::tests::key_not_in_log_output`, `signer::tests::sign_eip1559_is_deterministic_rfc6979`, `signer::tests::sign_eip1559_produces_nonempty_raw_bytes_and_correct_from`, `signer::tests::sign_legacy_produces_nonempty_raw_bytes` | `chronicle/signer.md` |
+| FR-005 | §4 FR-005 | `tx::tests::broadcaster_default_config`, `tx_send_eth_confirmed_eip1559`, `tx_send_eth_confirmed_legacy`, `tx_confirmation_timeout_returns_hash` | `chronicle/tx.md` |
+| FR-006 | §4 FR-006 | `events::tests::backoff_values`, `events::tests::listener_error_display`, `events::tests::poll_config_default_is_one_second`, `events::tests::poll_interval_override`, `events::tests::subscribe_returns_http_stream_for_http_scheme`, `events::tests::subscribe_returns_ws_stream_for_ws_scheme`, `test_http_poll_no_errors_when_no_logs`, `test_ws_subscribe_no_errors_when_no_logs`, `test_http_poll_receives_constructor_log`, `test_ws_subscribe_receives_constructor_log` | `chronicle/events.md` |
+| FR-007 | §4 FR-007 | `contract::tests::error_display_messages`, `contract::tests::new_rejects_invalid_json`, `contract::tests::new_succeeds_with_valid_abi`, `contract::tests::resolve_function_finds_correct_overload`, `contract::tests::resolve_function_not_found`, `contract_caller_rejects_invalid_abi_json`, `contract_caller_new_succeeds_with_valid_abi`, `test_contract_call_balance_of`, `test_contract_call_missing_fn_returns_error` | `chronicle/contract.md` |
+| AC-001 | §2 AC-001 | `anvil_fixture_starts_and_accepts_connections`, `rpc_block_number_is_zero_on_fresh_anvil`, `rpc_chain_id_is_31337_for_anvil` | `chronicle/rpc.md` |
+| AC-002 | §2 AC-002 | `rpc_get_balance_returns_initial_anvil_balance` | `chronicle/rpc.md` |
+| AC-003 | §2 AC-003 | `tx_send_eth_confirmed_eip1559`, `tx_send_eth_confirmed_legacy`, `tx_send_increments_block_number` | `chronicle/tx.md` |
+| AC-004 | §2 AC-004 | `test_http_poll_receives_constructor_log`, `test_ws_subscribe_receives_constructor_log` | `chronicle/events.md` |
+| AC-005 | §2 AC-005 | `test_contract_call_balance_of` _(partial — see T-010 gap report G-001)_ | `chronicle/contract.md` |
+| AC-006 | §2 AC-006 | All 94 tests passing (53 unit + 20 integration + 5 doc-test + 8 CLI unit + 8 CLI integration) | All chronicle entries |
+| NFR-001 | §5 NFR-001 | _(not implemented — see T-010 gap report G-002; deferred to Phase 2)_ | `chronicle/rpc.md` |
+| NFR-002 | §5 NFR-002 | `signer::tests::key_not_in_log_output` | `chronicle/signer.md` |
+| Q3-ARCH-01 | §7.1 | Architecture review at Stage 5; `test_cli_help_exits_zero` (binary smoke), `test_cli_balance` (API delegation) | `chronicle/architecture.md` |
 
 ---
 
