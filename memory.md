@@ -119,15 +119,17 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
 - In progress: None — awaiting next instruction
 - Decisions made:
   - Builder tracks conflict with two bool flags, not enum variant inspection
-- Open questions / Lefty comments pending implementation:
-  - primitives.rs: uppercase/mixed-case address test, U256::MAX+MAX, more ABI vectors, long strings/unicode, dead_beef edge cases, complex RLP structures
-  - rpc.rs: near-valid URL variants
-  - signer.rs: RFC 6979 clone-tx identity question, other sensitive data in logs
-  - tx.rs: parameterisable tip percentage, rename fee_conflict tests to fee_decision_table
-  - events.rs: MAX_RECONNECT rationale doc, ws vs http stream type introspection, infinite retry option
-  - contract.rs: empty-but-valid JSON ABI test, malformed overload test, explanation comments
+  - DEFAULT_AUTO_TIP_DIVISOR = 10 extracted as named constant in tx.rs
+  - Listener.max_reconnect: Option<u32> added; None = infinite retries
+- Completed in this session:
+  - Lefty review pass: all 22 //Lefty comments resolved (answers embedded as doc comments or code comments)
+  - 18 new unit tests added (56 → 74 total, all passing)
+  - Oracle/Tester review: O-001 dead guard fixed, DIT-001 wrong-arg-type test, DIT-002 RpcError display tests
+  - Last commit: d7df6be "Implement Lefty review: 18 new tests, named constant, configurable WS retry, doc comments across all 6 modules"
+  - Pushed to origin/master
+- Open questions / Lefty comments: None remaining
 - Blockers: None
-- Next step: Awaiting Lefty direction
+- Next step: Awaiting Lefty direction (T-003 session capture scripts still pending)
 
 ---
 
