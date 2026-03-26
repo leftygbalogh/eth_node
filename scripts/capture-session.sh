@@ -43,6 +43,26 @@ echo "Session artifacts: $SESSION_DIR"
 echo "Binary: $CLI_BIN"
 echo ""
 
+# ── Start Anvil if not already listening on port 8545 ────────────────────────
+ANVIL_STARTED=0
+if ! curl -sf -o /dev/null --max-time 1 http://127.0.0.1:8545; then
+    echo "Anvil not detected — starting it in the background..."
+    anvil --silent &
+    ANVIL_PID=$!
+    ANVIL_STARTED=1
+    # Wait up to 5 seconds for Anvil to be ready.
+    for i in $(seq 1 10); do
+        sleep 0.5
+        if curl -sf -o /dev/null --max-time 1 http://127.0.0.1:8545; then
+            echo "Anvil ready (pid $ANVIL_PID)."
+            break
+        fi
+    done
+else
+    echo "Anvil already running on 127.0.0.1:8545."
+fi
+echo ""
+
 # ── Build command string ───────────────────────────────────────────────────────
 if [[ $# -eq 0 ]]; then
     # No args: capture help output so the transcript is not empty.
@@ -68,4 +88,10 @@ if [[ -f "$STATE_JSON" ]]; then
     echo "state.json  : $STATE_JSON"
 else
     echo "state.json  : (not written — eth_node_cli did not produce one)"
+fi
+
+# ── Stop Anvil if we started it ───────────────────────────────────────────────
+if [[ $ANVIL_STARTED -eq 1 ]]; then
+    kill "$ANVIL_PID" 2>/dev/null || true
+    echo "Anvil stopped (pid $ANVIL_PID)."
 fi
