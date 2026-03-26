@@ -127,7 +127,12 @@ Wire Anvil as a subprocess test fixture for the integration test suite. All inte
 
 **Claire Voyant note:** *Fixture determinism under parallel test execution is the key risk here. Random port assignment mitigates port collision but each test must get a fresh Anvil instance with deterministic initial state (same genesis block, same funded accounts). Confirm: one Anvil instance per test binary run, not per test function — to keep startup overhead manageable.*
 
-**Status:** `[ ]`
+**Status:** `[x]` — DONE 2026-03-26
+- AnvilInstance: subprocess, random port via TcpListener(0), TCP-poll readiness, Drop teardown
+- Graceful SKIP when anvil not on PATH (`Ok(None)` pattern)
+- 2 integration tests pass (skip locally, full pass in CI with Foundry toolchain)
+- accounts.rs: ANVIL_ACCOUNT0_KEY, _ADDRESS, CHAIN_ID constants
+- Chronicle: CHR-002-test-infrastructure.md complete
 
 ---
 
