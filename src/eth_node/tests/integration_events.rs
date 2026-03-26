@@ -163,28 +163,48 @@ async fn test_http_poll_receives_constructor_log() {
 
 /// WebSocket: subscribe before deployment, deploy the emitter, then verify the
 /// WS subscription delivers the constructor log.
+///
+/// # Why the background task?
+///
+/// `ws_subscription_stream` uses `async_stream::stream!` which is **lazy** —
+/// the WS TCP connection and `eth_subscribe` call only execute when the stream
+/// is first polled.  If we awaited on `stream.next()` only after deploying the
+/// emitter the subscription would open *after* the LOG0 was already mined and
+/// would never see it.
+///
+/// Spawning the stream onto its own task drives the first poll immediately, so
+/// the WS handshake and subscription complete before `deploy_emitter` is called.
 #[tokio::test]
 async fn test_ws_subscribe_receives_constructor_log() {
     let anvil = require_anvil!();
     let client = RpcClient::new(&anvil.endpoint).expect("rpc client");
     let signer = EthSigner::from_key(ANVIL_ACCOUNT0_KEY).expect("signer");
 
-    // Subscribe first so we don't miss the event.
+    // Create the subscription stream.
     let filter = Filter::new(); // match any log
     let listener = Listener::new(anvil.ws_endpoint());
     let mut stream = listener.subscribe(filter);
 
-    // Let the WS handshake complete before emitting.
-    tokio::time::sleep(Duration::from_millis(300)).await;
+    // Drive the stream on a background task so the WS connection and
+    // `eth_subscribe` call are established BEFORE we deploy the emitter.
+    let (tx, mut rx) = tokio::sync::mpsc::channel(8);
+    tokio::spawn(async move {
+        while let Some(item) = stream.next().await {
+            let _ = tx.send(item).await;
+        }
+    });
+
+    // Give the WS handshake and eth_subscribe time to complete.
+    tokio::time::sleep(Duration::from_millis(500)).await;
 
     // Deploy — constructor emits one LOG0.
     let _contract_addr = deploy_emitter(&client, &signer).await;
 
     // Expect to receive the log within 5 seconds.
-    let result = tokio::time::timeout(Duration::from_secs(5), stream.next())
+    let result = tokio::time::timeout(Duration::from_secs(5), rx.recv())
         .await
         .expect("timed out waiting for WS log")
-        .expect("stream ended unexpectedly");
+        .expect("background task channel closed");
 
     assert!(result.is_ok(), "stream yielded an error: {:?}", result.err());
 }
