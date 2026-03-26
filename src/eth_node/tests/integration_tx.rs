@@ -5,14 +5,48 @@
 
 mod helpers;
 
-use alloy_primitives::U256;
+use alloy_consensus::TxEip1559;
+use alloy_primitives::{TxKind, U256};
 use eth_node::{
     primitives::parse_address,
     rpc::RpcClient,
-    signer::EthSigner,
-    tx::{BroadcastConfig, TxBuilder, TxError, send_transaction},
+    signer::{EthSigner, UnsignedTx},
+    tx::{BroadcastConfig, Broadcaster, TxBuilder, TxError, send_transaction},
 };
 use tokio::time::Duration;
+
+// ── Reverter contract bytecode ────────────────────────────────────────────────
+//
+// A 17-byte init code that deploys a 5-byte runtime which unconditionally
+// REVERTs any incoming call.
+//
+// Init code disassembly (12 bytes of preamble):
+//   PUSH1 0x05   — runtime code length = 5
+//   PUSH1 0x0c   — runtime code offset in init bytecode = 12
+//   PUSH1 0x00   — memory destination offset
+//   CODECOPY     — copy runtime[0..5] → mem[0..5]
+//   PUSH1 0x05   — return 5 bytes
+//   PUSH1 0x00   — from memory offset 0
+//   RETURN       — deploy 5-byte runtime
+//
+// Runtime code disassembly (5 bytes, starting at init offset 12):
+//   PUSH1 0x00   — revert data size = 0
+//   PUSH1 0x00   — revert data offset = 0
+//   REVERT       — always reverts with empty revert data
+const REVERTER_INIT_CODE: &[u8] = &[
+    // Init preamble (12 bytes):
+    0x60, 0x05, // PUSH1 5    — runtime length
+    0x60, 0x0c, // PUSH1 12   — runtime offset in this bytecode
+    0x60, 0x00, // PUSH1 0    — memory dest
+    0x39,       // CODECOPY
+    0x60, 0x05, // PUSH1 5    — return size
+    0x60, 0x00, // PUSH1 0    — return offset
+    0xf3,       // RETURN
+    // Runtime code (5 bytes):
+    0x60, 0x00, // PUSH1 0    — revert offset
+    0x60, 0x00, // PUSH1 0    — revert size
+    0xfd,       // REVERT
+];
 
 const SKIP: &str = "SKIP — Anvil not on PATH";
 
@@ -167,4 +201,78 @@ async fn tx_send_increments_block_number() {
 
     let block_after = client.block_number().await.unwrap();
     assert!(block_after > block_before, "block number must advance after mining a tx");
+}
+
+// ── Reverted tx — receipt status == 0 → TxError::Reverted ────────────────────
+//
+// Spec ref: FR-005 statechart `Reverted` terminal state; T-006 DoD item 3b
+//
+// Deploys a contract whose runtime code unconditionally REVERTs on any call,
+// then sends a tx to it and asserts the Broadcaster returns TxError::Reverted
+// (not a panic and not a success receipt).
+
+async fn deploy_reverter(client: &RpcClient, signer: &EthSigner) -> alloy_primitives::Address {
+    let from = signer.address();
+    let nonce = client.get_nonce(from).await.expect("get nonce");
+    let gas_price = client.gas_price().await.expect("gas price");
+    let chain_id = client.chain_id().await.expect("chain id");
+
+    let tx = TxEip1559 {
+        chain_id,
+        nonce,
+        max_fee_per_gas: gas_price * 2,
+        max_priority_fee_per_gas: gas_price,
+        gas_limit: 100_000,
+        to: TxKind::Create,
+        value: U256::ZERO,
+        input: REVERTER_INIT_CODE.to_vec().into(),
+        ..Default::default()
+    };
+    let signed = signer.sign(UnsignedTx::Eip1559(tx)).expect("sign deploy");
+    let receipt = Broadcaster::new().send(&signed, client).await.expect("deploy reverter");
+    assert!(receipt.status(), "reverter deploy must succeed");
+    receipt.contract_address.expect("no contract_address in deploy receipt")
+}
+
+#[tokio::test]
+async fn tx_send_reverted_receipt_status_zero() {
+    let Some(anvil) = helpers::anvil_fixture::AnvilInstance::spawn().unwrap() else {
+        println!("{SKIP}");
+        return;
+    };
+    let client = RpcClient::new(&anvil.endpoint).unwrap();
+    let signer = EthSigner::from_key(helpers::accounts::ANVIL_ACCOUNT0_KEY).unwrap();
+
+    // Deploy the always-revert contract.
+    let reverter_addr = deploy_reverter(&client, &signer).await;
+
+    // Now send a tx to it — any call will revert.
+    let from = signer.address();
+    let chain_id = client.chain_id().await.unwrap();
+    let nonce = client.get_nonce(from).await.unwrap();
+    let gas_price = client.gas_price().await.unwrap();
+
+    let builder = TxBuilder::new(chain_id, from, reverter_addr)
+        .nonce(nonce)
+        .gas_limit(50_000)
+        .max_fee(gas_price * 2, gas_price);
+
+    let config = BroadcastConfig {
+        poll_interval: Duration::from_millis(100),
+        timeout: Duration::from_secs(10),
+    };
+
+    let err = send_transaction(builder, &signer, &client, Some(config))
+        .await
+        .expect_err("call to reverter must not succeed");
+
+    assert!(
+        matches!(err, TxError::Reverted { .. }),
+        "expected TxError::Reverted, got {err:?}"
+    );
+
+    // The reverted receipt must carry a non-zero tx hash.
+    if let TxError::Reverted { hash, .. } = err {
+        assert_ne!(hash, alloy_primitives::B256::ZERO, "reverted hash must be non-zero");
+    }
 }
