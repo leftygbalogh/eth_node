@@ -48,12 +48,11 @@ if [[ $# -eq 0 ]]; then
     # No args: capture help output so the transcript is not empty.
     CMD="\"$CLI_BIN\" --help"
 else
-    # Shell-quote each argument to handle spaces/special chars safely.
-    CMD="\"$CLI_BIN\""
+    # --dump-state is a global flag; it must come BEFORE the subcommand.
+    CMD="\"$CLI_BIN\" --dump-state $(printf '%q' "$STATE_JSON")"
     for arg in "$@"; do
         CMD="$CMD $(printf '%q' "$arg")"
     done
-    CMD="$CMD --dump-state $(printf '%q' "$STATE_JSON")"
 fi
 
 # ── Run CLI and capture output via tee ────────────────────────────────────────
