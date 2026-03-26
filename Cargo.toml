@@ -17,6 +17,10 @@ alloy-consensus = "0.12"
 alloy-network = "0.12"
 alloy-sol-types = "0.8"
 alloy-rpc-types = "0.12"
+alloy-rlp = "0.3"
+
+# Byte buffers (used by alloy-rlp byte-string decode)
+bytes = "1"
 
 # Async runtime
 tokio = { version = "1", features = ["full"] }

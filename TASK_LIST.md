@@ -91,7 +91,11 @@ Implement `eth_node::primitives` — `Address`, `H256`, `U256`, ABI encode/decod
 
 **Test falsifiability (Oracle-reviewed):** ABI/RLP tests use known vectors — a wrong encoding produces a byte mismatch, not a vacuous pass. ✓
 
-**Status:** `[ ]`
+**Status:** `[x]` — DONE 2026-03-26
+- 23 unit tests: all passing
+- clippy -D warnings: clean
+- Key discovery: `Vec<u8>` decodes as RLP list; `bytes::Bytes` required for byte-string decode. `bytes = "1"` added to workspace deps.
+- Chronicle: CHR-001-primitives.md complete
 
 ---
 
