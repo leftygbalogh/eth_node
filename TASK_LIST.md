@@ -52,7 +52,10 @@ Establish the canonical Cargo workspace layout and project skeleton. No business
 
 **TDD Navigator note:** No tests to write yet — DoD is compile + structure. First real red-green cycle starts at T-001.
 
-**Status:** `[ ]`
+**Status:** `[x]` — DONE 2026-03-26
+- cargo build: PASSED (serde pinned to <1.0.215 for alloy-consensus 0.12.6 compat)
+- cargo test: PASSED (0 tests, compile only)
+- Committed: 2d69ea6 "T-000: Cargo workspace scaffold..."
 
 ---
 
