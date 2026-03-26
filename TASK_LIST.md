@@ -414,6 +414,6 @@ T-000 through T-009 → T-010 (AC verification)
 
 ## Stage 3 Approval
 
-- Approved by: (pending Lefty approval)
-- Approval date: (pending)
-- Notes: (poke & probe Q&A window open)
+- Approved by: Lefty
+- Approval date: 2026-03-26
+- Notes: Oracle and Claire Voyant gate reviews complete. Claire Voyant risks mitigated in T-002 DoD and T-009 DoR.

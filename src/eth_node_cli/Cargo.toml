@@ -1,0 +1,16 @@
+[package]
+name = "eth_node_cli"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "eth_node_cli"
+path = "src/main.rs"
+
+[dependencies]
+eth_node = { path = "../eth_node" }
+clap = { workspace = true }
+tokio = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }

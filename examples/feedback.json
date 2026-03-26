@@ -1,0 +1,47 @@
+{
+  "project": "eth_node",
+  "stage": "Stage 1 — Discover",
+  "closed": "2026-03-26",
+  "feedback": [
+    {
+      "id": "FB-001",
+      "source": "Domain Discovery Lead",
+      "type": "template-improvement",
+      "target": "templates/PROJECT_BRIEF_TEMPLATE.md",
+      "section": "1.1 Mode-Specific Direction",
+      "observation": "Greenfield direction section does not prompt for multi-phase roadmap recording. A learning/exploration project naturally produces a phased component progression (e.g., the 12-component Ethereum stack list) that has no designated home in the template until a custom field is added.",
+      "suggestion": "Add an optional field under section 1.1 Greenfield: 'Multi-phase component roadmap (if applicable): list phases and components in delivery order.' This surfaces phasing decisions early without mandating it for simple projects.",
+      "priority": "low"
+    },
+    {
+      "id": "FB-002",
+      "source": "Domain Discovery Lead",
+      "type": "template-improvement",
+      "target": "governance/02_WORKFLOW_STAGES.md",
+      "section": "Stage 1 done criteria",
+      "observation": "The done criteria do not mention upstream contribution intent as a declared project track. When a project includes a Track B (contributing tests back to open-source dependencies), this is a permission-gated recurring action under 01_DECISION_POLICY.md, but there is no Stage 1 field to capture the intent and pre-authorize the pattern.",
+      "suggestion": "Add an optional field to Stage 1 done criteria: 'Upstream contribution intent declared (Yes/No). If Yes, record target repositories, contribution type (tests/docs/fixes), and confirm permission-gated action acknowledgment.' This avoids repeated per-PR approval requests when the intent is established up front.",
+      "priority": "medium"
+    },
+    {
+      "id": "FB-003",
+      "source": "Domain Discovery Lead",
+      "type": "process-improvement",
+      "target": "governance/02_WORKFLOW_STAGES.md",
+      "section": "Stage gate transition protocol",
+      "observation": "The 'poke and probe' Q&A window at stage transitions (user's learning safety net) is not a named pattern in the governance. It emerged organically from this project's Stage 1 discussion.",
+      "suggestion": "Codify a named 'Stage Transition Review Window' in the stage gate protocol: before presenting a gate for approval, the owner may ask any number of clarifying questions about the completed stage work. Agents must answer before the approval question is posed. This makes the learning pattern explicit and reproducible.",
+      "priority": "medium"
+    }
+    {
+      "id": "FB-004",
+      "source": "Developer in Test / Exploratory Tester gap observation",
+      "type": "template-improvement",
+      "target": "governance/04_PERSONA_DIRECTORY.md",
+      "section": "Agent Persona Library",
+      "observation": "The persona library lacked a Developer in Test (test infrastructure, fixtures, CI, contract tests) and an Exploratory Tester (session-based manual investigation, charter-driven, artifact-producing). Both are distinct from TDD Driver/Navigator and Unit Test Completeness Engineer and fill a real gap in the quality coverage model.",
+      "suggestion": "Add developer-in-test.md and exploratory-tester.md to the base template persona library. Register them in the Test and quality category in 04_PERSONA_DIRECTORY.md. These roles are relevant to all projects with CLI or interactive UX and should be listed as core, not optional.",
+      "priority": "high"
+    }
+  ]
+}

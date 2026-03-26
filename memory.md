@@ -82,7 +82,9 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
 - Next step: Write feedback.json, then present Stage 1 close summary for Lefty approval.
 - **Stage 1 — Discover: APPROVED by Lefty, 2026-03-26**
 - **Stage 2 — Specify: APPROVED by Lefty, 2026-03-26**
-- Current stage: Stage 3 — Plan (IN PROGRESS, Team Lead coordinating)
+- **Stage 3 — Plan: APPROVED by Lefty, 2026-03-26**
+- Current stage: Stage 4 — Build (IN PROGRESS)
+- Active task: T-000 (workspace layout)
 - Stage 2 artifacts complete:
   - FORMAL_SPEC.md (Oracle objection FR-004 resolved, RFC 6979 note added)
   - REQUIREMENTS_SPEC_MANIFEST.md
@@ -969,6 +971,31 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
 - Open questions: None.
 - Blockers: None.
 - Next step: Execute Stage 5 Verify checklist, record evidence, then request explicit Stage 5 approval.
+
+## 2026-03-26 Status Snapshot — T-000 Complete
+
+- Timestamp: 2026-03-26
+- Current stage: Stage 4 — Build
+- Active task: T-000 COMPLETE; next task: T-001 (Ethereum Primitives)
+- Completed in T-000:
+  - Cargo workspace Cargo.toml at repo root; members src/eth_node, src/eth_node_cli
+  - src/eth_node/Cargo.toml (library crate, all alloy/tokio/serde/tracing/thiserror workspace deps)
+  - src/eth_node_cli/Cargo.toml (binary crate, thin CLI wrapper)
+  - src/eth_node/src/lib.rs (6 pub mod declarations: primitives, rpc, signer, tx, events, contract)
+  - 6 module stub files (primitives.rs, rpc.rs, signer.rs, tx.rs, events.rs, contract.rs)
+  - src/eth_node_cli/src/main.rs (stub: prints "eth_node_cli", exits 0)
+  - src/eth_node/tests/.gitkeep (integration tests dir placeholder)
+  - output/sessions/.gitkeep
+  - .gitignore updated: target/, output/sessions/, *.env, .env.*
+  - README.md replaced with project-specific content (≤10 step setup)
+  - chronicle/ stubs: CHR-000 through CHR-008 (one per module + test infra)
+  - .github/workflows/ci.yml (cargo fmt, clippy, build, test; Foundry install step)
+  - cargo build: PASSED (serde pinned to <1.0.215 to fix alloy-consensus 0.12.6 compat)
+  - cargo test: PASSED (0 tests, compile only)
+- Decisions made:
+  - serde pinned to >=1.0.0, <1.0.215 (resolves to 1.0.214) — serde 1.0.215+ serde_core split broke alloy-consensus 0.12.6 use of serde::__private. Recorded in CHR-000 and Cargo.toml comment.
+- Blockers: None
+- Next step: Commit T-000; then begin T-001 (Ethereum Primitives, red-green-refactor, alloy-primitives integration)
 
 ## 2026-03-20 Status Snapshot 076
 

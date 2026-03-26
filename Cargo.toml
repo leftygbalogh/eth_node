@@ -1,0 +1,42 @@
+[workspace]
+members = [
+    "src/eth_node",
+    "src/eth_node_cli",
+]
+resolver = "2"
+
+[workspace.dependencies]
+# Alloy ecosystem — pinned to minor version for Phase 1 stability (Claire Voyant risk mitigation)
+alloy-primitives = "0.8"
+alloy-core = "0.8"
+alloy-provider = { version = "0.12", features = ["ws"] }
+alloy-transport = "0.12"
+alloy-signer = "0.12"
+alloy-signer-local = "0.12"
+alloy-consensus = "0.12"
+alloy-network = "0.12"
+alloy-sol-types = "0.8"
+alloy-rpc-types = "0.12"
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# Serialization
+# Pinned to <1.0.215 — alloy-consensus 0.12.6 uses serde::__private directly.
+# serde 1.0.215+ introduced serde_core crate split which removed/restructured __private.
+# Resolves to serde 1.0.214. Revisit when upgrading alloy beyond 0.12.
+serde = { version = ">=1.0.0, <1.0.215", features = ["derive"] }
+serde_json = "1"
+
+# Logging / tracing
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# Error handling
+thiserror = "2"
+
+# CLI (eth_node_cli only)
+clap = { version = "4", features = ["derive"] }
+
+# Testing
+tokio-test = "0.4"

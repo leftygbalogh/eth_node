@@ -1,3 +1,5 @@
-examples/
 build/
-output/
+output/sessions/
+target/
+*.env
+.env.*
