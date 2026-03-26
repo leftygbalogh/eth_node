@@ -81,7 +81,7 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
   - Security/production-readiness loop: No (local devnet only, no public exposure)
 - Next step: Write feedback.json, then present Stage 1 close summary for Lefty approval.
 - **Stage 1 — Discover: APPROVED by Lefty, 2026-03-26**
-- Current stage: Stage 2 — Specify (pending start confirmation)
+- Current stage: Stage 2 — Specify (IN PROGRESS)
 
 ---
 
