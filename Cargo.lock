@@ -1411,6 +1411,7 @@ dependencies = [
  "async-stream",
  "bytes",
  "futures",
+ "proptest",
  "serde",
  "serde_json",
  "thiserror",

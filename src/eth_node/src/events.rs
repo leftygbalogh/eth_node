@@ -33,8 +33,8 @@ pub enum ListenerError {
     #[error("subscribe failed: {0}")]
     SubscribeFailed(String),
 
-    /// All WebSocket reconnect attempts exhausted after disconnect.
-    #[error("WebSocket reconnect exhausted after {0} attempts")]
+    /// Consecutive transport error limit reached (HTTP poll or WebSocket).
+    #[error("reconnect exhausted after {0} consecutive errors")]
     ReconnectExhausted(u32),
 
     /// The supplied filter is logically invalid (e.g., `from_block > to_block`).
@@ -77,10 +77,11 @@ pub struct Listener {
     endpoint: String,
     /// Interval used in HTTP polling mode. Ignored for WebSocket mode.
     poll_interval: Duration,
-    /// Maximum WebSocket reconnect attempts before the stream terminates.
+    /// Maximum consecutive transport errors (HTTP poll or WebSocket) before the stream
+    /// terminates.
     ///
     /// `Some(n)` — yield [`ListenerError::ReconnectExhausted`] after `n` consecutive
-    /// failures and stop.  Defaults to `Some(3)` per spec FR-006.
+    /// errors and stop.  Defaults to `Some(3)` per spec FR-006.
     /// `None` — retry indefinitely; the stream never yields `ReconnectExhausted`.
     max_reconnect: Option<u32>,
 }
@@ -89,8 +90,8 @@ impl Listener {
     /// Create a new `Listener` targeting `endpoint`.
     ///
     /// `endpoint` must begin with `http://`, `https://`, `ws://`, or `wss://`.
-    /// The poll interval defaults to **1 second** and the WebSocket reconnect
-    /// limit defaults to **3 attempts** (spec FR-006).
+    /// The poll interval defaults to **1 second** and the transport error
+    /// limit defaults to **3 consecutive failures** (spec FR-006).
     pub fn new(endpoint: impl Into<String>) -> Self {
         Self {
             endpoint: endpoint.into(),
@@ -105,7 +106,7 @@ impl Listener {
         self
     }
 
-    /// Override the maximum WebSocket reconnect attempts.
+    /// Override the maximum consecutive transport errors (HTTP poll and WebSocket).
     ///
     /// Pass `None` to retry indefinitely — the stream only ends when the caller
     /// drops it.  Pass `Some(n)` to stop after `n` consecutive failed attempts.
@@ -126,7 +127,7 @@ impl Listener {
         if endpoint.starts_with("ws://") || endpoint.starts_with("wss://") {
             Box::pin(ws_subscription_stream(endpoint, filter, max_reconnect))
         } else {
-            Box::pin(http_poll_stream(endpoint, filter, interval))
+            Box::pin(http_poll_stream(endpoint, filter, interval, max_reconnect))
         }
     }
 }
@@ -142,6 +143,7 @@ fn http_poll_stream(
     endpoint: String,
     filter: Filter,
     interval: Duration,
+    max_reconnect: Option<u32>,
 ) -> impl Stream<Item = Result<Log, ListenerError>> + Send {
     async_stream::stream! {
         let client = match RpcClient::new(&endpoint) {
@@ -161,14 +163,23 @@ fn http_poll_stream(
         };
 
         let mut next_block: u64 = filter.get_from_block().unwrap_or(start);
+        let mut consecutive_errors: u32 = 0;
 
         loop {
             tokio::time::sleep(interval).await;
 
             let current = match client.block_number().await {
-                Ok(n) => n,
+                Ok(n) => {
+                    consecutive_errors = 0;
+                    n
+                }
                 Err(e) => {
-                    warn!("http_poll: block_number failed: {e}");
+                    consecutive_errors += 1;
+                    warn!("http_poll: block_number failed (error {consecutive_errors}): {e}");
+                    if max_reconnect.map_or(false, |limit| consecutive_errors >= limit) {
+                        yield Err(ListenerError::ReconnectExhausted(consecutive_errors));
+                        return;
+                    }
                     continue;
                 }
             };
@@ -181,6 +192,7 @@ fn http_poll_stream(
             let ranged = filter.clone().from_block(next_block).to_block(current);
             match client.get_logs(&ranged).await {
                 Ok(logs) => {
+                    consecutive_errors = 0;
                     debug!(count = logs.len(), from = next_block, to = current, "http_poll: batch");
                     next_block = current + 1;
                     for log in logs {
@@ -188,8 +200,13 @@ fn http_poll_stream(
                     }
                 }
                 Err(e) => {
-                    warn!("http_poll: get_logs failed: {e}");
+                    consecutive_errors += 1;
+                    warn!("http_poll: get_logs failed (error {consecutive_errors}): {e}");
                     yield Err(ListenerError::SubscribeFailed(e.to_string()));
+                    if max_reconnect.map_or(false, |limit| consecutive_errors >= limit) {
+                        yield Err(ListenerError::ReconnectExhausted(consecutive_errors));
+                        return;
+                    }
                 }
             }
         }
@@ -293,7 +310,7 @@ mod tests {
         );
         assert_eq!(
             ListenerError::ReconnectExhausted(3).to_string(),
-            "WebSocket reconnect exhausted after 3 attempts"
+            "reconnect exhausted after 3 consecutive errors"
         );
         assert_eq!(
             ListenerError::FilterInvalid("from > to".into()).to_string(),

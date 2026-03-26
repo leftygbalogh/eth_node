@@ -325,4 +325,33 @@ mod tests {
             "invalid endpoint URL: not a url"
         );
     }
+
+    #[test]
+    /// G5: verify that alloy_primitives::Address preserves the EIP-55 checksum that
+    /// alloy uses as the JSON-RPC wire parameter for eth_getBalance.
+    fn eth_getbalance_address_param_is_checksummed_hex() {
+        let addr: Address = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+            .parse()
+            .expect("parse checksummed address");
+        assert_eq!(
+            addr.to_checksum(None),
+            "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            "alloy must preserve EIP-55 checksum for JSON-RPC wire encoding"
+        );
+    }
+}
+
+/// G7 variant 1: `RpcClient::new` must never panic for any string input.
+#[cfg(test)]
+mod proptests {
+    use super::*;
+    use proptest::prelude::*;
+
+    proptest! {
+        #[test]
+        fn rpc_client_new_never_panics(s in ".*") {
+            // Must always return Ok or Err(InvalidUrl) — never panic.
+            let _ = RpcClient::new(&s);
+        }
+    }
 }

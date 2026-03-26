@@ -27,7 +27,7 @@ use std::time::Duration;
 use alloy_consensus::TxEip1559;
 use alloy_primitives::{TxKind, U256};
 use alloy_rpc_types::Filter;
-use eth_node::events::Listener;
+use eth_node::events::{Listener, ListenerError};
 use eth_node::rpc::RpcClient;
 use eth_node::signer::{EthSigner, UnsignedTx};
 use eth_node::tx::Broadcaster;
@@ -207,5 +207,94 @@ async fn test_ws_subscribe_receives_constructor_log() {
         .expect("background task channel closed");
 
     assert!(result.is_ok(), "stream yielded an error: {:?}", result.err());
+}
+
+// ── G3: WS reconnect exhaustion ───────────────────────────────────────────────
+
+/// Spawn a transparent TCP proxy on a random local port that pipes traffic to
+/// `target_port` on 127.0.0.1.  Accepts one connection, then forwards
+/// bidirectionally until the task handle is aborted.
+///
+/// Aborting the returned handle drops all owned TCP halves, which sends a TCP
+/// FIN to the WebSocket client and triggers the reconnect path.
+async fn spawn_tcp_proxy(target_port: u16) -> (u16, tokio::task::JoinHandle<()>) {
+    use tokio::io;
+    use tokio::net::TcpListener;
+
+    let listener = TcpListener::bind("127.0.0.1:0").await.expect("proxy bind");
+    let proxy_port = listener.local_addr().expect("proxy local_addr").port();
+
+    let handle = tokio::spawn(async move {
+        // Accept exactly one connection — sufficient for the reconnect test.
+        let Ok((client_stream, _)) = listener.accept().await else { return };
+        let Ok(server_stream) =
+            tokio::net::TcpStream::connect(format!("127.0.0.1:{target_port}")).await
+        else {
+            return;
+        };
+        let (mut cr, mut cw) = client_stream.into_split();
+        let (mut sr, mut sw) = server_stream.into_split();
+        // Forward bidirectionally until one side closes or the task is aborted.
+        tokio::select! {
+            _ = io::copy(&mut cr, &mut sw) => {}
+            _ = io::copy(&mut sr, &mut cw) => {}
+        }
+    });
+
+    (proxy_port, handle)
+}
+
+/// G3: after the proxy is aborted the WS stream must yield
+/// `ListenerError::ReconnectExhausted` within the timeout.
+///
+/// A transparent TCP proxy is placed between the stream and Anvil's WS port.
+/// Once the subscription is live, we abort the proxy task.  Dropping the owned
+/// TCP halves sends a FIN to the WS client, causing the inner stream to end.
+/// The WS reconnect loop then tries to re-connect to the now-dead proxy port,
+/// fails twice (`max_reconnect = Some(2)`), and emits `ReconnectExhausted`.
+#[tokio::test]
+async fn test_ws_reconnect_exhausted_after_proxy_abort() {
+    let anvil = require_anvil!();
+    let ws_port = anvil.port;
+
+    // Start a transparent proxy in front of Anvil's WS port.
+    let (proxy_port, proxy_handle) = spawn_tcp_proxy(ws_port).await;
+    let proxy_url = format!("ws://127.0.0.1:{proxy_port}");
+
+    let listener = Listener::new(&proxy_url).with_max_reconnect(Some(2));
+    let mut stream = listener.subscribe(Filter::new());
+
+    // Drive the stream on a background task so the WS handshake runs immediately.
+    let (tx, mut rx) = tokio::sync::mpsc::channel(8);
+    tokio::spawn(async move {
+        while let Some(item) = stream.next().await {
+            if tx.send(item).await.is_err() {
+                break;
+            }
+        }
+    });
+
+    // Wait long enough for the WS connection and eth_subscribe to complete.
+    tokio::time::sleep(Duration::from_millis(600)).await;
+
+    // Kill the proxy — the WS client will lose the stream and attempt to
+    // reconnect to the now-dead proxy port, exhausting max_reconnect = 2.
+    proxy_handle.abort();
+
+    // Drain items until we see ReconnectExhausted or the hard deadline fires.
+    let deadline = tokio::time::Instant::now() + Duration::from_secs(10);
+    let mut got_exhausted = false;
+    while tokio::time::Instant::now() < deadline {
+        match tokio::time::timeout(Duration::from_secs(1), rx.recv()).await {
+            Ok(Some(Err(ListenerError::ReconnectExhausted(_)))) => {
+                got_exhausted = true;
+                break;
+            }
+            Ok(None) => break, // channel closed — stream ended without the error
+            _ => continue,
+        }
+    }
+
+    assert!(got_exhausted, "expected ReconnectExhausted but stream did not emit it");
 }
 

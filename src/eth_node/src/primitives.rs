@@ -474,3 +474,18 @@ mod tests {
         assert_eq!(rlp_decode_list(&enc).unwrap(), l);
     }
 }
+
+/// G7 variant 2: `parse_address` must never panic for any string input.
+#[cfg(test)]
+mod proptests {
+    use super::*;
+    use proptest::prelude::*;
+
+    proptest! {
+        #[test]
+        fn parse_address_never_panics(s in ".*") {
+            // Must always return Ok or Err(PrimitiveError) — never panic.
+            let _ = parse_address(&s);
+        }
+    }
+}

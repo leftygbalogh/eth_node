@@ -391,5 +391,54 @@ mod tests {
             "expected AbiDecodeError for wrong arg types, got {err:?}"
         );
     }
+
+    #[test]
+    /// G6: verify that ABI-encoding `balanceOf(address(0))` produces the correct
+    /// 4-byte function selector in the first bytes of the `eth_call` data field.
+    fn eth_call_data_contains_correct_balance_of_selector() {
+        // keccak256("balanceOf(address)")[:4] = 0x70a08231
+        let caller = ContractCaller::new(ADDR, BALANCE_OF_ABI).unwrap();
+        let func = caller
+            .resolve_function("balanceOf", &[DynSolValue::Address(Address::ZERO)])
+            .expect("resolve balanceOf");
+        let encoded = func
+            .abi_encode_input(&[DynSolValue::Address(Address::ZERO)])
+            .expect("ABI encode input");
+        // 4-byte selector + 32-byte padded address argument = 36 bytes total.
+        assert_eq!(encoded.len(), 36, "encoded call data must be 36 bytes");
+        assert_eq!(
+            &encoded[..4],
+            &[0x70, 0xa0, 0x82, 0x31],
+            "first 4 bytes must be keccak256(\"balanceOf(address)\")[:4]"
+        );
+    }
+}
+
+/// G7 variant 3: ABI decoding arbitrary bytes must never panic.
+#[cfg(test)]
+mod proptests {
+    use alloy_dyn_abi::FunctionExt;
+    use alloy_json_abi::JsonAbi;
+    use proptest::prelude::*;
+
+    const BALANCE_OF_ABI: &str = r#"[{
+        "name": "balanceOf",
+        "type": "function",
+        "inputs": [{"name": "account", "type": "address"}],
+        "outputs": [{"name": "", "type": "uint256"}],
+        "stateMutability": "view"
+    }]"#;
+
+    proptest! {
+        #[test]
+        fn abi_decode_arbitrary_bytes_never_panics(
+            bytes in proptest::collection::vec(any::<u8>(), 0..256)
+        ) {
+            // ABI decoding arbitrary bytes must never panic — always Ok or Err.
+            let abi: JsonAbi = serde_json::from_str(BALANCE_OF_ABI).unwrap();
+            let func = abi.function("balanceOf").unwrap().first().unwrap();
+            let _ = func.abi_decode_output(&bytes, false);
+        }
+    }
 }
 
