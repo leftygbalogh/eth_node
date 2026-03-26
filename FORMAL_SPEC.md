@@ -203,8 +203,8 @@ Error
   - Keccak-256 hash the encoded transaction
   - ECDSA sign the hash using secp256k1
   - Produce `SignedTransaction` with fields: `raw_bytes` (fully encoded, broadcast-ready), `hash` (H256), `from` (Address)
-  - EIP-155 replay protection applied for legacy transactions
-  - EIP-2930 / EIP-1559 signing envelope applied for type 2
+  - EIP-155 replay protection applied for legacy transactions (type 0)
+  - EIP-1559 signing envelope applied for type 2: `rlp([chain_id, nonce, max_priority_fee_per_gas, max_fee_per_gas, gas_limit, to, value, data, access_list, signature_y_parity, signature_r, signature_s])` (per EIP-1559 spec; EIP-2930 type 1 is out of scope for Phase 1)
 - Postconditions: `SignedTransaction.raw_bytes` is valid RLP, accepted by `eth_sendRawTransaction`
 - Error handling: `SignerError::InvalidKey`, `SignerError::SigningFailed`
 - **Security constraint:** private key must never be logged, printed, or included in any error message or debug output
@@ -349,7 +349,7 @@ Error (terminal — emit ListenerError, stream ends)
 | `rpc::Client::get_balance(addr, tag)` | `Address`, `BlockTag` | `Result<U256>` | outbound RPC call | No |
 | `rpc::Client::get_nonce(addr)` | `Address` | `Result<u64>` | outbound RPC call | No |
 | `signer::Signer::from_env()` | — | `Result<Signer>` | reads env var | No |
-| `signer::Signer::sign(tx)` | `Transaction` | `Result<SignedTransaction>` | none | Yes |
+| `signer::Signer::sign(tx)` | `Transaction` | `Result<SignedTransaction>` | none | Yes (deterministic — RFC 6979) |
 | `tx::Broadcaster::send(signed, client)` | `SignedTransaction`, `&Client` | `Result<TransactionReceipt>` | outbound RPC call, polls | No |
 | `events::Listener::subscribe(filter)` | `LogFilter` | `Stream<Item=Result<Log>>` | outbound RPC subscription | No |
 | `contract::ContractCaller::call(fn, args)` | fn name, `&[Token]` | `Result<Vec<Token>>` | outbound RPC call | No |

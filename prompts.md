@@ -619,3 +619,15 @@ yes, approved
 
 ### Prompt 015
 go ahead
+
+### Prompt 016
+Do we have a developer in test and an exploratory tester persona agent for us, if not, could you create them for me please?
+
+### Prompt 017
+not yet, do we record the implementation steps as we go along somewhere?
+
+### Prompt 018
+perfect, please tell me which agents take part in the next stage?
+
+### Prompt 019
+perfect, please save the current state, commit and push.

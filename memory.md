@@ -81,7 +81,16 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
   - Security/production-readiness loop: No (local devnet only, no public exposure)
 - Next step: Write feedback.json, then present Stage 1 close summary for Lefty approval.
 - **Stage 1 — Discover: APPROVED by Lefty, 2026-03-26**
-- Current stage: Stage 2 — Specify (IN PROGRESS)
+- **Stage 2 — Specify: IN PROGRESS (poke & probe window open, awaiting Lefty approval)**
+- Stage 2 artifacts complete:
+  - FORMAL_SPEC.md (Oracle objection FR-004 resolved, RFC 6979 note added)
+  - REQUIREMENTS_SPEC_MANIFEST.md
+  - agents/developer-in-test.md (new)
+  - agents/exploratory-tester.md (new)
+  - governance/04_PERSONA_DIRECTORY.md updated
+  - examples/feedback.json FB-004 added
+- Stage 3 agents identified: Team Lead (lead), TDD Navigator, Developer in Test, Traceability Mapper, Greenfield Evolution Architect, Oracle (gate), Claire Voyant (gate)
+- Next step: Lefty approves Stage 2, then Stage 3 Plan begins
 
 ---
 

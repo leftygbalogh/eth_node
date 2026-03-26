@@ -16,7 +16,7 @@ The implementing team declares the primary language during Stage 1 Discover and 
 All persona files live in `agents/`. Categories available:
 
 - **Specification and discovery**: greenfield-domain-discovery-expert, greenfield-evolution-architect, greenfield-formal-spec-author, human-spec-writer, traceability-mapper
-- **Test and quality**: tdd-driver, tdd-navigator, unit-test-completeness-engineer, property-based-test-engineer, readability-reviewer, maintainability-reviewer, refactoring-steward
+- **Test and quality**: tdd-driver, tdd-navigator, unit-test-completeness-engineer, property-based-test-engineer, **developer-in-test**, **exploratory-tester**, readability-reviewer, maintainability-reviewer, refactoring-steward
 - **Documentation**: technical-writer-live-examples, meta-prompter
 - **Brownfield specialists**: brownfield-behavior-baseline-analyst, brownfield-incremental-rewrite-planner, brownfield-parity-test-engineer
 - **Language implementers**: rust-backend, rust-cli, rust-database, rust-defensive-programming, rust-systems-performance, rust-async-concurrency-reliability, rust-api-contract-serialization, rust-api-ergonomics, rust-documentation-quality, rust-unsafe-code-auditor, rust-webassembly-frontend; python-backend, python-cli, python-database, python-defensive-programming; go-backend, kotlin-jvm, typescript-fullstack, javascript-legacy-migration, c-systems, sql-database, powershell-automation; plus backend, cli, database, and defensive-programming specialist variants
