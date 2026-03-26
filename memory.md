@@ -34,8 +34,54 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
   - Greenfield mode confirmed
   - Primary goal: **learning project** — explore and understand the Rust Ethereum ecosystem by building a node
   - Primary user: Lefty (solo developer / learner)
-- Stage 1 progress: Q1 (mode) ✓, Q2 (goal/user) ✓ — session paused, continuing later
-- Next step: Resume Stage 1 discovery (Q3+) — scope, target network, Ethereum layer, key libraries.
+- Stage 1 progress:
+  - Q1 (mode): Greenfield ✓
+  - Q2 (goal): Learning/Rust ETH ecosystem ✓
+  - Q3 (stack): Execution layer toolkit — primitives, RPC, signing, broadcasting, events, contract calls ✓
+  - Q4 (infra): Step 0 = Anvil (local devnet, instant, 100% Rust); Step 2 = Reth on Sepolia ✓
+  - Primary language: Rust ✓ (implied)
+- Component progression (recorded for multi-phase planning):
+  - #1  Ethereum primitives library (alloy-core, alloy-primitives) — types, ABI, RLP
+  - #2  JSON-RPC client (alloy-provider, alloy-transport) — queries existing node
+  - #3  Transaction builder + signer (alloy-signer, alloy-consensus) — sign locally
+  - #4  Transaction broadcaster (alloy-provider) — submit + track confirmation
+  - #5  Event/log listener (alloy-provider + filter types) — subscribe to contract events
+  - #6  ABI-driven contract caller (alloy-sol-types, alloy-contract) — encode/decode calls
+  - #7  Local EVM executor (revm) — simulate transactions, fork mainnet state
+  - #8  Mempool monitor (alloy-provider) — watch pending txs
+  - #9  Block + receipt indexer (alloy-provider + redb/rocksdb) — crawl and store chain data
+  - #10 Local devnet node — Anvil (Foundry, 100% Rust), instant, 0 GB
+  - #11 EVM state trie reader (alloy-trie, reth-trie) — Merkle Patricia Trie, state proofs
+  - #12 Partial execution client — full Reth node (sync, execute blocks, maintain state)
+  - Phase 1 scope: #10 (Anvil) + #1 through #6
+  - Phase 2 scope (pending disk/hardware): #7, then #12 (Reth/Sepolia or Holesky)
+- Approval delegation:
+  - Stage 2 (Specify): Lefty approves — poke & probe window before approval
+  - Stage 3 (Plan): Team lead coordinates internally; Lefty approves gate — poke & probe window before approval
+  - Stage 4 (Build): Team lead coordinates internally; Lefty approves gate — poke & probe window before approval
+  - Stage 5 (Verify): Lefty approves — poke & probe window before approval
+  - Stage 6 (Release): Lefty approves — poke & probe window before approval
+  - Poke & probe protocol: at every stage gate, Lefty may ask any number of questions to understand the work before giving explicit approval
+- Q3-ARCH-01: ACTIVE — library crate (`eth_node`) + thin CLI wrapper; interfaces tested in isolation
+- Acceptance criteria (Phase 1):
+  - AC-001: Anvil devnet starts and responds to Rust RPC calls
+  - AC-002: Balance query returns correct value for funded test address
+  - AC-003: Signed transaction built, broadcast, confirmed on Anvil
+  - AC-004: Contract event captured by listener
+  - AC-005: Contract function called and return value decoded correctly
+  - AC-006: Unit tests per library module + at least one integration test per capability
+- Non-functionals (Phase 1):
+  - Performance: no strict target — correctness first
+  - Reliability: graceful errors; no panics on bad RPC responses
+  - Security: no secrets in code; keys via env vars or test keystores only
+  - Scalability: not a target for Phase 1
+  - Observability: structured logging via `tracing` crate
+  - Maintainability: idiomatic Rust; library/CLI separation enforced (Q3-ARCH-01)
+  - Interactive CLI diagnostics: Yes — terminal session capture for manual testing
+  - Security/production-readiness loop: No (local devnet only, no public exposure)
+- Next step: Write feedback.json, then present Stage 1 close summary for Lefty approval.
+- **Stage 1 — Discover: APPROVED by Lefty, 2026-03-26**
+- Current stage: Stage 2 — Specify (pending start confirmation)
 
 ---
 

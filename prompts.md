@@ -579,3 +579,40 @@ green,
 I want to learn about the rust eth ecosystem, so I'd like to see how it works.
 
 please save state, commit and push, we will continue later
+
+### Prompt 005
+we can go on
+
+### Prompt 006
+Can you make an itemized list of the smallest deployable and useful chunks that would make sense to run, without the 32 ETH limit, so no validation for us today.
+List item + a bit of explanation what it does and what it requires. One important condition, we are focusing on the RUST ecosystem within ethereum, so only components that run on rust, or can be built to run on rust.
+
+### Prompt 007
+to me it feels like setting up a RETH node would be a step 0, or am I off your line of thinking?
+
+### Prompt 008
+c it is
+
+### Prompt 009
+I have a few requests before we define done. I'd like your entire #1 through #12 progression to be recorded somewhere. So once stage1 is done we can move on to define the scope of 2, 3, etc.
+
+For now, I do not have the disk, I have 190 gigs free, so I need some serious cleanup to do. Or I may look into getting a decent mini pc. But I think our current option is local, can you confirm?
+
+Then, I like your scope, but I'd also like to explore the possibility, that we contribute back to the external sources we use, specifically by improving their existing tests, unless they all have perfect 100% coverage in all aspects.
+
+How do you suggest we could do both?
+
+### Prompt 010
+yes
+
+### Prompt 011
+I would like to retain stage approvals as I feel that is where my learning can best happen, but within stage 3 and 4 I am happy for the teams and teamleads to figure things out themselves. At each stage transition, I would like to be able to poke and probe things to make sure I understand how they work.
+
+### Prompt 012
+agreed
+
+### Prompt 013
+lgtm
+
+### Prompt 014
+yes, approved
