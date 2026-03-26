@@ -631,3 +631,6 @@ perfect, please tell me which agents take part in the next stage?
 
 ### Prompt 019
 perfect, please save the current state, commit and push.
+
+### Prompt 020
+Approved, you can go on

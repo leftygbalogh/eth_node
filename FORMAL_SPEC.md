@@ -547,6 +547,6 @@ Error (terminal — emit ListenerError, stream ends)
 
 ## 11. Stage Approval
 
-- Approved by: (pending Lefty approval)
-- Approval date: (pending)
-- Notes: Poke & probe Q&A window is open before approval is given
+- Approved by: Lefty
+- Approval date: 2026-03-26
+- Notes: Oracle objection FR-004 resolved. Developer-in-test and Exploratory Tester agents added. Poke & probe Q&A window completed.

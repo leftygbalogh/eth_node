@@ -4,7 +4,7 @@
 |-------|----------|---------------|---------|
 | Stage 1 Discovery Record | memory.md | Mode, goal, scope, infra choice, approval delegation, component roadmap, non-goals | Commander's intent and discovery decisions |
 | Formal Specification | FORMAL_SPEC.md | FR-001–FR-007, NFR-001–NFR-006, statecharts, contracts, integration contracts, architecture (Q3-ARCH-01), test strategy, traceability matrix | Behavioral contract for all Phase 1 implementation |
-| Task List | TASK_LIST.md | Numbered tasks T-000 through T-NNN, dependencies, owners, DoR/DoD status | Implementation planning artifact (Stage 3) |
+| Task List | TASK_LIST.md | T-000 through T-010, dependencies, owners, DoR/DoD status | Implementation planning artifact (Stage 3) |
 | Implementation Chronicle | IMPLEMENTATION_CHRONICLE.md | Per-module decisions, tradeoffs, test vectors, alternatives rejected | Audit trail for future maintainers and contributors |
 | Release Checklist | RELEASE_CHECKLIST.md | AC-001–006 verification, security check, build artifact, changelog | Stage 6 release gate artifact |
 | Runbook Known Failures | RUNBOOK_KNOWN_FAILURES.md | Known failure modes, recovery steps, workarounds | Operations reference |
@@ -19,7 +19,7 @@
 | Stage 1 Discovery Record | ✓ Complete | Stage 2 start |
 | Formal Specification | ✓ Draft (pending Stage 2 approval) | Stage 3 start |
 | Requirements and Specification Manifest (this file) | ✓ Draft | Stage 2 close |
-| Task List | Not started | Stage 4 start |
+| Task List | ✓ Draft (pending Stage 3 approval) | Stage 4 start |
 | Implementation Chronicle | Not started | Stage 5 start |
 | Release Checklist | Not started | Stage 6 start |
 | Runbook Known Failures | Not started | Stage 6 start |

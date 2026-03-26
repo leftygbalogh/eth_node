@@ -81,7 +81,8 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
   - Security/production-readiness loop: No (local devnet only, no public exposure)
 - Next step: Write feedback.json, then present Stage 1 close summary for Lefty approval.
 - **Stage 1 — Discover: APPROVED by Lefty, 2026-03-26**
-- **Stage 2 — Specify: IN PROGRESS (poke & probe window open, awaiting Lefty approval)**
+- **Stage 2 — Specify: APPROVED by Lefty, 2026-03-26**
+- Current stage: Stage 3 — Plan (IN PROGRESS, Team Lead coordinating)
 - Stage 2 artifacts complete:
   - FORMAL_SPEC.md (Oracle objection FR-004 resolved, RFC 6979 note added)
   - REQUIREMENTS_SPEC_MANIFEST.md
