@@ -56,18 +56,11 @@ else
     CMD="$CMD --dump-state $(printf '%q' "$STATE_JSON")"
 fi
 
-# ── Record session via 'script' ─────────────────────────────────────────────
-#    Linux:  script -q -c "command" screen.log
-#    macOS:  script -q screen.log command   (different flag order, no -c)
-OS="$(uname -s)"
-if [[ "$OS" == "Darwin" ]]; then
-    # macOS: script <file> <command...>
-    # shellcheck disable=SC2086
-    script -q "$SCREEN_LOG" bash -c "$CMD" || true
-else
-    # Linux (and WSL)
-    script -q -c "$CMD" "$SCREEN_LOG" || true
-fi
+# ── Run CLI and capture output via tee ────────────────────────────────────────
+#    Works on Linux, macOS, and Git Bash (MINGW64) on Windows.
+#    stdout + stderr are both written to screen.log and shown on the terminal.
+# shellcheck disable=SC2086
+bash -c "$CMD" 2>&1 | tee "$SCREEN_LOG" || true
 
 # ── Report ─────────────────────────────────────────────────────────────────────
 echo ""
