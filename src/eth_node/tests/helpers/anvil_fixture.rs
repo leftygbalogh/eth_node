@@ -56,6 +56,14 @@ impl AnvilInstance {
 
         Ok(Some(AnvilInstance { child, port, endpoint }))
     }
+
+    /// WebSocket endpoint for this Anvil instance.
+    ///
+    /// Anvil serves WebSocket on the same port as HTTP.
+    #[allow(dead_code)]
+    pub fn ws_endpoint(&self) -> String {
+        format!("ws://127.0.0.1:{}", self.port)
+    }
 }
 
 impl Drop for AnvilInstance {

@@ -45,5 +45,9 @@ thiserror = "2"
 # CLI (eth_node_cli only)
 clap = { version = "4", features = ["derive"] }
 
+# Async stream combinators
+async-stream = "0.3"
+futures = "0.3"
+
 # Testing
 tokio-test = "0.4"
