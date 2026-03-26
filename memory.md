@@ -133,6 +133,26 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
 
 ---
 
+## 2026-03-26 Status Snapshot (session close)
+
+- Timestamp: 2026-03-26
+- Current stage: Stage 4 — Build (complete, pending Stage 5 gate)
+- Last commit: `201933e` — A1+G3+G5+G6+G7 pushed to origin/master
+- Completed since last update:
+  - A1 Option D: HTTP poll consecutive_errors counter; terminates with ReconnectExhausted after N failures; resets on success; default Some(3); None = infinite. Transport-neutral display string.
+  - G3: WS reconnect exhaustion integration test — inline tokio TCP proxy (no external tool), `test_ws_reconnect_exhausted_after_proxy_abort`.
+  - G5: `eth_getbalance_address_param_is_checksummed_hex` unit test in rpc.rs.
+  - G6: `eth_call_data_contains_correct_balance_of_selector` unit test in contract.rs — asserts 4-byte keccak selector `0x70a08231`.
+  - G7: `proptest = "1"` added to workspace; 3 proptest modules: rpc/primitives/contract — never panic on arbitrary input.
+  - PPL-001 pair programming log created: chronicle/PPL-001-A1-G3-G5-G6-G7.md
+- Test counts: 124 total, all passing (79 unit + 24 integration + 8 CLI unit + 8 CLI integration + 5 doc-tests)
+- Deferred: G8 (tracing span assertions), G9, A2-A5
+- All Phase 1 acceptance criteria met (AC-001 through AC-006)
+- Open questions: None
+- Blockers: None
+- Next step: Lefty calls Stage 5 (Verify) gate or requests further work
+---
+
 ## 2026-03-26 Status Snapshot (v1.6)
 
 - Timestamp: 2026-03-26
