@@ -258,12 +258,17 @@ mod tests {
     }
 
     #[test]
-    //Lefty: I like this case, awesome thingking. I just need a little explanation here because 
-    // I just feel that the definitiion of the same transaction is a little fuzzy: 
-    // calling test_eip1559_tx() twice definitely the same transaction, 
-    // but what happens if we make a clone of test_eip1559_tx(), say test_eip1559_tx_clone() 
-    // with identical content and call the hash on both, are those identical?
-    //As in, would these two transanctions a nanosecond apart be the same or different? 
+    // RFC 6979 signing is purely input-deterministic: the output depends only on
+    // (private_key, transaction_fields) — there is no timestamp or random nonce.
+    //
+    // "Same transaction" means identical field values (chain_id, nonce, gas_limit,
+    // max_fee, max_priority_fee, to, value, data). Two `TxEip1559` structs with
+    // identical content produce bit-for-bit identical EIP-2718 encoded bytes, and
+    // therefore the same keccak hash and the same RFC 6979 signature.
+    //
+    // "A nanosecond apart" only differs if a field differs (typically the nonce).
+    // Two transactions with the same nonce are literally the same transaction on-chain;
+    // only one can be confirmed. This is intentional replay protection.
     fn sign_eip1559_is_deterministic_rfc6979() {
         // RFC 6979 guarantees deterministic signing — same key + same tx = same signature.
         let signer = EthSigner::from_key(ANVIL_KEY).unwrap();
@@ -299,7 +304,12 @@ mod tests {
     // ── NFR-002: key must not appear in log output ────────────────────────────
 
     #[test]
-    //Lefty: excellent case; is there any other data that we do not want in the logs?
+    // For Phase 1 (local devnet, env-var key), the private key is the only item
+    // that must never reach log output. Items to re-check if Phase 2 adds HD wallets:
+    //   - BIP-39 mnemonic seed phrases
+    //   - Derivation paths that could narrow key-space guessing
+    //   - Raw signature bytes (enable replay analysis in some contexts)
+    // None of these are in scope today; revisit this test when HD wallet support is added.
     fn key_not_in_log_output() {
         use std::io;
         use std::sync::{Arc, Mutex};

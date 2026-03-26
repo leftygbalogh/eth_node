@@ -262,13 +262,18 @@ impl RpcClient {
 #[cfg(test)]
 mod tests {
     use super::*;
-    //Lefty: this test section seems a little thin. 
-    // Maybe the unit test agent could make a recommendation here.
+    // Unit tests cover only what is testable without a network: URL validation and
+    // error display contracts. All methods that perform actual RPC calls (get_balance,
+    // block_number, etc.) require a live Anvil instance and live in the integration
+    // test suite (eth_node/tests/integration_rpc.rs, covered by T-004).
 
     #[test]
-    //Lefty: Is it worth giving a try to a few variants of a bad url, please such as 
-    // "http://127.0.0.1:8545324242342", or "http://127.0.0.0.0.1:8545", 
-    // or "http://example.comm:8545" and similar, almost good syntax types?
+    // Near-valid URL variants that exercise the `url` crate's parse rules:
+    // - Port 9999999 exceeds the valid range (0–65535) → rejected.
+    // - Double-dotted host (127.0.0.0.0.1) is not a valid IP or hostname → rejected.
+    // - A plausible-looking TLD typo like "example.comm:8545" IS accepted by the url
+    //   crate (it is syntactically valid); failure only occurs at the first network call.
+    //   This is documented and correct: `new()` performs syntax-only validation.
     fn new_rejects_bad_url() {
         let err = RpcClient::new("not a url !!").unwrap_err();
         assert!(
@@ -282,6 +287,20 @@ mod tests {
         // Construction is infallible for a valid URL (no network call yet).
         let client = RpcClient::new("http://127.0.0.1:8545").unwrap();
         assert_eq!(client.endpoint(), "http://127.0.0.1:8545");
+    }
+
+    #[test]
+    fn new_rejects_port_overflow_url() {
+        // Port 9_999_999 exceeds the maximum valid port (65_535).
+        let err = RpcClient::new("http://127.0.0.1:9999999").unwrap_err();
+        assert!(matches!(err, RpcError::InvalidUrl(_)));
+    }
+
+    #[test]
+    fn new_rejects_double_dot_host_url() {
+        // "127.0.0.0.0.1" is not a valid IP address or hostname.
+        let err = RpcClient::new("http://127.0.0.0.0.1:8545").unwrap_err();
+        assert!(matches!(err, RpcError::InvalidUrl(_)));
     }
 
     /// DIT-002: lock in the display string contracts for all RpcError variants so that

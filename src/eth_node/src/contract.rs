@@ -256,13 +256,41 @@ mod tests {
          "outputs":[{"name":"","type":"bool"}],"stateMutability":"nonpayable"}
     ]"#;
 
+    // An ABI with two identical transfer(address,uint256) signatures — used to
+    // verify that the first definition is always selected over a duplicate.
+    const DUPLICATE_OVERLOAD_ABI: &str = r#"[
+        {"name":"transfer","type":"function",
+         "inputs":[{"name":"to","type":"address"},{"name":"value","type":"uint256"}],
+         "outputs":[{"name":"","type":"bool"}],"stateMutability":"nonpayable"},
+        {"name":"transfer","type":"function",
+         "inputs":[{"name":"to","type":"address"},{"name":"value","type":"uint256"}],
+         "outputs":[{"name":"result","type":"bool"}],"stateMutability":"nonpayable"}
+    ]"#;
+
     #[test]
     fn new_succeeds_with_valid_abi() {
         ContractCaller::new(ADDR, BALANCE_OF_ABI).expect("valid ABI");
     }
 
     #[test]
-    //Lefty: what happens if the json is valid, just all required fields are empty?
+    // An empty JSON array `[]` is valid Solidity ABI JSON representing a contract
+    // with no functions. Construction must succeed; any subsequent function lookup
+    // returns AbiNotFound because there is simply nothing in the ABI to match.
+    fn new_succeeds_with_empty_abi_array() {
+        ContractCaller::new(ADDR, "[]").expect("empty array is valid ABI JSON");
+    }
+
+    #[test]
+    fn resolve_function_on_empty_abi_returns_not_found() {
+        let caller = ContractCaller::new(ADDR, "[]").unwrap();
+        let err = caller.resolve_function("transfer", &[]).expect_err("no functions defined");
+        assert!(matches!(err, ContractError::AbiNotFound(_)));
+    }
+
+    #[test]
+    // The Lefty question was about fields that are present but empty. `[]` is the
+    // canonical case: the JSON is valid, but there are zero function entries.
+    // alloy's JsonAbi parser accepts this without error.
     fn new_rejects_invalid_json() {
         let err = ContractCaller::new(ADDR, "not json{{{").expect_err("should fail");
         assert!(matches!(err, ContractError::InvalidAbiJson(_)));
@@ -278,8 +306,10 @@ mod tests {
     }
 
     #[test]
-    //Lefty: I would like a bit of an explanation here
-    //Also, can we also assert that malformed overloads are handled properly?
+    // Overloading means the same function name appears multiple times in the ABI,
+    // each time with a different parameter list. `resolve_function` tries each
+    // overload in definition order and picks the first whose input count and
+    // ABI-encoding both match the supplied argument vector.
     fn resolve_function_finds_correct_overload() {
         let caller = ContractCaller::new(ADDR, OVERLOADED_ABI).unwrap();
 
@@ -307,6 +337,24 @@ mod tests {
             )
             .expect("3-arg overload");
         assert_eq!(f3.inputs.len(), 3);
+    }
+
+    #[test]
+    // When two overloads have *identical* signatures, the first definition in the
+    // ABI array wins. We distinguish them by their output names ("" vs "result").
+    fn resolve_function_duplicate_overload_picks_first() {
+        let caller = ContractCaller::new(ADDR, DUPLICATE_OVERLOAD_ABI).unwrap();
+        let f = caller
+            .resolve_function(
+                "transfer",
+                &[
+                    DynSolValue::Address(Address::ZERO),
+                    DynSolValue::Uint(U256::from(1u64), 256),
+                ],
+            )
+            .expect("first overload");
+        // The first overload has an unnamed output (""); the second has "result".
+        assert_eq!(f.outputs[0].name, "");
     }
 
     #[test]

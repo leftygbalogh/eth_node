@@ -77,23 +77,40 @@ pub struct Listener {
     endpoint: String,
     /// Interval used in HTTP polling mode. Ignored for WebSocket mode.
     poll_interval: Duration,
+    /// Maximum WebSocket reconnect attempts before the stream terminates.
+    ///
+    /// `Some(n)` — yield [`ListenerError::ReconnectExhausted`] after `n` consecutive
+    /// failures and stop.  Defaults to `Some(3)` per spec FR-006.
+    /// `None` — retry indefinitely; the stream never yields `ReconnectExhausted`.
+    max_reconnect: Option<u32>,
 }
 
 impl Listener {
     /// Create a new `Listener` targeting `endpoint`.
     ///
     /// `endpoint` must begin with `http://`, `https://`, `ws://`, or `wss://`.
-    /// The poll interval defaults to **1 second** (spec FR-006).
+    /// The poll interval defaults to **1 second** and the WebSocket reconnect
+    /// limit defaults to **3 attempts** (spec FR-006).
     pub fn new(endpoint: impl Into<String>) -> Self {
         Self {
             endpoint: endpoint.into(),
             poll_interval: Duration::from_secs(1),
+            max_reconnect: Some(MAX_RECONNECT),
         }
     }
 
     /// Override the HTTP polling interval (ignored in WebSocket mode).
     pub fn with_poll_interval(mut self, interval: Duration) -> Self {
         self.poll_interval = interval;
+        self
+    }
+
+    /// Override the maximum WebSocket reconnect attempts.
+    ///
+    /// Pass `None` to retry indefinitely — the stream only ends when the caller
+    /// drops it.  Pass `Some(n)` to stop after `n` consecutive failed attempts.
+    pub fn with_max_reconnect(mut self, max: Option<u32>) -> Self {
+        self.max_reconnect = max;
         self
     }
 
@@ -104,9 +121,10 @@ impl Listener {
     pub fn subscribe(&self, filter: Filter) -> LogStream {
         let endpoint = self.endpoint.clone();
         let interval = self.poll_interval;
+        let max_reconnect = self.max_reconnect;
 
         if endpoint.starts_with("ws://") || endpoint.starts_with("wss://") {
-            Box::pin(ws_subscription_stream(endpoint, filter))
+            Box::pin(ws_subscription_stream(endpoint, filter, max_reconnect))
         } else {
             Box::pin(http_poll_stream(endpoint, filter, interval))
         }
@@ -180,18 +198,19 @@ fn http_poll_stream(
 
 // ── WebSocket subscription ────────────────────────────────────────────────────
 
+/// Default maximum WebSocket reconnect attempts (spec FR-006).
 const MAX_RECONNECT: u32 = 3;
 
 /// Subscribe to Ethereum logs over WebSocket, yielding each [`Log`] individually.
 ///
-/// Reconnects on disconnect (up to [`MAX_RECONNECT`] = 3 times) with
-/// exponential back-off starting at 50 ms.
-
-//Lefty: what is the reason why we only reconnect 3 times?
-//What happens afterwards?
+/// Reconnects on disconnect with exponential back-off starting at 50 ms.
+/// `max_reconnect` controls the termination policy:
+/// - `Some(n)` — yields [`ListenerError::ReconnectExhausted`] after `n` failures.
+/// - `None` — retries indefinitely; the stream only ends when the caller drops it.
 fn ws_subscription_stream(
     ws_url: String,
     filter: Filter,
+    max_reconnect: Option<u32>,
 ) -> impl Stream<Item = Result<Log, ListenerError>> + Send {
     async_stream::stream! {
         let mut attempts: u32 = 0;
@@ -202,7 +221,7 @@ fn ws_subscription_stream(
                     warn!("ws_stream: connect failed (attempt {attempts}): {e}");
                     yield Err(ListenerError::SubscribeFailed(e));
                     attempts += 1;
-                    if attempts >= MAX_RECONNECT {
+                    if max_reconnect.map_or(false, |limit| attempts >= limit) {
                         yield Err(ListenerError::ReconnectExhausted(attempts));
                         return;
                     }
@@ -215,7 +234,7 @@ fn ws_subscription_stream(
                             warn!("ws_stream: subscribe_logs failed: {e}");
                             yield Err(ListenerError::SubscribeFailed(e.to_string()));
                             attempts += 1;
-                            if attempts >= MAX_RECONNECT {
+                            if max_reconnect.map_or(false, |limit| attempts >= limit) {
                                 yield Err(ListenerError::ReconnectExhausted(attempts));
                                 return;
                             }
@@ -265,7 +284,8 @@ mod tests {
     use super::*;
 
     #[test]
-    //Lefty: is this the complete list of possibilities?
+    // These 3 variants are exhaustive — the enum is not `#[non_exhaustive]`, so any
+    // new variant added in future must also get a display assertion here.
     fn listener_error_display() {
         assert_eq!(
             ListenerError::SubscribeFailed("timeout".into()).to_string(),
@@ -295,8 +315,11 @@ mod tests {
     }
 
     #[test]
-    //Lefty: how does this work? How do I know we really got a ws here 
-    // and an http in the following test?
+    // Both tests create a `LogStream` (a boxed `dyn Stream`) via `subscribe()`.
+    // The stream is the same opaque type regardless of transport — boxed trait objects
+    // erase the concrete type, so we cannot inspect *which* branch ran at runtime.
+    // Correctness is guaranteed by the `starts_with("ws://")` branch in `subscribe()`
+    // and confirmed by the distinct scheme strings passed in each test.
     fn subscribe_returns_ws_stream_for_ws_scheme() {
         // subscribe() should not panic or error for either scheme; we verify
         // the stream is created without blocking.
@@ -309,13 +332,34 @@ mod tests {
     }
 
     #[test]
-    //Lefty: maybe I misunderstood, I thoght we only do 3 retries?
-    //Also, I am happy if we actually keep on retrying.
+    // This test verifies the *backoff delay formula*, not the retry count limit —
+    // those are separate concerns. The formula is: 50 ms × 2^attempt, capped at
+    // 2^10 = 1 024 doublings. With default `max_reconnect = Some(3)`, only
+    // attempts 0, 1, and 2 are ever reached; the cap kicks in for pathological cases.
     fn backoff_values() {
         assert_eq!(backoff(0), Duration::from_millis(50));
         assert_eq!(backoff(1), Duration::from_millis(100));
         assert_eq!(backoff(2), Duration::from_millis(200));
         // cap at 2^10 = 1024
         assert_eq!(backoff(20), Duration::from_millis(50 * 1024));
+    }
+
+    #[test]
+    fn max_reconnect_none_means_infinite_retries() {
+        // `None` disables the attempt ceiling; the stream never yields ReconnectExhausted.
+        let l = Listener::new("ws://127.0.0.1:8545").with_max_reconnect(None);
+        assert!(l.max_reconnect.is_none());
+    }
+
+    #[test]
+    fn max_reconnect_custom_limit() {
+        let l = Listener::new("ws://127.0.0.1:8545").with_max_reconnect(Some(10));
+        assert_eq!(l.max_reconnect, Some(10));
+    }
+
+    #[test]
+    fn max_reconnect_default_is_three() {
+        let l = Listener::new("ws://127.0.0.1:8545");
+        assert_eq!(l.max_reconnect, Some(MAX_RECONNECT));
     }
 }

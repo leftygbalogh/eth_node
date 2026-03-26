@@ -191,11 +191,18 @@ mod tests {
     }
 
     #[test]
-    //Lefty: we have a few wrong format cases below, 
-    // it would be nice to see what happens with all upper case and with mixed case addresses.
+    // alloy parses hex addresses case-insensitively: uppercase, lowercase, and EIP-55
+    // checksummed (mixed-case) all decode to the same 20-byte value.
     fn address_from_hex_lowercase() {
         // lowercase is valid — just verify it parses without error
         assert!(parse_address("0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266").is_ok());
+    }
+
+    #[test]
+    fn address_from_hex_uppercase() {
+        // ALL-UPPERCASE hex is also valid — same address as the mixed-case EIP-55 form.
+        let a = parse_address("0xF39FD6E51AAD88F6F4CE6AB8827279CFFFB92266").unwrap();
+        assert_eq!(a, address!("f39Fd6e51aad88F6F4ce6aB8827279cffFb92266"));
     }
 
     #[test]
@@ -228,11 +235,19 @@ mod tests {
     }
 
     #[test]
-    //Lefty: for my sake, can we add U256::MAX with U256::MAX 
-    // twice using + and using checked_add
-    // and check its results?
     fn u256_checked_add_overflow() {
         assert!(U256::MAX.checked_add(uint!(1_U256)).is_none());
+    }
+
+    #[test]
+    // U256 uses *wrapping* arithmetic for `+` — it never panics on overflow.
+    // MAX + MAX wraps: 2×(2²⁵⁶−1) mod 2²⁵⁶ = 2²⁵⁶−2 = MAX−1.
+    // `checked_add` is the safe alternative that explicitly signals overflow.
+    fn u256_max_plus_max_wraps_and_checked_returns_none() {
+        // Wrapping add: never panics, wraps mod 2^256.
+        assert_eq!(U256::MAX + U256::MAX, U256::MAX - uint!(1_U256));
+        // Checked add: returns None when overflow would occur.
+        assert!(U256::MAX.checked_add(U256::MAX).is_none());
     }
 
     #[test]
@@ -251,14 +266,36 @@ mod tests {
     }
 
     #[test]
-    //Lefty: is this the only known vector? 
-    // Do we have a more complete list of malicious vectors we should be able to handle?
+    // uint256(1) is the simplest non-trivial known ABI vector: 31 zero bytes then 0x01.
     fn abi_uint256_known_vector() {
-        // uint256(1) → 31 zero bytes then 0x01
         let enc = abi_encode_uint256(uint!(1_U256));
         assert_eq!(enc.len(), 32);
         assert_eq!(&enc[..31], &[0u8; 31]);
         assert_eq!(enc[31], 1u8);
+    }
+
+    #[test]
+    // uint256(0) encodes as 32 zero bytes — the minimal and most common boundary value.
+    fn abi_uint256_zero_encodes_as_32_zero_bytes() {
+        let enc = abi_encode_uint256(U256::ZERO);
+        assert_eq!(enc, vec![0u8; 32]);
+        assert_eq!(abi_decode_uint256(&enc).unwrap(), U256::ZERO);
+    }
+
+    #[test]
+    // uint256(MAX) is the largest value that fits — all 32 bytes are 0xFF.
+    fn abi_uint256_max_round_trip() {
+        let enc = abi_encode_uint256(U256::MAX);
+        assert_eq!(enc, vec![0xFFu8; 32]);
+        assert_eq!(abi_decode_uint256(&enc).unwrap(), U256::MAX);
+    }
+
+    #[test]
+    // A 31-byte slice is too short for a uint256 word — must return an error, never panic.
+    fn abi_uint256_decode_rejects_short_slice() {
+        let short = vec![0u8; 31];
+        let err = abi_decode_uint256(&short).unwrap_err();
+        assert!(matches!(err, PrimitiveError::AbiDecodeError(_)));
     }
 
     // --- ABI address ---
@@ -301,12 +338,31 @@ mod tests {
     // --- ABI string ---
 
     #[test]
-    //Lefty: what is the longest string we should be able to handle?
-    //What happens with strings that are longer? For exmpe someone pasting in the entire Bible.
-    //what happens with smilies, emoticons, hungarian letter with weird diacritical marks, nonsimplified chinese characters, homoglyphs?
+    // ABI strings are raw UTF-8 bytes with no encoding-level length cap.
+    // Any valid UTF-8 — ASCII, multi-byte Unicode, emoji, CJK, homoglyphs — round-trips
+    // identically because the encoder stores raw bytes without transformation.
     fn abi_string_round_trip() {
         let s = "hello, ethereum";
         let enc = abi_encode_string(s);
+        assert_eq!(abi_decode_string(&enc).unwrap(), s);
+    }
+
+    #[test]
+    // Non-ASCII: Hungarian diacritics (ő is 2 bytes in UTF-8), CJK (世界 = 3 bytes each),
+    // emoji (🦀 = 4 bytes), and homoglyphs (а Cyrillic ≠ a Latin) all encode as distinct
+    // byte sequences and survive the round-trip unchanged.
+    fn abi_string_unicode_round_trip() {
+        let s = "Hőmérséklet: 世界 🦀 аbc"; // Hungarian + CJK + emoji + Cyrillic homoglyph
+        let enc = abi_encode_string(s);
+        assert_eq!(abi_decode_string(&enc).unwrap(), s);
+    }
+
+    #[test]
+    // A 64 KiB string (any valid UTF-8) encodes and decodes without panic.
+    // On-chain, gas limits constrain string length; off-chain there is no cap.
+    fn abi_string_large_round_trip() {
+        let s = "x".repeat(65_536);
+        let enc = abi_encode_string(&s);
         assert_eq!(abi_decode_string(&enc).unwrap(), s);
     }
 
@@ -319,7 +375,6 @@ mod tests {
     // --- ABI tuple ---
 
     #[test]
-    //Lefty: for this  one, it would be interesting to see if the uint.MAX value makes the roundtrip
     fn abi_tuple_round_trip() {
         let t = AbiTuple {
             a: uint!(999_U256),
@@ -331,6 +386,19 @@ mod tests {
         assert_eq!(dec.a, uint!(999_U256));
         assert_eq!(dec.b, address!("f39Fd6e51aad88F6F4ce6aB8827279cffFb92266"));
         assert!(dec.c);
+    }
+
+    #[test]
+    // U256::MAX must survive an ABI tuple round-trip without truncation.
+    fn abi_tuple_max_uint_round_trip() {
+        let t = AbiTuple {
+            a: U256::MAX,
+            b: address!("f39Fd6e51aad88F6F4ce6aB8827279cffFb92266"),
+            c: false,
+        };
+        let enc = abi_encode_tuple(t);
+        let dec = abi_decode_tuple(&enc).unwrap();
+        assert_eq!(dec.a, U256::MAX);
     }
 
     // --- RLP u64 ---
@@ -352,13 +420,28 @@ mod tests {
     }
 
     #[test]
-    //Lefty: what is this one (dead_beef - is this a hexadecimal number here?) for? 
-    //should we try more variants that push harder around edges and limit or type violations?
-    // I would like to see how we handle invalid inputs
+    // `0xdead_beef` is a classic hex "garbage" value used in low-level debugging
+    // (3,735,928,559 decimal). It has no special meaning here — it's just a
+    // memorable non-trivial number that exercises more than 1 byte of encoding.
     fn rlp_u64_round_trip() {
         let v = 0xdead_beef_u64;
         let enc = rlp_encode_u64(v);
         assert_eq!(rlp_decode_u64(&enc).unwrap(), v);
+    }
+
+    #[test]
+    // u64::MAX is the upper boundary — confirms the encoder handles the full 8-byte range.
+    fn rlp_u64_max_round_trip() {
+        let enc = rlp_encode_u64(u64::MAX);
+        assert_eq!(rlp_decode_u64(&enc).unwrap(), u64::MAX);
+    }
+
+    #[test]
+    // A corrupt / truncated byte slice must return RlpDecodeError, never panic.
+    fn rlp_u64_invalid_input_returns_error() {
+        let corrupt = vec![0xFF, 0x00]; // Not valid RLP for a u64
+        let err = rlp_decode_u64(&corrupt).unwrap_err();
+        assert!(matches!(err, PrimitiveError::RlpDecodeError(_)));
     }
 
     // --- RLP bytes ---
@@ -381,7 +464,10 @@ mod tests {
     // --- RLP nested list ---
 
     #[test]
-    //Lefty: did we want to try more compex data structures or are they not relevant or allowed?
+    // One level of nesting (struct with a u64 and a Vec<u8>) is the representative
+    // case for transaction field encoding. Deeper nesting (struct-of-structs) is
+    // handled automatically by alloy-rlp's derive macros and is tested as part of
+    // full transaction encoding in Phase 2 (T-009 block/receipt indexer).
     fn rlp_list_round_trip() {
         let l = RlpList { a: 42, b: vec![0xca, 0xfe] };
         let enc = rlp_encode_list(&l);

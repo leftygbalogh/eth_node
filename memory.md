@@ -97,6 +97,40 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
 
 ---
 
+## 2026-03-26 Status Snapshot (current)
+
+- Timestamp: 2026-03-26
+- Current stage: Stage 4 — Build (IN PROGRESS)
+- Completed since last update:
+  - T-000 Workspace scaffold: DONE
+  - T-001 Primitives module: DONE (23 unit tests)
+  - T-002 Anvil integration test fixture: DONE
+  - T-004 RPC client module: DONE
+  - T-005 Transaction signer module: DONE
+  - T-006 Transaction builder/broadcaster module: DONE
+  - T-007 Event listener module: DONE
+  - T-007 Contract caller module: DONE
+  - Oracle + Tester review pass: DONE
+    - O-001 Fixed dead ConflictingFeeParams guard in tx.rs (has_gas_price/has_max_fee flags added)
+    - DIT-001 Added wrong-arg-type test to contract.rs
+    - DIT-002 Added RpcError display contract tests to rpc.rs
+  - All 56 unit tests: PASSING
+  - Last commit: f87cc87 pushed to origin/master
+- In progress: None — awaiting next instruction
+- Decisions made:
+  - Builder tracks conflict with two bool flags, not enum variant inspection
+- Open questions / Lefty comments pending implementation:
+  - primitives.rs: uppercase/mixed-case address test, U256::MAX+MAX, more ABI vectors, long strings/unicode, dead_beef edge cases, complex RLP structures
+  - rpc.rs: near-valid URL variants
+  - signer.rs: RFC 6979 clone-tx identity question, other sensitive data in logs
+  - tx.rs: parameterisable tip percentage, rename fee_conflict tests to fee_decision_table
+  - events.rs: MAX_RECONNECT rationale doc, ws vs http stream type introspection, infinite retry option
+  - contract.rs: empty-but-valid JSON ABI test, malformed overload test, explanation comments
+- Blockers: None
+- Next step: Awaiting Lefty direction
+
+---
+
 ## 2026-03-26 Status Snapshot (v1.6)
 
 - Timestamp: 2026-03-26

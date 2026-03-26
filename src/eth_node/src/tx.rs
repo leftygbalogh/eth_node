@@ -64,6 +64,13 @@ pub enum TxError {
 
 // ── Builder ───────────────────────────────────────────────────────────────────
 
+/// In `FeeConfig::Auto` mode the priority fee is calculated as
+/// `gas_price / DEFAULT_AUTO_TIP_DIVISOR`.
+///
+/// To use a different tip percentage, call `.max_fee(max, priority)` explicitly
+/// instead of relying on `Auto`.
+const DEFAULT_AUTO_TIP_DIVISOR: u128 = 10; // 10 % of base fee
+
 /// Typed fee configuration — drives the decision table.
 #[derive(Debug, Clone, Default)]
 pub enum FeeConfig {
@@ -245,11 +252,7 @@ impl TxBuilder {
                             .gas_price()
                             .await
                             .map_err(TxError::GasEstimationFailed)?;
-                        (base, base / 10) // tip = 10% of base as a simple default
-                        //Lefty: what happens if I want 11% or 9%? 
-                        // Can we avoid magic numbers by default and use mechanisms that can easily be parameterized? 
-                        // I know base/10 is neat, but gong forward, lets turn magic numbers into contants 
-                        // that have self explanatory names. 
+                        (base, base / DEFAULT_AUTO_TIP_DIVISOR)
                     }
                 };
 
@@ -422,9 +425,12 @@ pub async fn send_transaction(
 
 /// Returns `Err(TxError::ConflictingFeeParams)` if both fee params are provided.
 ///
+/// A **conflict** means both a `gas_price` (legacy type-0) and a `max_fee_per_gas`
+/// (EIP-1559 type-2) fee parameter were supplied simultaneously.  These select
+/// mutually exclusive transaction types; providing both is ambiguous and therefore
+/// rejected (decision table row 4).
+///
 /// Exposes the decision-table check for unit testing without network I/O.
-
-//Lefty: what is the definition of  conflict in this context?
 pub fn check_fee_conflict(gas_price: Option<u128>, max_fee: Option<u128>) -> Result<(), TxError> {
     if gas_price.is_some() && max_fee.is_some() {
         return Err(TxError::ConflictingFeeParams);
@@ -447,14 +453,13 @@ mod tests {
     }
 
     #[test]
-    //Lefty: why is this called _conflict_? I thought this was actually one of the two lega, acceptable set calls.
-    fn fee_conflict_only_gas_price_ok() {
+    // Decision table rows 1–3 are NOT conflicts — only row 4 is.
+    fn fee_params_only_gas_price_is_valid() {
         check_fee_conflict(Some(1_000_000_000), None).unwrap();
     }
 
     #[test]
-    //Lefty: why is this called _conflict_? I thought this was actually the other one of the two lega, acceptable set calls.
-    fn fee_conflict_only_max_fee_ok() {
+    fn fee_params_only_max_fee_is_valid() {
         check_fee_conflict(None, Some(2_000_000_000)).unwrap();
     }
 
@@ -466,8 +471,14 @@ mod tests {
     // ── Builder with fixed inputs ─────────────────────────────────────────────
 
     #[test]
-    //Lefty: I like the comment, it helps me understand more, hence the question:
+    // Tests that the builder stores field values correctly without making any RPC calls.
     //
+    // On async testing (L-016): yes, `#[tokio::test]` is supported and used
+    // in `build_gas_price_and_max_fee_returns_conflict` below. This test stays
+    // synchronous because it only inspects builder *field state* — nonce fetching
+    // and gas estimation don't happen until `.build(&client)` is awaited.
+    // The full async flow (build → sign → broadcast) is covered by integration
+    // tests (T-006) running against a live Anvil instance.
     fn builder_eip1559_fixed_inputs() {
         let from: Address = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266".parse().unwrap();
         let to: Address = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8".parse().unwrap();
