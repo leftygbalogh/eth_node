@@ -262,6 +262,7 @@ mod tests {
     }
 
     #[test]
+    //Lefty: what happens if the json is valid, just all required fields are empty?
     fn new_rejects_invalid_json() {
         let err = ContractCaller::new(ADDR, "not json{{{").expect_err("should fail");
         assert!(matches!(err, ContractError::InvalidAbiJson(_)));
@@ -277,6 +278,8 @@ mod tests {
     }
 
     #[test]
+    //Lefty: I would like a bit of an explanation here
+    //Also, can we also assert that malformed overloads are handled properly?
     fn resolve_function_finds_correct_overload() {
         let caller = ContractCaller::new(ADDR, OVERLOADED_ABI).unwrap();
 
@@ -315,6 +318,30 @@ mod tests {
         assert!(ContractError::InvalidAbiJson("bad".into())
             .to_string()
             .contains("bad"));
+    }
+
+    /// DIT-001: resolve_function finds the function by name but no overload accepts the
+    /// given argument types — must return AbiDecodeError (not AbiNotFound).
+    #[test]
+    fn resolve_function_rejects_wrong_arg_types() {
+        let caller = ContractCaller::new(ADDR, OVERLOADED_ABI).unwrap();
+
+        // `transfer` exists, but passing a uint256 where an address is expected
+        // should fail with AbiDecodeError, not AbiNotFound.
+        let err = caller
+            .resolve_function(
+                "transfer",
+                &[
+                    DynSolValue::Uint(U256::from(1u64), 256), // wrong type: uint256 instead of address
+                    DynSolValue::Uint(U256::from(1u64), 256),
+                ],
+            )
+            .expect_err("wrong arg types should fail");
+
+        assert!(
+            matches!(err, ContractError::AbiDecodeError(_)),
+            "expected AbiDecodeError for wrong arg types, got {err:?}"
+        );
     }
 }
 

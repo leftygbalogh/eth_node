@@ -101,6 +101,10 @@ pub struct TxBuilder {
     nonce: Option<u64>,
     gas_limit: Option<u64>,
     fee_config: FeeConfig,
+    /// Tracks whether `.gas_price()` was called (decision table row 4 detection).
+    has_gas_price: bool,
+    /// Tracks whether `.max_fee()` was called (decision table row 4 detection).
+    has_max_fee: bool,
 }
 
 impl TxBuilder {
@@ -115,6 +119,8 @@ impl TxBuilder {
             nonce: None,
             gas_limit: None,
             fee_config: FeeConfig::Auto,
+            has_gas_price: false,
+            has_max_fee: false,
         }
     }
 
@@ -153,12 +159,14 @@ impl TxBuilder {
             max_fee_per_gas,
             max_priority_fee_per_gas,
         };
+        self.has_max_fee = true;
         self
     }
 
     /// Use legacy fee (type-0) transaction with explicit `gas_price`.
     pub fn gas_price(mut self, gas_price: u128) -> Self {
         self.fee_config = FeeConfig::Legacy { gas_price };
+        self.has_gas_price = true;
         self
     }
 
@@ -168,11 +176,12 @@ impl TxBuilder {
     pub async fn build(self, client: &RpcClient) -> Result<UnsignedTx, TxError> {
         let _span = info_span!("tx_build", from = %self.from, chain_id = self.chain_id).entered();
 
-        // Check decision table: both set = error.
-        if matches!(self.fee_config, FeeConfig::Legacy { .. }) {
-            if let FeeConfig::Eip1559 { .. } = self.fee_config {
-                return Err(TxError::ConflictingFeeParams);
-            }
+        // Decision table row 4: both .gas_price() and .max_fee() were called — reject.
+        // The builder's setters track this with has_gas_price / has_max_fee because
+        // fee_config can only hold one variant at a time; without separate flags the
+        // conflict would be silently resolved by whichever setter ran last.
+        if self.has_gas_price && self.has_max_fee {
+            return Err(TxError::ConflictingFeeParams);
         }
 
         // Fetch nonce if not overridden.
@@ -237,6 +246,10 @@ impl TxBuilder {
                             .await
                             .map_err(TxError::GasEstimationFailed)?;
                         (base, base / 10) // tip = 10% of base as a simple default
+                        //Lefty: what happens if I want 11% or 9%? 
+                        // Can we avoid magic numbers by default and use mechanisms that can easily be parameterized? 
+                        // I know base/10 is neat, but gong forward, lets turn magic numbers into contants 
+                        // that have self explanatory names. 
                     }
                 };
 
@@ -410,6 +423,8 @@ pub async fn send_transaction(
 /// Returns `Err(TxError::ConflictingFeeParams)` if both fee params are provided.
 ///
 /// Exposes the decision-table check for unit testing without network I/O.
+
+//Lefty: what is the definition of  conflict in this context?
 pub fn check_fee_conflict(gas_price: Option<u128>, max_fee: Option<u128>) -> Result<(), TxError> {
     if gas_price.is_some() && max_fee.is_some() {
         return Err(TxError::ConflictingFeeParams);
@@ -432,11 +447,13 @@ mod tests {
     }
 
     #[test]
+    //Lefty: why is this called _conflict_? I thought this was actually one of the two lega, acceptable set calls.
     fn fee_conflict_only_gas_price_ok() {
         check_fee_conflict(Some(1_000_000_000), None).unwrap();
     }
 
     #[test]
+    //Lefty: why is this called _conflict_? I thought this was actually the other one of the two lega, acceptable set calls.
     fn fee_conflict_only_max_fee_ok() {
         check_fee_conflict(None, Some(2_000_000_000)).unwrap();
     }
@@ -449,6 +466,8 @@ mod tests {
     // ── Builder with fixed inputs ─────────────────────────────────────────────
 
     #[test]
+    //Lefty: I like the comment, it helps me understand more, hence the question:
+    //
     fn builder_eip1559_fixed_inputs() {
         let from: Address = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266".parse().unwrap();
         let to: Address = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8".parse().unwrap();
@@ -495,6 +514,28 @@ mod tests {
         let b = Broadcaster::new();
         assert_eq!(b.config.poll_interval, Duration::from_millis(500));
         assert_eq!(b.config.timeout, Duration::from_secs(60));
+    }
+
+    /// O-001: decision table row 4 — calling both `.gas_price()` and `.max_fee()` on the
+    /// builder must return `ConflictingFeeParams` from `build()`.  The conflict check in
+    /// `build()` fires before any `await`, so no live RPC is reached.
+    #[tokio::test]
+    async fn build_gas_price_and_max_fee_returns_conflict() {
+        use crate::rpc::RpcClient;
+        let client = RpcClient::new("http://127.0.0.1:8545").unwrap();
+        let from: Address = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266".parse().unwrap();
+        let to: Address = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8".parse().unwrap();
+
+        let result = TxBuilder::transfer(31337, from, to, U256::ZERO)
+            .gas_price(1_000_000_000)
+            .max_fee(2_000_000_000, 1_000_000_000)
+            .build(&client)
+            .await;
+
+        assert!(
+            matches!(result, Err(TxError::ConflictingFeeParams)),
+            "expected ConflictingFeeParams, got {result:?}"
+        );
     }
 }
 

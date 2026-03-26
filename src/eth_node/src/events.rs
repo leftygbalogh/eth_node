@@ -186,6 +186,9 @@ const MAX_RECONNECT: u32 = 3;
 ///
 /// Reconnects on disconnect (up to [`MAX_RECONNECT`] = 3 times) with
 /// exponential back-off starting at 50 ms.
+
+//Lefty: what is the reason why we only reconnect 3 times?
+//What happens afterwards?
 fn ws_subscription_stream(
     ws_url: String,
     filter: Filter,
@@ -262,6 +265,7 @@ mod tests {
     use super::*;
 
     #[test]
+    //Lefty: is this the complete list of possibilities?
     fn listener_error_display() {
         assert_eq!(
             ListenerError::SubscribeFailed("timeout".into()).to_string(),
@@ -291,6 +295,8 @@ mod tests {
     }
 
     #[test]
+    //Lefty: how does this work? How do I know we really got a ws here 
+    // and an http in the following test?
     fn subscribe_returns_ws_stream_for_ws_scheme() {
         // subscribe() should not panic or error for either scheme; we verify
         // the stream is created without blocking.
@@ -303,6 +309,8 @@ mod tests {
     }
 
     #[test]
+    //Lefty: maybe I misunderstood, I thoght we only do 3 retries?
+    //Also, I am happy if we actually keep on retrying.
     fn backoff_values() {
         assert_eq!(backoff(0), Duration::from_millis(50));
         assert_eq!(backoff(1), Duration::from_millis(100));

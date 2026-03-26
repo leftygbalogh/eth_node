@@ -258,6 +258,12 @@ mod tests {
     }
 
     #[test]
+    //Lefty: I like this case, awesome thingking. I just need a little explanation here because 
+    // I just feel that the definitiion of the same transaction is a little fuzzy: 
+    // calling test_eip1559_tx() twice definitely the same transaction, 
+    // but what happens if we make a clone of test_eip1559_tx(), say test_eip1559_tx_clone() 
+    // with identical content and call the hash on both, are those identical?
+    //As in, would these two transanctions a nanosecond apart be the same or different? 
     fn sign_eip1559_is_deterministic_rfc6979() {
         // RFC 6979 guarantees deterministic signing — same key + same tx = same signature.
         let signer = EthSigner::from_key(ANVIL_KEY).unwrap();
@@ -293,6 +299,7 @@ mod tests {
     // ── NFR-002: key must not appear in log output ────────────────────────────
 
     #[test]
+    //Lefty: excellent case; is there any other data that we do not want in the logs?
     fn key_not_in_log_output() {
         use std::io;
         use std::sync::{Arc, Mutex};

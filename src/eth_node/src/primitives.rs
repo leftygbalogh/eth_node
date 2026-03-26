@@ -191,6 +191,8 @@ mod tests {
     }
 
     #[test]
+    //Lefty: we have a few wrong format cases below, 
+    // it would be nice to see what happens with all upper case and with mixed case addresses.
     fn address_from_hex_lowercase() {
         // lowercase is valid — just verify it parses without error
         assert!(parse_address("0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266").is_ok());
@@ -226,6 +228,9 @@ mod tests {
     }
 
     #[test]
+    //Lefty: for my sake, can we add U256::MAX with U256::MAX 
+    // twice using + and using checked_add
+    // and check its results?
     fn u256_checked_add_overflow() {
         assert!(U256::MAX.checked_add(uint!(1_U256)).is_none());
     }
@@ -246,6 +251,8 @@ mod tests {
     }
 
     #[test]
+    //Lefty: is this the only known vector? 
+    // Do we have a more complete list of malicious vectors we should be able to handle?
     fn abi_uint256_known_vector() {
         // uint256(1) → 31 zero bytes then 0x01
         let enc = abi_encode_uint256(uint!(1_U256));
@@ -294,6 +301,9 @@ mod tests {
     // --- ABI string ---
 
     #[test]
+    //Lefty: what is the longest string we should be able to handle?
+    //What happens with strings that are longer? For exmpe someone pasting in the entire Bible.
+    //what happens with smilies, emoticons, hungarian letter with weird diacritical marks, nonsimplified chinese characters, homoglyphs?
     fn abi_string_round_trip() {
         let s = "hello, ethereum";
         let enc = abi_encode_string(s);
@@ -309,6 +319,7 @@ mod tests {
     // --- ABI tuple ---
 
     #[test]
+    //Lefty: for this  one, it would be interesting to see if the uint.MAX value makes the roundtrip
     fn abi_tuple_round_trip() {
         let t = AbiTuple {
             a: uint!(999_U256),
@@ -341,6 +352,9 @@ mod tests {
     }
 
     #[test]
+    //Lefty: what is this one (dead_beef - is this a hexadecimal number here?) for? 
+    //should we try more variants that push harder around edges and limit or type violations?
+    // I would like to see how we handle invalid inputs
     fn rlp_u64_round_trip() {
         let v = 0xdead_beef_u64;
         let enc = rlp_encode_u64(v);
@@ -367,6 +381,7 @@ mod tests {
     // --- RLP nested list ---
 
     #[test]
+    //Lefty: did we want to try more compex data structures or are they not relevant or allowed?
     fn rlp_list_round_trip() {
         let l = RlpList { a: 42, b: vec![0xca, 0xfe] };
         let enc = rlp_encode_list(&l);

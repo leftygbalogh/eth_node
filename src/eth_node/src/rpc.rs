@@ -262,8 +262,13 @@ impl RpcClient {
 #[cfg(test)]
 mod tests {
     use super::*;
+    //Lefty: this test section seems a little thin. 
+    // Maybe the unit test agent could make a recommendation here.
 
     #[test]
+    //Lefty: Is it worth giving a try to a few variants of a bad url, please such as 
+    // "http://127.0.0.1:8545324242342", or "http://127.0.0.0.0.1:8545", 
+    // or "http://example.comm:8545" and similar, almost good syntax types?
     fn new_rejects_bad_url() {
         let err = RpcClient::new("not a url !!").unwrap_err();
         assert!(
@@ -277,5 +282,28 @@ mod tests {
         // Construction is infallible for a valid URL (no network call yet).
         let client = RpcClient::new("http://127.0.0.1:8545").unwrap();
         assert_eq!(client.endpoint(), "http://127.0.0.1:8545");
+    }
+
+    /// DIT-002: lock in the display string contracts for all RpcError variants so that
+    /// changes to error messages are caught by tests.
+    #[test]
+    fn rpc_error_display_messages() {
+        assert_eq!(
+            RpcError::Transport("connection refused".into()).to_string(),
+            "transport error: connection refused"
+        );
+        assert_eq!(
+            RpcError::JsonRpc { code: -32601, message: "method not found".into() }.to_string(),
+            "JSON-RPC error -32601: method not found"
+        );
+        assert_eq!(RpcError::Timeout.to_string(), "request timed out");
+        assert_eq!(
+            RpcError::Deserialization("unexpected field".into()).to_string(),
+            "deserialization error: unexpected field"
+        );
+        assert_eq!(
+            RpcError::InvalidUrl("not a url".into()).to_string(),
+            "invalid endpoint URL: not a url"
+        );
     }
 }
