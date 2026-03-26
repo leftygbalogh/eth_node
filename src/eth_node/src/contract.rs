@@ -1,3 +1,320 @@
 //! ABI-driven contract caller.
 //!
 //! Spec ref: FORMAL_SPEC.md §4 FR-007
+//!
+//! # Design summary
+//!
+//! [`ContractCaller`] holds a deployed-contract address and a parsed
+//! [`alloy_json_abi::JsonAbi`].  Two call modes are exposed:
+//!
+//! - **Read** ([`ContractCaller::call`]) — ABI-encodes the selector + args,
+//!   sends `eth_call`, and ABI-decodes the return data into [`DynSolValue`]s.
+//!
+//! - **Write** ([`ContractCaller::send`]) — same encoding, then builds an
+//!   EIP-1559 transaction, signs it with the provided [`EthSigner`], and
+//!   broadcasts via [`Broadcaster`].
+//!
+//! Function overloading is resolved by iterating the ABI's overloads for the
+//! requested name and selecting the first whose input types accept the given
+//! argument vector.
+
+use alloy_dyn_abi::{DynSolValue, FunctionExt, JsonAbiExt};
+use alloy_json_abi::JsonAbi;
+use alloy_primitives::{Address, Bytes};
+use alloy_rpc_types::{TransactionInput, TransactionRequest};
+use thiserror::Error;
+use tracing::info_span;
+
+use crate::{
+    rpc::RpcClient,
+    signer::EthSigner,
+    tx::{BroadcastConfig, Broadcaster, TxBuilder},
+};
+
+// ── Error type ────────────────────────────────────────────────────────────────
+
+/// Errors produced by the contract caller.
+#[derive(Debug, Error)]
+pub enum ContractError {
+    /// The ABI defines no function with the requested name.
+    #[error("function not found in ABI: {0}")]
+    AbiNotFound(String),
+
+    /// ABI encoding or decoding failed.
+    #[error("ABI codec error: {0}")]
+    AbiDecodeError(String),
+
+    /// The call reverted on-chain.
+    #[error("call reverted: {0}")]
+    CallReverted(String),
+
+    /// The supplied ABI JSON cannot be parsed.
+    #[error("invalid ABI JSON: {0}")]
+    InvalidAbiJson(String),
+
+    /// An RPC error occurred during the call or send.
+    #[error("RPC error: {0}")]
+    RpcError(String),
+
+    /// Transaction building, signing, or broadcasting failed.
+    #[error("transaction error: {0}")]
+    TxError(String),
+}
+
+// ── ContractCaller ────────────────────────────────────────────────────────────
+
+/// An ABI-aware caller for a deployed Ethereum contract.
+///
+/// # Example
+/// ```no_run
+/// # #[tokio::main] async fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// use eth_node::contract::ContractCaller;
+/// use eth_node::rpc::RpcClient;
+/// use alloy_dyn_abi::DynSolValue;
+///
+/// let abi_json = r#"[{"name":"balanceOf","type":"function",
+///   "inputs":[{"name":"account","type":"address"}],
+///   "outputs":[{"name":"","type":"uint256"}],
+///   "stateMutability":"view"}]"#;
+///
+/// let address = "0x6B175474E89094C44Da98b954EedeAC495271d0F".parse().unwrap();
+/// let client = RpcClient::new("http://127.0.0.1:8545")?;
+/// let caller = ContractCaller::new(address, abi_json)?;
+///
+/// let user: alloy_primitives::Address = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045".parse().unwrap();
+/// let tokens = caller.call("balanceOf", &[DynSolValue::Address(user)], &client).await?;
+/// println!("{tokens:#?}");
+/// # Ok(()) }
+/// ```
+#[derive(Debug, Clone)]
+pub struct ContractCaller {
+    address: Address,
+    abi: JsonAbi,
+}
+
+impl ContractCaller {
+    /// Create a new caller for the contract at `address` with the given ABI JSON.
+    ///
+    /// # Errors
+    /// Returns [`ContractError::InvalidAbiJson`] if `abi_json` is not valid
+    /// Solidity ABI JSON.
+    pub fn new(address: Address, abi_json: &str) -> Result<Self, ContractError> {
+        let abi = serde_json::from_str::<JsonAbi>(abi_json)
+            .map_err(|e: serde_json::Error| ContractError::InvalidAbiJson(e.to_string()))?;
+        Ok(Self { address, abi })
+    }
+
+    // ── Read call ─────────────────────────────────────────────────────────
+
+    /// Execute a read-only contract call (`eth_call`) and decode the return
+    /// data.
+    ///
+    /// Overloaded functions are resolved by selecting the first overload whose
+    /// parameter types accept the given `args` vector.
+    ///
+    /// # Errors
+    /// - [`ContractError::AbiNotFound`] — function not in ABI.
+    /// - [`ContractError::AbiDecodeError`] — encoding or decoding failure.
+    /// - [`ContractError::CallReverted`] — the call reverted on-chain.
+    /// - [`ContractError::RpcError`] — transport-level failure.
+    pub async fn call(
+        &self,
+        fn_name: &str,
+        args: &[DynSolValue],
+        client: &RpcClient,
+    ) -> Result<Vec<DynSolValue>, ContractError> {
+        let _span =
+            info_span!("contract_call", function = fn_name, address = %self.address).entered();
+
+        let func = self.resolve_function(fn_name, args)?;
+        let encoded = func
+            .abi_encode_input(args)
+            .map_err(|e| ContractError::AbiDecodeError(e.to_string()))?;
+
+        let req = TransactionRequest::default()
+            .to(self.address)
+            .input(TransactionInput::new(Bytes::from(encoded)));
+
+        let raw = client.call(req).await.map_err(|e| {
+            let msg = e.to_string();
+            if msg.to_lowercase().contains("revert") {
+                ContractError::CallReverted(msg)
+            } else {
+                ContractError::RpcError(msg)
+            }
+        })?;
+
+        func.abi_decode_output(&raw, true)
+            .map_err(|e: alloy_dyn_abi::Error| ContractError::AbiDecodeError(e.to_string()))
+    }
+
+    // ── Write call ────────────────────────────────────────────────────────
+
+    /// Build → sign → broadcast a state-changing contract call.
+    ///
+    /// Returns the confirmed [`TransactionReceipt`].
+    ///
+    /// # Errors
+    /// - [`ContractError::AbiNotFound`] — function not in ABI.
+    /// - [`ContractError::AbiDecodeError`] — argument encoding failure.
+    /// - [`ContractError::TxError`] — build, sign, or broadcast failure.
+    pub async fn send(
+        &self,
+        fn_name: &str,
+        args: &[DynSolValue],
+        signer: &EthSigner,
+        client: &RpcClient,
+        config: Option<BroadcastConfig>,
+    ) -> Result<alloy_rpc_types::TransactionReceipt, ContractError> {
+        let _span =
+            info_span!("contract_send", function = fn_name, address = %self.address).entered();
+
+        let func = self.resolve_function(fn_name, args)?;
+        let encoded = func
+            .abi_encode_input(args)
+            .map_err(|e| ContractError::AbiDecodeError(e.to_string()))?;
+
+        let chain_id = client
+            .chain_id()
+            .await
+            .map_err(|e| ContractError::RpcError(e.to_string()))?;
+
+        let builder = TxBuilder::new(chain_id, signer.address(), self.address)
+            .data(Bytes::from(encoded));
+
+        let unsigned = builder
+            .build(client)
+            .await
+            .map_err(|e| ContractError::TxError(e.to_string()))?;
+
+        let signed = signer
+            .sign(unsigned)
+            .map_err(|e| ContractError::TxError(e.to_string()))?;
+
+        let broadcaster = config.map(Broadcaster::with_config).unwrap_or_default();
+        broadcaster
+            .send(&signed, client)
+            .await
+            .map_err(|e| ContractError::TxError(e.to_string()))
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────
+
+    /// Find the first function overload that accepts `args`.
+    ///
+    /// Overloads are tried in definition order.  If no overload matches,
+    /// returns [`ContractError::AbiDecodeError`] (wrong argument types).
+    fn resolve_function(
+        &self,
+        fn_name: &str,
+        args: &[DynSolValue],
+    ) -> Result<&alloy_json_abi::Function, ContractError> {
+        let overloads = self
+            .abi
+            .function(fn_name)
+            .ok_or_else(|| ContractError::AbiNotFound(fn_name.to_string()))?;
+
+        overloads
+            .iter()
+            .find(|f| {
+                f.inputs.len() == args.len() && f.abi_encode_input(args).is_ok()
+            })
+            .ok_or_else(|| {
+                ContractError::AbiDecodeError(format!(
+                    "no overload of `{fn_name}` accepts the given argument types"
+                ))
+            })
+    }
+}
+
+// ── Unit tests ────────────────────────────────────────────────────────────────
+
+#[cfg(test)]
+mod tests {
+    use alloy_dyn_abi::DynSolValue;
+    use alloy_primitives::{Address, U256};
+
+    use super::*;
+
+    const ADDR: Address = Address::ZERO;
+
+    const BALANCE_OF_ABI: &str = r#"[{
+        "name": "balanceOf",
+        "type": "function",
+        "inputs": [{"name": "account", "type": "address"}],
+        "outputs": [{"name": "", "type": "uint256"}],
+        "stateMutability": "view"
+    }]"#;
+
+    const OVERLOADED_ABI: &str = r#"[
+        {"name":"transfer","type":"function",
+         "inputs":[{"name":"to","type":"address"},{"name":"value","type":"uint256"}],
+         "outputs":[{"name":"","type":"bool"}],"stateMutability":"nonpayable"},
+        {"name":"transfer","type":"function",
+         "inputs":[{"name":"to","type":"address"},{"name":"value","type":"uint256"},
+                   {"name":"data","type":"bytes"}],
+         "outputs":[{"name":"","type":"bool"}],"stateMutability":"nonpayable"}
+    ]"#;
+
+    #[test]
+    fn new_succeeds_with_valid_abi() {
+        ContractCaller::new(ADDR, BALANCE_OF_ABI).expect("valid ABI");
+    }
+
+    #[test]
+    fn new_rejects_invalid_json() {
+        let err = ContractCaller::new(ADDR, "not json{{{").expect_err("should fail");
+        assert!(matches!(err, ContractError::InvalidAbiJson(_)));
+    }
+
+    #[test]
+    fn resolve_function_not_found() {
+        let caller = ContractCaller::new(ADDR, BALANCE_OF_ABI).unwrap();
+        let err = caller
+            .resolve_function("nonexistent", &[])
+            .expect_err("should not find");
+        assert!(matches!(err, ContractError::AbiNotFound(_)));
+    }
+
+    #[test]
+    fn resolve_function_finds_correct_overload() {
+        let caller = ContractCaller::new(ADDR, OVERLOADED_ABI).unwrap();
+
+        // 2-arg overload
+        let f2 = caller
+            .resolve_function(
+                "transfer",
+                &[
+                    DynSolValue::Address(Address::ZERO),
+                    DynSolValue::Uint(U256::from(1u64), 256),
+                ],
+            )
+            .expect("2-arg overload");
+        assert_eq!(f2.inputs.len(), 2);
+
+        // 3-arg overload
+        let f3 = caller
+            .resolve_function(
+                "transfer",
+                &[
+                    DynSolValue::Address(Address::ZERO),
+                    DynSolValue::Uint(U256::from(1u64), 256),
+                    DynSolValue::Bytes(vec![]),
+                ],
+            )
+            .expect("3-arg overload");
+        assert_eq!(f3.inputs.len(), 3);
+    }
+
+    #[test]
+    fn error_display_messages() {
+        assert!(ContractError::AbiNotFound("foo".into()).to_string().contains("foo"));
+        assert!(ContractError::CallReverted("boom".into())
+            .to_string()
+            .contains("boom"));
+        assert!(ContractError::InvalidAbiJson("bad".into())
+            .to_string()
+            .contains("bad"));
+    }
+}
+

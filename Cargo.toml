@@ -18,6 +18,8 @@ alloy-network = "0.12"
 alloy-sol-types = "0.8"
 alloy-rpc-types = "0.12"
 alloy-rlp = "0.3"
+alloy-json-abi = "0.8"
+alloy-dyn-abi = "0.8"
 
 # Byte buffers (used by alloy-rlp byte-string decode)
 bytes = "1"

@@ -1397,6 +1397,8 @@ version = "0.1.0"
 dependencies = [
  "alloy-consensus",
  "alloy-core",
+ "alloy-dyn-abi",
+ "alloy-json-abi",
  "alloy-network",
  "alloy-primitives",
  "alloy-provider",
