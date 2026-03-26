@@ -997,6 +997,21 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
 - Blockers: None
 - Next step: Commit T-000; then begin T-001 (Ethereum Primitives, red-green-refactor, alloy-primitives integration)
 
+## 2026-03-26 Status Snapshot — T-001 Complete
+
+- Timestamp: 2026-03-26
+- Current stage: Stage 4 — Build
+- Active task: T-002 (Anvil integration test fixture) — IN PROGRESS
+- T-001 completed:
+  - 23 unit tests, all passing: Address parsing, U256 arithmetic, ABI (uint256/address/bool/bytes32/string/tuple), RLP (u64/bytes/nested list)
+  - Known vectors verified (uint256(1)=0x000..01, RLP(0)=0x80, RLP(1)=0x01)
+  - bytes=1 and alloy-rlp=0.3 added to workspace deps
+  - Key discovery: Vec<u8> decodes RLP as list; use bytes::Bytes for byte-string decode
+  - CHR-001-primitives.md: Final
+  - clippy -D warnings: clean
+  - Committed: 79e3180
+- Next step: T-002 — AnvilInstance subprocess fixture (Developer in Test)
+
 ## 2026-03-20 Status Snapshot 076
 
 - Timestamp: 2026-03-20

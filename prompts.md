@@ -423,6 +423,14 @@ Is there a way to indicate that now this repo is for a real software projet vs w
 
 yes
 
+### 2026-03-26 — Session resumed (post token-budget)
+
+**Prompt (session continuation):** [Agent resumed from conversation summary; T-000 was ~60% complete]
+
+go ahead [T-001 approval]
+
+save your state, commit and push, then go ahead [T-002 instruction]
+
 ### Prompt 096
 leave it out
 
