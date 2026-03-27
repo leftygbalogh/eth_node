@@ -593,6 +593,7 @@ All five commands work:
   1000000000000000000
 
 # Check transaction status
+# Replace 0x43aa... with the transaction hash printed by the `send` command above.
 ./scripts/capture-session.sh tx-status 0x43aab2ff75b7c9b2a3a345de2e2de2ae41ea6ea8a62c8aa5bef4c3b7a24c7421
 
 # Call a contract (ABI file auto-provisioned from config/)
