@@ -211,3 +211,112 @@ pub fn simulate_tx(
     }
 }
 
+/// Simulate read-only contract call using revm.
+///
+/// Executes a static call (like eth_call) without modifying state.
+///
+/// # Arguments
+/// - `contract_address`: Target contract address.
+/// - `calldata`: ABI-encoded function call.
+/// - `context`: SimulationContext for block environment.
+///
+/// # Returns
+/// - `Ok(Bytes)` with ABI-encoded return data if call succeeds.
+/// - `Err(ExecutorError::InvalidInput)` if calldata is invalid.
+/// - `Err(ExecutorError::RevmFailure)` if call reverts or halts.
+///
+/// # Example
+/// ```ignore
+/// // Call ERC-20 balanceOf(address)
+/// let selector = hex::decode("70a08231").unwrap();
+/// let account_bytes = account.as_slice();
+/// let mut calldata = selector;
+/// calldata.extend_from_slice(&[0u8; 12]); // Pad to 32 bytes
+/// calldata.extend_from_slice(account_bytes);
+///
+/// let result = simulate_contract_call(token_address, Bytes::from(calldata), &context)?;
+/// // Decode result as uint256
+/// ```
+pub fn simulate_contract_call(
+    contract_address: Address,
+    calldata: Bytes,
+    context: &SimulationContext,
+) -> Result<Bytes, ExecutorError> {
+    // Validate calldata (must be at least 4 bytes for function selector)
+    if calldata.len() < 4 {
+        return Err(ExecutorError::InvalidInput(format!(
+            "calldata too short: {} bytes (minimum 4 for selector)",
+            calldata.len()
+        )));
+    }
+
+    // Initialize revm with in-memory database
+    let mut cache_db = CacheDB::new(EmptyDB::default());
+
+    // Ensure contract account exists
+    // Note: In Phase 2 we use empty code; Phase 3 will load actual contract code
+    // via StateProvider. For now, calls to empty contracts will return empty data.
+    cache_db.insert_account_info(
+        contract_address,
+        AccountInfo {
+            balance: U256::ZERO,
+            nonce: 0,
+            ..Default::default()
+        },
+    );
+
+    // Static call from zero address (standard for eth_call)
+    let caller = Address::ZERO;
+
+    // Build transaction environment for static call
+    let tx_env = TxEnv {
+        caller,
+        transact_to: TransactTo::Call(contract_address),
+        value: U256::ZERO, // Static calls have no value
+        data: calldata.clone(),
+        gas_limit: 30_000_000, // High limit for read calls
+        gas_price: U256::ZERO, // No cost for static calls
+        nonce: None,           // Static calls don't increment nonce
+        ..Default::default()
+    };
+
+    // Build environment
+    let mut env = Env::default();
+    env.block = context.clone().into();
+    env.tx = tx_env;
+
+    // Execute static call
+    let mut evm = Evm::builder()
+        .with_db(cache_db)
+        .with_env(Box::new(env))
+        .build();
+
+    let result = evm.transact().map_err(|e| {
+        ExecutorError::RevmFailure(format!("contract call execution failed: {:?}", e))
+    })?;
+
+    // Map result
+    match result.result {
+        RevmExecutionResult::Success { output, .. } => {
+            let return_data = match output {
+                Output::Call(data) => data,
+                Output::Create(_, _) => {
+                    return Err(ExecutorError::InvalidInput(
+                        "static call should not create contract".into(),
+                    ))
+                }
+            };
+            Ok(return_data)
+        }
+        RevmExecutionResult::Revert { output, .. } => Err(ExecutorError::RevmFailure(format!(
+            "contract call reverted: {}",
+            alloy_primitives::hex::encode(&output)
+        ))),
+        RevmExecutionResult::Halt { reason, .. } => Err(ExecutorError::RevmFailure(format!(
+            "contract call halted: {:?}",
+            reason
+        ))),
+    }
+}
+
+
