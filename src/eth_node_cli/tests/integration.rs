@@ -358,3 +358,41 @@ fn test_dump_state_flag_accepted_after_subcommand() {
         String::from_utf8_lossy(&out.stderr)
     );
 }
+
+/// Regression test (S5-D3 / Claire Voyant fix): --abi-file must be accepted
+/// and load ABI from a file, avoiding PowerShell shell-quoting issues.
+///
+/// Writes a minimal ABI JSON to a temp file, passes it via --abi-file,
+/// confirms no Clap parse error (exit 2 = arg rejected) and no panic.
+/// A transport error (no server on port 19999) is expected and acceptable.
+#[test]
+fn test_cli_call_accepts_abi_file() {
+    use std::io::Write;
+    let abi_json = r#"[{"name":"balanceOf","type":"function","inputs":[{"name":"account","type":"address"}],"outputs":[{"name":"","type":"uint256"}],"stateMutability":"view"}]"#;
+    let path = std::env::temp_dir().join("test_abi_file.json");
+    std::fs::File::create(&path)
+        .and_then(|mut f| f.write_all(abi_json.as_bytes()))
+        .expect("write temp abi file");
+
+    let out = binary()
+        .args([
+            "--endpoint",
+            "http://127.0.0.1:19999",
+            "call",
+            "--abi-file",
+            path.to_str().unwrap(),
+            "0x0000000000000000000000000000000000000000",
+            "balanceOf",
+            ANVIL_ADDR_0,
+        ])
+        .output()
+        .expect("run binary");
+
+    let code = out.status.code().unwrap_or(99);
+    assert_ne!(
+        code, 2,
+        "--abi-file must parse correctly (exit 2 = Clap reject)\nstderr: {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let _ = std::fs::remove_file(&path);
+}

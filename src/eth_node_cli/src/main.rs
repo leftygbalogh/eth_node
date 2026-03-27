@@ -95,9 +95,15 @@ enum Commands {
         /// Function arguments (parsed as address, uint256, bool, bytes, or string).
         args: Vec<String>,
 
-        /// ABI JSON (single-function fragment or full ABI array).
-        #[arg(long, value_name = "JSON")]
-        abi: String,
+        /// ABI as an inline JSON string.
+        /// Tip: if your shell mangles the quotes, use --abi-file instead.
+        #[arg(long, value_name = "JSON", conflicts_with = "abi_file")]
+        abi: Option<String>,
+
+        /// Path to a file containing the ABI JSON.
+        /// Avoids shell-quoting problems with inline JSON on Windows/PowerShell.
+        #[arg(long, value_name = "PATH", conflicts_with = "abi")]
+        abi_file: Option<PathBuf>,
     },
 
     /// Print the receipt for a transaction, or "pending" if not yet mined.
@@ -144,8 +150,9 @@ async fn run(cli: &Cli) -> Result<Value, String> {
         Commands::Watch { contract, event } => {
             cmd_watch(contract, event.as_deref(), &cli.endpoint).await
         }
-        Commands::Call { contract, function, args, abi } => {
-            cmd_call(contract, function, args, abi, &client).await
+        Commands::Call { contract, function, args, abi, abi_file } => {
+            let abi_json = resolve_abi(abi.as_deref(), abi_file.as_deref())?;
+            cmd_call(contract, function, args, &abi_json, &client).await
         }
         Commands::TxStatus { hash } => cmd_tx_status(hash, &client).await,
     }
@@ -283,6 +290,20 @@ async fn cmd_watch(
     }
 
     Ok(json!({ "contract": contract, "events_received": count }))
+}
+
+/// Resolve the ABI JSON from either `--abi` (inline string) or `--abi-file` (path).
+///
+/// Returns an error if neither is provided or the file cannot be read.
+fn resolve_abi(abi: Option<&str>, abi_file: Option<&std::path::Path>) -> Result<String, String> {
+    if let Some(json) = abi {
+        return Ok(json.to_owned());
+    }
+    if let Some(path) = abi_file {
+        return std::fs::read_to_string(path)
+            .map_err(|e| format!("cannot read --abi-file {}: {e}", path.display()));
+    }
+    Err("one of --abi or --abi-file is required".to_owned())
 }
 
 async fn cmd_call(
