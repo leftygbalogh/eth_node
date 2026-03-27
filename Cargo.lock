@@ -1444,6 +1444,7 @@ dependencies = [
  "async-stream",
  "bytes",
  "futures",
+ "hex",
  "proptest",
  "revm",
  "serde",

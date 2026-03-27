@@ -5,4 +5,4 @@
 
 pub mod simulate;
 
-pub use simulate::{ExecutorError, SimulationResult};
+pub use simulate::{simulate_tx, ExecutorError, SimulationContext, SimulationResult};

@@ -57,3 +57,4 @@ futures = "0.3"
 # Testing
 tokio-test = "0.4"
 proptest = "1"
+hex = "0.4"

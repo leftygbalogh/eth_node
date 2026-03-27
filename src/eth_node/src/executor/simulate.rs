@@ -3,6 +3,17 @@
 //! Provides simulate_tx() for full transaction execution and simulate_contract_call() for read-only calls.
 //! See PHASE2_FORMAL_SPEC.md FR-001 for behavioral contracts.
 
+use alloy_primitives::{Address, Bytes, TxKind, U256};
+use alloy_rpc_types::TransactionRequest;
+use revm::{
+    db::{CacheDB, EmptyDB},
+    primitives::{
+        AccountInfo, BlockEnv, Env, ExecutionResult as RevmExecutionResult, Output, TxEnv,
+        TransactTo,
+    },
+    Evm,
+};
+use std::collections::HashMap;
 use thiserror::Error;
 
 /// Executor-specific errors.
@@ -22,8 +33,29 @@ pub enum ExecutorError {
     Context {
         message: String,
         /// Optional fields for debugging (e.g., block number, tx hash, gas used).
-        context: std::collections::HashMap<String, String>,
+        context: HashMap<String, String>,
     },
+}
+
+/// Simulation context (decouples from revm BlockEnv per architect recommendation R1).
+#[derive(Debug, Clone)]
+pub struct SimulationContext {
+    pub block_number: u64,
+    pub timestamp: u64,
+    pub base_fee_per_gas: Option<u64>,
+    pub gas_limit: u64,
+}
+
+impl From<SimulationContext> for BlockEnv {
+    fn from(ctx: SimulationContext) -> Self {
+        BlockEnv {
+            number: U256::from(ctx.block_number),
+            timestamp: U256::from(ctx.timestamp),
+            basefee: U256::from(ctx.base_fee_per_gas.unwrap_or(0)),
+            gas_limit: U256::from(ctx.gas_limit),
+            ..Default::default()
+        }
+    }
 }
 
 /// Result of transaction simulation.
@@ -32,9 +64,9 @@ pub struct SimulationResult {
     /// Gas used by the transaction.
     pub gas_used: u64,
     /// Return data (empty for transfers, ABI-encoded for contract calls).
-    pub return_data: Vec<u8>,
-    /// Emitted logs.
-    pub logs: Vec<String>, // Placeholder; will use proper Log type in T-002
+    pub return_data: Bytes,
+    /// Emitted logs (raw revm logs).
+    pub logs: Vec<revm::primitives::Log>,
     /// Success flag (true if execution succeeded, false if reverted).
     pub success: bool,
 }
@@ -42,8 +74,8 @@ pub struct SimulationResult {
 /// Simulate transaction execution using revm.
 ///
 /// # Arguments
-/// - `tx`: Transaction to simulate (alloy types TBD in T-002).
-/// - `block_env`: Block environment (number, timestamp, base fee).
+/// - `tx`: TransactionRequest to simulate (from alloy).
+/// - `context`: SimulationContext with block number, timestamp, base fee, gas limit.
 ///
 /// # Returns
 /// - `Ok(SimulationResult)` if simulation completes (even if tx reverts).
@@ -51,14 +83,131 @@ pub struct SimulationResult {
 ///
 /// # Example
 /// ```ignore
-/// // T-002: Example will be completed during implementation
-/// let result = simulate_tx(&tx, &block_env)?;
+/// use eth_node::executor::{simulate_tx, SimulationContext};
+/// use alloy_rpc_types::TransactionRequest;
+/// use alloy_primitives::{Address, U256};
+///
+/// let tx = TransactionRequest {
+///     from: Some(Address::ZERO),
+///     to: Some(Address::ZERO.into()),
+///     value: Some(U256::from(1000)),
+///     ..Default::default()
+/// };
+/// let context = SimulationContext {
+///     block_number: 1,
+///     timestamp: 1710000000,
+///     base_fee_per_gas: Some(10),
+///     gas_limit: 30_000_000,
+/// };
+/// let result = simulate_tx(&tx, &context)?;
 /// assert!(result.success);
 /// ```
 pub fn simulate_tx(
-    _tx: (), // Placeholder; T-002 will use proper alloy transaction type
-    _block_env: (), // Placeholder; T-002 will use revm BlockEnv
+    tx: &TransactionRequest,
+    context: &SimulationContext,
 ) -> Result<SimulationResult, ExecutorError> {
-    // T-002: Implementation placeholder
-    unimplemented!("T-002: Transaction simulation not yet implemented")
+    // Validate required fields
+    let from = tx
+        .from
+        .ok_or_else(|| ExecutorError::InvalidInput("missing 'from' address".into()))?;
+    let gas_limit = tx
+        .gas
+        .ok_or_else(|| ExecutorError::InvalidInput("missing 'gas' limit".into()))?;
+
+    if gas_limit == 0 {
+        return Err(ExecutorError::InvalidInput("gas limit cannot be zero".into()));
+    }
+
+    // Initialize revm with in-memory database
+    let mut cache_db = CacheDB::new(EmptyDB::default());
+
+    // Fund sender account (for testing; Phase 3 will use proper state provider)
+    let sender_balance = U256::from(1_000_000_000_000_000_000_u128); // 1 ETH in wei
+    cache_db.insert_account_info(
+        from,
+        AccountInfo {
+            balance: sender_balance,
+            nonce: tx.nonce.unwrap_or(0),
+            ..Default::default()
+        },
+    );
+
+    // If deploying or calling a contract, ensure target account exists
+    if let Some(TxKind::Call(to)) = tx.to {
+        // For contract calls, ensure target exists (empty account is fine)
+        if !cache_db.accounts.contains_key(&to) {
+            cache_db.insert_account_info(
+                to,
+                AccountInfo {
+                    balance: U256::ZERO,
+                    nonce: 0,
+                    ..Default::default()
+                },
+            );
+        }
+    }
+
+    // Build transaction environment
+    let tx_env = TxEnv {
+        caller: from,
+        transact_to: match tx.to {
+            Some(TxKind::Call(addr)) => TransactTo::Call(addr),
+            Some(TxKind::Create) | None => TransactTo::Create,
+        },
+        value: tx.value.unwrap_or(U256::ZERO),
+        data: tx.input.input().cloned().unwrap_or_default(),
+        gas_limit: gas_limit,
+        gas_price: U256::from(tx.gas_price.unwrap_or(0)),
+        nonce: tx.nonce,
+        ..Default::default()
+    };
+
+    // Build environment
+    let mut env = Env::default();
+    env.block = context.clone().into();
+    env.tx = tx_env;
+
+    // Execute transaction
+    let mut evm = Evm::builder()
+        .with_db(cache_db)
+        .with_env(Box::new(env))
+        .build();
+
+    let result = evm
+        .transact()
+        .map_err(|e| ExecutorError::RevmFailure(format!("transaction execution failed: {:?}", e)))?;
+
+    // Map revm result to SimulationResult
+    match result.result {
+        RevmExecutionResult::Success {
+            gas_used,
+            logs,
+            output,
+            ..
+        } => {
+            let return_data = match output {
+                Output::Call(data) => data,
+                Output::Create(data, _) => data,
+            };
+            Ok(SimulationResult {
+                gas_used,
+                return_data,
+                logs,
+                success: true,
+            })
+        }
+        RevmExecutionResult::Revert { gas_used, output } => Ok(SimulationResult {
+            gas_used,
+            return_data: output,
+            logs: Vec::new(),
+            success: false,
+        }),
+        RevmExecutionResult::Halt { reason, gas_used } => {
+            Err(ExecutorError::RevmFailure(format!(
+                "transaction halted: {:?}, gas used: {}",
+                reason, gas_used
+            )))
+        }
+    }
 }
+
