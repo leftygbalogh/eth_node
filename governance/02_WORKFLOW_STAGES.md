@@ -251,6 +251,13 @@ Definition of done:
 - Pair-programming session log (if applicable) is audited for each task: proposal, critique, decision, and linked evidence are complete; unresolved disagreements are listed as blockers.
 - Escaped-defect check: any defect discovered during Stage 5 must be converted into a permanent regression test and linked process/spec improvement before Stage 5 closes.
 - Per-fix commit cadence is enforced during Stage 5: after each individual fix is verified, save all related files and create a dedicated fix commit before the next manual/exploratory test pass or before starting another fix.
+- **Defect TDD red-gate protocol (FB-005, FB-006):** For every reported defect — including setup gaps, missing fixtures, and configuration errors — the following sequence is mandatory with no exceptions:
+  1. Write a locked regression test that reproduces the defect. No assertion changes after the first run.
+  2. Run the test twice. Both runs must produce identical FAILs. If the first run unexpectedly passes, treat this as a test design failure: stop, diagnose, rewrite the test, and restart the two-run red sequence.
+  3. Apply the fix only after two consecutive identical FAILs.
+  4. Run the internal test suite to confirm green.
+  5. Re-run the exact user-reported scenario (not just the unit test) twice. Both runs must exit 0. A single pass or a different-error exit is not sufficient to declare the fix complete.
+  6. Commit only after step 5 is satisfied.
 - For any system integrating with external data sources, the live E2E acceptance criteria include a non-empty data assertion: at least one real data record is present in the output from at least one live integration point. A structurally valid but empty result is a failure unless empty output is explicitly the expected scenario for that test. If live credentials or access are unavailable, the gap is documented with a named owner and follow-up trigger — not recorded as a pass.
 - For projects using a compiled or packaged build step, a fresh rebuild from HEAD is completed immediately before every live E2E run or exploratory test handover. The artifact timestamp must post-date the last commit. Running a live test against a stale artifact invalidates the result.
 

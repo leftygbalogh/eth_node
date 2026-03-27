@@ -52,6 +52,16 @@
       "observation": "When writing a regression test for a defect, the agent updated the test assertions mid-run after an unexpected PASS, producing the sequence: write test → PASS (too weak) → update assertions → FAIL → FAIL → fix → PASS. The required TDD sequence is: write test → FAIL → FAIL → fix → PASS → PASS. Updating assertions after a false green breaks the red-gate guarantee and means the test was not actually characterising the defect before the fix.",
       "suggestion": "Add an explicit rule to the Stage 5 defect protocol: 'The regression test must be locked (no assertion changes) before the first run. If the first run produces an unexpected PASS, treat this as a test design failure — stop, diagnose why the test did not catch the defect, rewrite the test, and restart the two-run red sequence from the beginning. The fix may only begin after two consecutive identical FAILs with no changes to the test between them.'",
       "priority": "high"
+    },
+    {
+      "id": "FB-006",
+      "source": "Exploratory Tester / Stage 5 session 2026-03-27",
+      "type": "process-improvement",
+      "target": "governance/02_WORKFLOW_STAGES.md",
+      "section": "Stage 5 — Verify: defect TDD protocol",
+      "observation": "The agent skipped the FAIL×2 red-gate entirely for Test #4 (missing ABI file), classifying it as a 'setup gap' rather than a defect and going straight to the fix. The protocol applies regardless of root cause category — code bug, missing fixture, or configuration error. Additionally, after applying the fix the agent ran the scenario only once before declaring success, and that single run still exited 1 (different error). The green-gate requires two consecutive clean passes of the exact user scenario, not just internal tests passing.",
+      "suggestion": "Add two explicit rules to the Stage 5 defect protocol: (1) The FAIL×2 red-gate is mandatory for every reported defect, including setup gaps, missing fixtures, and configuration errors — root cause category does not exempt the run. (2) The green-gate requires the exact user-reported scenario to be re-run twice and exit 0 both times before the fix is declared complete. Internal test-suite green is necessary but not sufficient.",
+      "priority": "high"
     }
   ]
 }
