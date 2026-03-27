@@ -133,6 +133,25 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
 
 ---
 
+## 2026-03-27 Status Snapshot (session close — Stage 5 gap fixes)
+
+- Timestamp: 2026-03-27
+- Current stage: Stage 5 — Verify (IN PROGRESS; gap remediation complete; V-002 through V-010 not yet run)
+- Last commit: `b279ec7` — session close state snapshot pushed to origin/master
+- Previous build commit: `a1956af` — S5 gap fixes (all 4 gaps resolved)
+- Tests: 128 total, all passing
+- Completed this session:
+  - Gap-001: CHR-004 through CHR-008 chronicle stubs filled with real implementation decisions
+  - Gap-002: `#[tracing::instrument]` added to all 13 public async methods in `rpc.rs`
+  - Gap-003: Integration tests for `send`, `watch`, `call` CLI subcommands added to `integration.rs`
+  - Gap-005: `event_selector` moved from CLI `main.rs` to `eth_node::primitives`; CLI updated to call library function
+  - Gap-004: Formally deferred — proptest accepted as proportionate substitute; recorded in CHR-008
+- Open questions: None
+- Blockers: None
+- Next step: V-002 (Exploratory Tester) → V-003 (Readability Reviewer) → V-004 through V-010 → Team Lead integrates reports → Lefty gives explicit Stage 5 gate approval → Stage 6
+
+---
+
 ## 2026-03-26 Status Snapshot (session close)
 
 - Timestamp: 2026-03-26
@@ -1297,10 +1316,10 @@ Next step: None pending.
 - Blockers: None.
 - Next step: Review wording with Lefty and commit when approved.
 
-## 2026-03-27 Status Snapshot � Stage 5 Gap Fixes Applied
+## 2026-03-27 Status Snapshot � Stage 5 Gap Fixes Applied
 
 - Timestamp: 2026-03-27
-- Current stage: Stage 5 � Verify (gap fixes complete, awaiting approval)
+- Current stage: Stage 5 � Verify (gap fixes complete, awaiting approval)
 - Completed since last update:
   - Gap-001 (BLOCKER): Filled CHR-004 through CHR-008 with real implementation content
   - Gap-002 (BLOCKER): Added #[tracing::instrument] to all 13 public async methods in rpc.rs
@@ -1316,10 +1335,10 @@ Next step: None pending.
 - Tests: 128 total (79 unit + 24 integration + 11 CLI integration + 8 CLI unit + 6 doc-tests), all passing
 - Next step: Commit/push, then V-002 through V-010 verification activities
 
-## 2026-03-27 Status Snapshot � Session Close
+## 2026-03-27 Status Snapshot � Session Close
 
 - Timestamp: 2026-03-27
-- Current stage: Stage 5 � Verify (gap fixes complete; V-002 through V-010 pending)
+- Current stage: Stage 5 � Verify (gap fixes complete; V-002 through V-010 pending)
 - Completed this session:
   - Gap-001 (BLOCKER resolved): CHR-004 through CHR-008 filled with real content
   - Gap-002 (BLOCKER resolved): #[tracing::instrument] on all 13 public async methods in rpc.rs
@@ -1328,7 +1347,7 @@ Next step: None pending.
   - Gap-004: formally deferred (proptest is proportionate substitute)
   - 128 tests passing (was 124)
   - Commit a1956af pushed to origin/master
-- In progress: Nothing � clean working tree
+- In progress: Nothing � clean working tree
 - Open questions: None
 - Blockers: None
 - Next step: Resume Stage 5 verification (V-002 through V-010), then request Stage 5 gate approval from Team Lead
