@@ -1315,3 +1315,20 @@ Next step: None pending.
 - Blockers: None
 - Tests: 128 total (79 unit + 24 integration + 11 CLI integration + 8 CLI unit + 6 doc-tests), all passing
 - Next step: Commit/push, then V-002 through V-010 verification activities
+
+## 2026-03-27 Status Snapshot — Session Close
+
+- Timestamp: 2026-03-27
+- Current stage: Stage 5 — Verify (gap fixes complete; V-002 through V-010 pending)
+- Completed this session:
+  - Gap-001 (BLOCKER resolved): CHR-004 through CHR-008 filled with real content
+  - Gap-002 (BLOCKER resolved): #[tracing::instrument] on all 13 public async methods in rpc.rs
+  - Gap-003 (WARNING resolved): 3 CLI integration tests added (send/watch/call)
+  - Gap-005 (WARNING resolved): event_selector moved from CLI to eth_node::primitives
+  - Gap-004: formally deferred (proptest is proportionate substitute)
+  - 128 tests passing (was 124)
+  - Commit a1956af pushed to origin/master
+- In progress: Nothing — clean working tree
+- Open questions: None
+- Blockers: None
+- Next step: Resume Stage 5 verification (V-002 through V-010), then request Stage 5 gate approval from Team Lead
