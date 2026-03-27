@@ -397,23 +397,27 @@ fn test_cli_call_accepts_abi_file() {
     let _ = std::fs::remove_file(&path);
 }
 
-/// Test #2 (S5-exploratory): malformed address gives a human-readable error.
+/// Test #2 (S5-exploratory): malformed address gives a human-readable error
+/// that tells the user what was actually wrong with their specific input.
 ///
-/// When the user passes a malformed address (e.g. just "0x" — obviously too
-/// short), the CLI should exit 1 and print a message that:
-///   - explains the address is invalid, AND
-///   - tells the user what a valid address looks like (starts with 0x, 42 chars)
+/// Input: "0xDEADBEEF" — starts with 0x (correct prefix), contains valid hex,
+/// but is only 10 characters instead of the required 42.
+/// This mirrors the real user mistake: a plausible-looking but too-short address.
 ///
-/// Currently the CLI emits the raw alloy hex-decode error which gives no
-/// actionable guidance. This test is locked before first run per TDD protocol.
+/// The error must tell the user the actual length of what they provided,
+/// so they know exactly what to fix — not just a generic format hint.
+///
+/// Locked before first run per TDD protocol (FB-005).
 #[test]
 fn test_cli_balance_invalid_address_gives_friendly_hint() {
+    let bad_addr = "0xDEADBEEF"; // 10 chars — starts with 0x, wrong length
+
     let out = binary()
         .args([
             "--endpoint",
-            "http://127.0.0.1:19999", // no server — fails immediately at parse
+            "http://127.0.0.1:19999",
             "balance",
-            "0x",  // obviously malformed: too short, no hex digits
+            bad_addr,
         ])
         .output()
         .expect("run binary");
@@ -427,9 +431,10 @@ fn test_cli_balance_invalid_address_gives_friendly_hint() {
     );
 
     let stderr = String::from_utf8_lossy(&out.stderr);
-    // Must contain a hint about address format — not just a raw parse error.
+    // The message must include the actual character count of the input (10),
+    // so the user knows exactly what was wrong — not just a generic format hint.
     assert!(
-        stderr.contains("42") || stderr.contains("0x") && stderr.contains("hex"),
-        "error message should tell the user what a valid address looks like.\nGot: {stderr}"
+        stderr.contains("10"),
+        "error should report the actual length of the input (10 chars).\nGot: {stderr}"
     );
 }
