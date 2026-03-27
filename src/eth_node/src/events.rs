@@ -176,7 +176,7 @@ fn http_poll_stream(
                 Err(e) => {
                     consecutive_errors += 1;
                     warn!("http_poll: block_number failed (error {consecutive_errors}): {e}");
-                    if max_reconnect.map_or(false, |limit| consecutive_errors >= limit) {
+                    if max_reconnect.is_some_and(|limit| consecutive_errors >= limit) {
                         yield Err(ListenerError::ReconnectExhausted(consecutive_errors));
                         return;
                     }
@@ -203,7 +203,7 @@ fn http_poll_stream(
                     consecutive_errors += 1;
                     warn!("http_poll: get_logs failed (error {consecutive_errors}): {e}");
                     yield Err(ListenerError::SubscribeFailed(e.to_string()));
-                    if max_reconnect.map_or(false, |limit| consecutive_errors >= limit) {
+                    if max_reconnect.is_some_and(|limit| consecutive_errors >= limit) {
                         yield Err(ListenerError::ReconnectExhausted(consecutive_errors));
                         return;
                     }
@@ -238,7 +238,7 @@ fn ws_subscription_stream(
                     warn!("ws_stream: connect failed (attempt {attempts}): {e}");
                     yield Err(ListenerError::SubscribeFailed(e));
                     attempts += 1;
-                    if max_reconnect.map_or(false, |limit| attempts >= limit) {
+                    if max_reconnect.is_some_and(|limit| attempts >= limit) {
                         yield Err(ListenerError::ReconnectExhausted(attempts));
                         return;
                     }
@@ -251,7 +251,7 @@ fn ws_subscription_stream(
                             warn!("ws_stream: subscribe_logs failed: {e}");
                             yield Err(ListenerError::SubscribeFailed(e.to_string()));
                             attempts += 1;
-                            if max_reconnect.map_or(false, |limit| attempts >= limit) {
+                            if max_reconnect.is_some_and(|limit| attempts >= limit) {
                                 yield Err(ListenerError::ReconnectExhausted(attempts));
                                 return;
                             }
