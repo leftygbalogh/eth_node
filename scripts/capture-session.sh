@@ -88,10 +88,8 @@ for abi_src in "$WORK_ROOT/config/"*.abi.json; do
     [[ -e "$abi_src" ]] || continue           # skip if glob matched nothing
     abi_name="$(basename "$abi_src")"
     abi_dst="/tmp/$abi_name"
-    if [[ ! -f "$abi_dst" ]]; then
-        cp "$abi_src" "$abi_dst"
-        echo "Provisioned fixture: $abi_dst"
-    fi
+    cp "$abi_src" "$abi_dst"
+    echo "Provisioned fixture: $abi_dst"
 done
 
 # ── Build command string ───────────────────────────────────────────────────────

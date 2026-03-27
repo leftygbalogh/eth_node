@@ -488,3 +488,106 @@ fn test_cli_balance_very_long_address_not_echoed_verbatim() {
         "error must not echo the full 151-char address verbatim — truncate it.\nGot: {stderr}"
     );
 }
+
+/// Test #4 (S5-exploratory, retrospective): --abi-file with a non-existent
+/// path must exit 1 and report the file path in the error so the user knows
+/// which file was missing.
+///
+/// The fix (capture-session.sh provisioning + config/stubtoken.abi.json) was
+/// applied before this test was written — test is green from first run.
+/// Written retrospectively to enshrine the exit-1 contract.
+#[test]
+fn test_cli_call_abi_file_missing_exits_with_error() {
+    let out = binary()
+        .args([
+            "--endpoint",
+            "http://127.0.0.1:19999",
+            "call",
+            "--abi-file",
+            "/tmp/this_file_does_not_exist_abc123.abi.json",
+            "0x0000000000000000000000000000000000000000",
+            "balanceOf",
+            "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+        ])
+        .output()
+        .expect("run binary");
+
+    assert_eq!(
+        out.status.code(),
+        Some(1),
+        "missing abi-file should exit 1, got: {:?}\nstderr: {}",
+        out.status,
+        String::from_utf8_lossy(&out.stderr)
+    );
+
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("cannot read --abi-file"),
+        "error must mention 'cannot read --abi-file'.\nGot: {stderr}"
+    );
+}
+
+/// Test #5 (S5-exploratory): an ABI file whose event entry is missing the
+/// required `anonymous` field must produce a clear parse error — not a panic
+/// or a cryptic internal message.
+///
+/// Locked before first run per TDD protocol (FB-005).
+#[test]
+fn test_cli_call_abi_missing_anonymous_field_gives_parse_error() {
+    use std::io::Write;
+
+    // ABI with a Transfer event that omits the required `anonymous` field.
+    let bad_abi = r#"[
+  {
+    "name": "balanceOf",
+    "type": "function",
+    "inputs":  [{ "name": "account", "type": "address" }],
+    "outputs": [{ "name": "", "type": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "name": "Transfer",
+    "type": "event",
+    "inputs": [
+      { "name": "from",  "type": "address", "indexed": true  },
+      { "name": "to",    "type": "address", "indexed": true  },
+      { "name": "value", "type": "uint256", "indexed": false }
+    ]
+  }
+]"#;
+
+    let path = std::env::temp_dir().join("bad_abi_no_anonymous.json");
+    std::fs::File::create(&path)
+        .and_then(|mut f| f.write_all(bad_abi.as_bytes()))
+        .expect("write temp bad abi file");
+
+    let out = binary()
+        .args([
+            "--endpoint",
+            "http://127.0.0.1:19999",
+            "call",
+            "--abi-file",
+            path.to_str().unwrap(),
+            "0x0000000000000000000000000000000000000000",
+            "balanceOf",
+            "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+        ])
+        .output()
+        .expect("run binary");
+
+    assert_eq!(
+        out.status.code(),
+        Some(1),
+        "bad ABI should exit 1, got: {:?}\nstderr: {}",
+        out.status,
+        String::from_utf8_lossy(&out.stderr)
+    );
+
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("invalid ABI JSON"),
+        "error must mention 'invalid ABI JSON'.\nGot: {stderr}"
+    );
+
+    let _ = std::fs::remove_file(&path);
+}
