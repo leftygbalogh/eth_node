@@ -591,3 +591,58 @@ fn test_cli_call_abi_missing_anonymous_field_gives_parse_error() {
 
     let _ = std::fs::remove_file(&path);
 }
+
+/// feat(--porcelain): with --porcelain, stdout must be valid JSON only.
+///
+/// When --porcelain is passed:
+/// - stdout is exactly the JSON result object (parseable, no "Balance: X wei" line)
+/// - stderr is silent (no INFO logs)
+/// - exit code is 0
+///
+/// Locked before first run per TDD protocol (FB-005).
+#[test]
+fn test_cli_balance_porcelain_stdout_is_json() {
+    // Skip if Anvil is not running — this test requires a live node.
+    let anvil_up = std::net::TcpStream::connect("127.0.0.1:8545").is_ok();
+    if !anvil_up {
+        eprintln!("SKIP: test_cli_balance_porcelain_stdout_is_json — Anvil not running");
+        return;
+    }
+
+    let out = binary()
+        .args([
+            "--porcelain",
+            "balance",
+            "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+        ])
+        .output()
+        .expect("run binary");
+
+    assert!(
+        out.status.success(),
+        "--porcelain balance should exit 0, got: {:?}\nstderr: {}",
+        out.status,
+        String::from_utf8_lossy(&out.stderr)
+    );
+
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    let stderr = String::from_utf8_lossy(&out.stderr);
+
+    // stdout must be valid JSON
+    assert!(
+        serde_json::from_str::<serde_json::Value>(&stdout).is_ok(),
+        "--porcelain stdout must be valid JSON.\nGot stdout: {stdout}\nstderr: {stderr}"
+    );
+
+    // stdout must NOT contain the human-readable "Balance:" line
+    assert!(
+        !stdout.contains("Balance:"),
+        "--porcelain must not emit the 'Balance:' line to stdout.\nGot: {stdout}"
+    );
+
+    // stderr must be empty (no log noise)
+    assert!(
+        stderr.is_empty(),
+        "--porcelain must produce no stderr output.\nGot: {stderr}"
+    );
+}

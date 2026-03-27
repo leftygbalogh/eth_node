@@ -481,42 +481,53 @@ Ctrl+C
 
 ## 8. Recording a session
 
-Use `scripts/capture-session.sh` to run any command and automatically save:
-- `screen.log` — full terminal output
-- `state.json` — the result as machine-readable JSON
+Two scripts wrap `eth_node_cli` and save everything automatically:
 
-### Setup (one time)
+| Script | When to use |
+|---|---|
+| `scripts/capture-session.sh` | One command at a time |
+| `scripts/capture-multi.sh` | Chain several commands into one session |
+
+Both scripts:
+- Start Anvil automatically if it isn't already running
+- Copy `config/*.abi.json` fixtures to `/tmp/` so `--abi-file /tmp/...` examples work immediately
+- Save a `screen.log` (full terminal transcript) to `output/sessions/<timestamp>/`
+- Save one `state.json` per successful command
+
+---
+
+### Single command — `capture-session.sh`
 
 ```bash
-chmod +x scripts/capture-session.sh
-```
+chmod +x scripts/capture-session.sh    # one-time setup
 
-### Usage
-
-```bash
 ./scripts/capture-session.sh <subcommand> [args...]
 ```
 
-All the same arguments as `eth`, just prefixed with the script path.
-
-**Examples**:
+All five commands work:
 
 ```bash
-# Record a balance check
+# Check a balance
 ./scripts/capture-session.sh balance 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
 
-# Record a send
+# Send ETH
 ./scripts/capture-session.sh send \
   --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
   0x70997970C51812dc3A010C7d01b50e0d17dc79C8 \
   1000000000000000000
 
-# Record a contract call
+# Check transaction status
+./scripts/capture-session.sh tx-status 0x43aab2ff75b7c9b2a3a345de2e2de2ae41ea6ea8a62c8aa5bef4c3b7a24c7421
+
+# Call a contract (ABI file auto-provisioned from config/)
 ./scripts/capture-session.sh call \
   --abi-file /tmp/stubtoken.abi.json \
   0x5FbDB2315678afecb367f032d93F642f64180aa3 \
   balanceOf \
   0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+
+# Watch for events (press Ctrl+C to stop; session log captures everything up to that point)
+./scripts/capture-session.sh watch 0x5FbDB2315678afecb367f032d93F642f64180aa3
 ```
 
 Artifacts are written to `output/sessions/<timestamp>/`:
@@ -525,12 +536,154 @@ Artifacts are written to `output/sessions/<timestamp>/`:
 output/sessions/
   2026-03-27_14-05-30/
     screen.log    ← everything printed to the terminal
-    state.json    ← structured JSON result
+    state.json    ← structured JSON result (only on exit 0)
 ```
+
+---
+
+### Chaining commands — `capture-multi.sh`
+
+Run a sequence of commands in one shared session. The script stops after the
+first failure and tells you which step failed.
+
+```bash
+chmod +x scripts/capture-multi.sh    # one-time setup
+
+./scripts/capture-multi.sh <commands-file>
+```
+
+**Commands file format** — one subcommand per non-blank, non-comment line:
+
+```
+# comments and blank lines are ignored
+balance 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+balance 0x70997970C51812dc3A010C7d01b50e0d17dc79C8
+send --private-key 0xac09...80 0x7099...C8 1000000000000000000
+balance 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+balance 0x70997970C51812dc3A010C7d01b50e0d17dc79C8
+```
+
+**Worked example** — a ready-made scenario is included:
+
+```bash
+./scripts/capture-multi.sh scripts/examples/scenario-send-and-check.txt
+```
+
+This runs: balance account 0 → balance account 1 → send 1 ETH → balance account 0 → balance account 1.
+
+Sample output:
+
+```
+=== Multi-step session ===
+Session artifacts: output/sessions/2026-03-27_10-31-06
+Binary:            target/release/eth_node_cli
+
+Anvil already running on 127.0.0.1:8545.
+
+--- Running 5 step(s) ---
+
+--- Step 1/5: balance 0xf39Fd6... ---
+Balance: 10000000000000000000000 wei
+(state saved: state-1.json)
+
+--- Step 2/5: balance 0x70997... ---
+Balance: 10000000000000000000000 wei
+(state saved: state-2.json)
+
+--- Step 3/5: send ... ---
+Transaction success: 0x5bb3... in block 1
+(state saved: state-3.json)
+
+--- Step 4/5: balance 0xf39Fd6... ---
+Balance: 8999790000000000000000 wei    ← account 0 lost ~1 ETH + gas
+(state saved: state-4.json)
+
+--- Step 5/5: balance 0x70997... ---
+Balance: 11000000000000000000000 wei   ← account 1 gained 1 ETH
+(state saved: state-5.json)
+
+=== All 5 step(s) completed successfully ===
+```
+
+Each step gets its own `state-N.json`. If step 3 had failed, steps 4 and 5
+would not have run, and the footer would say:
+
+```
+=== ABORTED at step 3/5 ===
+Command   : send ...
+Exit code : 1
+```
+
+---
+
+### Suppress log noise — `--quiet` and `--porcelain`
+
+By default, every command prints structured JSON log lines to `stderr`.
+Two flags let you control this:
+
+| Flag | Effect |
+|---|---|
+| `--quiet` | Suppress INFO logs; only errors appear on stderr |
+| `--porcelain` | No logs at all; stdout is exactly the JSON result, nothing else |
+
+**`--quiet` — clean terminal output**:
+
+```bash
+eth --quiet balance 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+```
+
+Output:
+```
+Balance: 10000000000000000000000 wei
+```
+
+**Redirect stderr yourself** — suppress all log lines without changing the binary flag:
+
+```bash
+eth balance 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 2>/dev/null
+```
+
+Output:
+```
+Balance: 10000000000000000000000 wei
+```
+
+**`--porcelain` — JSON only, nothing else** (ideal for scripting):
+
+```bash
+eth --porcelain balance 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+```
+
+Output (stdout only, no labels, no logs):
+```json
+{
+  "address": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "balance_wei": "10000000000000000000000"
+}
+```
+
+Pipe it to `jq` for field extraction:
+
+```bash
+eth --porcelain balance 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 | jq .balance_wei
+# "10000000000000000000000"
+```
+
+`--porcelain` works with all five commands. The JSON shapes are:
+
+| Command | JSON keys |
+|---|---|
+| `balance` | `address`, `balance_wei` |
+| `send` | `transaction_hash`, `block_number`, `status` |
+| `tx-status` | `hash`, `status`, `block_number` |
+| `call` | `contract`, `function`, `return_values` |
+| `watch` | `contract`, `events_received` |
+
+---
 
 ### Manual recording with `tee`
 
-If you prefer not to use the script, pipe output through `tee`:
+If you prefer not to use the scripts, pipe output through `tee`:
 
 ```bash
 mkdir -p output/sessions/my-session
@@ -539,6 +692,7 @@ eth --dump-state output/sessions/my-session/state.json \
   balance 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 \
   2>&1 | tee output/sessions/my-session/screen.log
 ```
+
 
 ---
 

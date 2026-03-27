@@ -40,6 +40,11 @@ struct Cli {
     #[arg(long, conflicts_with = "log_level")]
     quiet: bool,
 
+    /// Machine-readable mode: print only the JSON result to stdout, no log
+    /// lines and no human-readable labels. Implies --quiet.
+    #[arg(long, conflicts_with = "log_level")]
+    porcelain: bool,
+
     /// Log level: trace, debug, info, warn, error.
     #[arg(long, default_value = "info", value_name = "LEVEL")]
     log_level: String,
@@ -124,6 +129,10 @@ async fn main() {
 
     match &result {
         Ok(state) => {
+            if cli.porcelain {
+                println!("{}", serde_json::to_string_pretty(state)
+                    .unwrap_or_else(|_| "{}".to_string()));
+            }
             if let Some(path) = &cli.dump_state {
                 let json_str = serde_json::to_string_pretty(state)
                     .unwrap_or_else(|_| "{}".to_string());
@@ -141,26 +150,27 @@ async fn main() {
 
 async fn run(cli: &Cli) -> Result<Value, String> {
     let client = RpcClient::new(&cli.endpoint).map_err(|e| e.to_string())?;
+    let porcelain = cli.porcelain;
 
     match &cli.command {
-        Commands::Balance { address } => cmd_balance(address, &client).await,
+        Commands::Balance { address } => cmd_balance(address, &client, porcelain).await,
         Commands::Send { to, amount_wei, private_key } => {
-            cmd_send(to, amount_wei, private_key, &client).await
+            cmd_send(to, amount_wei, private_key, &client, porcelain).await
         }
         Commands::Watch { contract, event } => {
-            cmd_watch(contract, event.as_deref(), &cli.endpoint).await
+            cmd_watch(contract, event.as_deref(), &cli.endpoint, porcelain).await
         }
         Commands::Call { contract, function, args, abi, abi_file } => {
             let abi_json = resolve_abi(abi.as_deref(), abi_file.as_deref())?;
-            cmd_call(contract, function, args, &abi_json, &client).await
+            cmd_call(contract, function, args, &abi_json, &client, porcelain).await
         }
-        Commands::TxStatus { hash } => cmd_tx_status(hash, &client).await,
+        Commands::TxStatus { hash } => cmd_tx_status(hash, &client, porcelain).await,
     }
 }
 
 // ── Commands ──────────────────────────────────────────────────────────────────
 
-async fn cmd_balance(address: &str, client: &RpcClient) -> Result<Value, String> {
+async fn cmd_balance(address: &str, client: &RpcClient, porcelain: bool) -> Result<Value, String> {
     let addr: Address = address
         .parse()
         .map_err(|_| {
@@ -180,7 +190,9 @@ async fn cmd_balance(address: &str, client: &RpcClient) -> Result<Value, String>
     info!(%address, %wei, "balance queried");
 
     let wei_str = wei.to_string();
-    println!("Balance: {wei_str} wei");
+    if !porcelain {
+        println!("Balance: {wei_str} wei");
+    }
 
     Ok(json!({ "address": address, "balance_wei": wei_str }))
 }
@@ -190,6 +202,7 @@ async fn cmd_send(
     amount_wei: &str,
     private_key: &str,
     client: &RpcClient,
+    porcelain: bool,
 ) -> Result<Value, String> {
     let to_addr: Address = to
         .parse()
@@ -222,7 +235,9 @@ async fn cmd_send(
     let block = receipt.block_number.unwrap_or(0);
     let status = if receipt.status() { "success" } else { "reverted" };
 
-    println!("Transaction {status}: {hash} in block {block}");
+    if !porcelain {
+        println!("Transaction {status}: {hash} in block {block}");
+    }
 
     Ok(json!({
         "transaction_hash": hash,
@@ -235,6 +250,7 @@ async fn cmd_watch(
     contract: &str,
     event: Option<&str>,
     endpoint: &str,
+    porcelain: bool,
 ) -> Result<Value, String> {
     let addr: Address = contract
         .parse()
@@ -254,7 +270,9 @@ async fn cmd_watch(
     let listener = Listener::new(endpoint);
     let mut stream = listener.subscribe(filter);
 
-    println!("Watching contract {contract} for events (Ctrl-C to stop)...");
+    if !porcelain {
+        println!("Watching contract {contract} for events (Ctrl-C to stop)...");
+    }
 
     let mut count = 0u64;
 
@@ -269,7 +287,9 @@ async fn cmd_watch(
         tokio::select! {
             biased;
             _ = &mut ctrl_c => {
-                println!("\nStopped. Received {count} event(s).");
+                if !porcelain {
+                    println!("\nStopped. Received {count} event(s).");
+                }
                 break;
             }
             item = stream.next() => {
@@ -280,10 +300,12 @@ async fn cmd_watch(
                             .transaction_hash
                             .map(|h| format!("{h:?}"))
                             .unwrap_or_default();
-                        println!(
-                            "Event #{count}: tx={tx_hash} topics={}",
-                            log.topics().len()
-                        );
+                        if !porcelain {
+                            println!(
+                                "Event #{count}: tx={tx_hash} topics={}",
+                                log.topics().len()
+                            );
+                        }
                         info!(tx_hash, topics = log.topics().len(), "event received");
                     }
                     Some(Err(e)) => {
@@ -291,7 +313,9 @@ async fn cmd_watch(
                         return Err(e.to_string());
                     }
                     None => {
-                        println!("Stream ended.");
+                        if !porcelain {
+                            println!("Stream ended.");
+                        }
                         break;
                     }
                 }
@@ -322,6 +346,7 @@ async fn cmd_call(
     args: &[String],
     abi: &str,
     client: &RpcClient,
+    porcelain: bool,
 ) -> Result<Value, String> {
     let addr: Address = contract
         .parse()
@@ -339,7 +364,9 @@ async fn cmd_call(
         .map_err(|e| e.to_string())?;
 
     let formatted: Vec<String> = tokens.iter().map(|t| format!("{t:?}")).collect();
-    println!("Return: {}", formatted.join(", "));
+    if !porcelain {
+        println!("Return: {}", formatted.join(", "));
+    }
 
     Ok(json!({
         "contract": contract,
@@ -348,7 +375,7 @@ async fn cmd_call(
     }))
 }
 
-async fn cmd_tx_status(hash: &str, client: &RpcClient) -> Result<Value, String> {
+async fn cmd_tx_status(hash: &str, client: &RpcClient, porcelain: bool) -> Result<Value, String> {
     let tx_hash: B256 = hash
         .parse()
         .map_err(|e| format!("invalid tx hash: {e}"))?;
@@ -364,11 +391,15 @@ async fn cmd_tx_status(hash: &str, client: &RpcClient) -> Result<Value, String> 
         Some(r) => {
             let block = r.block_number.unwrap_or(0);
             let status = if r.status() { "success" } else { "reverted" };
-            println!("Transaction {hash}: {status} in block {block}");
+            if !porcelain {
+                println!("Transaction {hash}: {status} in block {block}");
+            }
             Ok(json!({ "hash": hash, "status": status, "block_number": block }))
         }
         None => {
-            println!("Transaction {hash}: pending (not yet mined)");
+            if !porcelain {
+                println!("Transaction {hash}: pending (not yet mined)");
+            }
             Ok(json!({ "hash": hash, "status": "pending" }))
         }
     }
@@ -421,7 +452,7 @@ fn parse_dyn_sol_value(s: &str) -> DynSolValue {
 fn init_logging(cli: &Cli) {
     use tracing_subscriber::{fmt, EnvFilter};
 
-    let level = if cli.quiet { "error" } else { cli.log_level.as_str() };
+    let level = if cli.quiet || cli.porcelain { "error" } else { cli.log_level.as_str() };
 
     let env_filter = EnvFilter::try_from_default_env()
         .unwrap_or_else(|_| EnvFilter::new(level));

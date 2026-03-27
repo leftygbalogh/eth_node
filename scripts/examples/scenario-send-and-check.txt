@@ -1,0 +1,20 @@
+# Example multi-step scenario: balance → send → balance on both accounts
+# Copy this file and edit the addresses/keys to match your session.
+#
+# Run with:
+#   ./scripts/capture-multi.sh scripts/examples/scenario-send-and-check.txt
+
+# Step 1: check account 0 balance before send
+balance 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+
+# Step 2: check account 1 balance before send
+balance 0x70997970C51812dc3A010C7d01b50e0d17dc79C8
+
+# Step 3: send 1 ETH from account 0 to account 1
+send --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 0x70997970C51812dc3A010C7d01b50e0d17dc79C8 1000000000000000000
+
+# Step 4: check account 0 balance after send (should be less)
+balance 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+
+# Step 5: check account 1 balance after send (should be more)
+balance 0x70997970C51812dc3A010C7d01b50e0d17dc79C8

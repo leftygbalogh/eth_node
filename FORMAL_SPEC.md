@@ -328,6 +328,12 @@ Error (terminal — emit ListenerError, stream ends)
 - Suppression mechanism: `--quiet` flag sets log level to `error` only; `--log-level <level>` accepts `trace|debug|info|warn|error`
 - Log level default: `info`
 - Private key: must not appear at any log level
+- Machine-readable mode: `--porcelain` flag suppresses all log output (implies `--quiet`) and all human-readable `println!` labels; on success, the JSON result object is printed to stdout as the only output. Stdout shape per command:
+  - `balance`: `{"address": "<addr>", "balance_wei": "<decimal-str>"}`
+  - `send`: `{"transaction_hash": "<0x...>", "block_number": <u64>, "status": "success"|"reverted"}`
+  - `tx-status`: `{"hash": "<0x...>", "status": "success"|"reverted"|"pending", "block_number": <u64>}`
+  - `call`: `{"contract": "<addr>", "function": "<name>", "return_values": ["<debug-str>", ...]}`
+  - `watch`: `{"contract": "<addr>", "events_received": <u64>}` (emitted on exit)
 
 ---
 
