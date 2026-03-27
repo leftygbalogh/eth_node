@@ -16,11 +16,11 @@
 - [x] Logging and artifact requirements documented and present.
 - [x] Governance artifacts for stages 1-6 updated.
 - [x] Repo layout reviewed: governance/source/output separation retained.
-- [ ] Fresh rebuild from HEAD completed immediately before final release commit and push.
+- [x] Fresh rebuild from HEAD completed immediately before final release commit and push.
 - [x] Push target verified with git remote evidence.
 - [x] Intended remote and branch stated (origin/master).
 - [x] Release remote proof snapshot saved: docs/evidence/release-remote-proof.md.
-- [ ] Joint post-mortem feedback cycle complete in examples/feedback.json with owner response.
+- [x] Joint post-mortem feedback cycle complete in examples/feedback.json with owner response.
 
 ## Stage 5 Approval
 
@@ -31,5 +31,5 @@
 ## Stage 6 Approval
 
 - Approved by: Lefty
-- Approval date: [pending]
-- Notes: Pending remaining unchecked release items.
+- Approval date: 2026-03-27
+- Notes: Stage 6 gate approved after joint post-mortem owner pass and final verification.

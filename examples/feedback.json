@@ -2,6 +2,12 @@
   "project": "eth_node",
   "stage": "Stage 1 — Discover",
   "closed": "2026-03-26",
+  "joint_postmortem_owner_response": {
+    "date": "2026-03-27",
+    "source": "Lefty",
+    "response": "Pass",
+    "notes": "No additional feedback items beyond FB-001 through FB-009."
+  },
   "feedback": [
     {
       "id": "FB-001",
