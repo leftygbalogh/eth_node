@@ -10,7 +10,12 @@
 #
 # Usage:
 #   ./scripts/capture-session.sh balance 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
-#   ./scripts/capture-session.sh send --to 0xAbC... --value 1000000000000000000
+#   ./scripts/capture-session.sh send --private-key 0xac09... 0x7099... 1000000000000000000
+#   ./scripts/capture-session.sh tx-status 0x43aa...
+#   ./scripts/capture-session.sh call --abi-file /tmp/stubtoken.abi.json 0x5FbD... balanceOf 0xf39...
+#   ./scripts/capture-session.sh watch 0x5FbD...
+#
+# See CLI_REFERENCE.md for full examples and setup instructions.
 
 set -euo pipefail
 
@@ -79,15 +84,20 @@ fi
 #    Works on Linux, macOS, and Git Bash (MINGW64) on Windows.
 #    stdout + stderr are both written to screen.log and shown on the terminal.
 # shellcheck disable=SC2086
-bash -c "$CMD" 2>&1 | tee "$SCREEN_LOG" || true
+set +e
+bash -c "$CMD" 2>&1 | tee "$SCREEN_LOG"
+EXIT_CODE="${PIPESTATUS[0]}"
+set -e
 
 # ── Report ─────────────────────────────────────────────────────────────────────
 echo ""
-echo "screen.log  : $SCREEN_LOG"
+echo "=== Session complete ==="
+echo "Exit code   : $EXIT_CODE"
+echo "Screen log  : $SCREEN_LOG"
 if [[ -f "$STATE_JSON" ]]; then
-    echo "state.json  : $STATE_JSON"
+    echo "State JSON  : $STATE_JSON"
 else
-    echo "state.json  : (not written — eth_node_cli did not produce one)"
+    echo "State JSON  : (not written — command exited with error)"
 fi
 
 # ── Stop Anvil if we started it ───────────────────────────────────────────────
@@ -95,3 +105,5 @@ if [[ $ANVIL_STARTED -eq 1 ]]; then
     kill "$ANVIL_PID" 2>/dev/null || true
     echo "Anvil stopped (pid $ANVIL_PID)."
 fi
+
+exit "$EXIT_CODE"
