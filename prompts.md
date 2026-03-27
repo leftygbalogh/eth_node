@@ -682,3 +682,18 @@ go ahead, any mor estage gates?
 
 ### Prompt (Owner response)
 pass
+
+### Prompt (Find original big plan)
+I want you to find the original big plan, where this project was only the first step.
+
+### Prompt (Dig deeper into fleshed-out plan)
+yes, you are on the right track but we also fleshed it out in more detail. We even said we would do sideprojects where we improve the test coverage of exterbal sources that we use. So try to dig further until you find the details of the plan that are based on the project we just finished.
+
+### Prompt (Proceed with plan artifact)
+y
+
+### Prompt (Clarify 12-component plan)
+what is the 12 component plan explicitly in  #file:PHASE2_AND_UPSTREAM_PLAN.md  refers to?
+
+### Prompt (Expand plan with references)
+Can you pull in all the external references into this doc in a coherent format so we have an incomplete, but detailed plan that we can use for specs in all subsequent phases, please.

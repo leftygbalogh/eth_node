@@ -1539,3 +1539,57 @@ Next step: None pending.
 - Blockers: None
 - Next step:
   - Commit closure artifacts and confirm publish target if push is requested
+
+## 2026-03-27 Reference Note - Original Multi-Phase Plan
+
+- Located original phased roadmap in early Stage 1 snapshot block of memory.md.
+- Key reference lines include component progression (#1 through #12) and explicit phase scopes.
+- Phase framing: Phase 1 = Anvil + capabilities #1-#6; Phase 2 = #7 then #12 (Reth/Sepolia or Holesky).
+
+## 2026-03-27 Reference Note - Expanded Plan Evidence
+
+- Upstream-sideproject intent found in prompts history (contribute back by improving external-source tests if not already fully covered).
+- Formalized governance carry-forward appears in FB-002 (upstream contribution intent as explicit Stage 1 track declaration).
+- Phase 2 technical carry-over tied to this completed project appears in:
+  - FORMAL_SPEC out-of-scope deferred items (#8, #11, Reth integration)
+  - Stage snapshots with Phase 2 scope and deferred gaps (live contract decode and fuzzing)
+
+## 2026-03-27 Status Snapshot - Consolidated Next-Phase Plan Artifact
+
+- Timestamp: 2026-03-27
+- Current stage: Post-Stage-6 reference capture
+- Completed since last update:
+  - Created PHASE2_AND_UPSTREAM_PLAN.md to consolidate the recovered big-plan details
+  - Explicitly split continuation into Track A (project continuation) and Track B (upstream test-coverage side projects)
+- In progress:
+  - Awaiting user review/approval of the recovered plan framing
+- Decisions made:
+  - Treat this artifact as input to the next project brief/spec/task-list cycle
+- Open questions:
+  - Preferred first next increment: A-1 (revm executor) vs A-2 (deferred gaps)
+- Blockers: None
+- Next step:
+  - Commit this artifact if approved
+
+## 2026-03-27 Reference Note - 12-Component Plan Clarification
+
+- The "12-component plan" referenced in PHASE2_AND_UPSTREAM_PLAN.md is the Stage 1 component progression captured in memory.md.
+- It is a multi-phase learning roadmap where Phase 1 used #10 + #1 through #6 and Phase 2 starts from #7 then #12.
+
+## 2026-03-27 Status Snapshot - Plan Artifact Enriched With External References
+
+- Timestamp: 2026-03-27
+- Current stage: Post-release planning documentation
+- Completed since last update:
+  - Expanded PHASE2_AND_UPSTREAM_PLAN.md into a coherent reference-mapped baseline
+  - Added explicit external reference implications, full 12-component list, deferred quality carry-over, and Track A/Track B planning structure
+  - Added first backlog wave and decision questions for next brief/spec cycle
+- In progress:
+  - Awaiting user review and optional commit of enriched planning artifact
+- Decisions made:
+  - Keep document explicitly "incomplete but detailed" for reuse in subsequent phase specs
+- Open questions:
+  - Preferred first phase increment in next cycle (A-1 vs A-2-first ordering)
+- Blockers: None
+- Next step:
+  - Commit if approved
