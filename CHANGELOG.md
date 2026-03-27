@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.6.1 - 2026-03-27
+
+Stage 6 release documentation baseline added for the eth_node project:
+
+- Added release governance artifacts:
+  - DELIVERABLES_MANIFEST.md
+  - RELEASE_CHECKLIST.md
+  - OPERATIONS_AND_ROLLBACK.md
+  - POST_RELEASE_MONITORING.md
+  - RUNBOOK_KNOWN_FAILURES.md
+- Added release remote proof evidence:
+  - docs/evidence/release-remote-proof.md
+- Reconciled task list status markers and restored missing T-008 section heading.
+
 ## 1.6.0 - 2026-03-26
 
 Pass 4 simplification — continued reduction without loss of control:

@@ -656,3 +656,9 @@ stage approved, let's go onto the next. tell me what is on that tasklist
 
 ### Prompt (Task list update)
 go ahead
+
+### Prompt (Next step request)
+so whats next
+
+### Prompt (Proceed)
+ok

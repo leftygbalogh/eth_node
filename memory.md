@@ -1417,3 +1417,21 @@ Next step: None pending.
 - Blockers: None
 - Next step:
   - Commit and push housekeeping updates, then continue Stage 6 flow
+
+## 2026-03-27 Status Snapshot - Stage 6 Release Docs Baseline
+
+- Timestamp: 2026-03-27
+- Current stage: Stage 6 - Release (in progress)
+- Completed since last update:
+  - Created release artifacts: DELIVERABLES_MANIFEST.md, RELEASE_CHECKLIST.md, OPERATIONS_AND_ROLLBACK.md, POST_RELEASE_MONITORING.md, RUNBOOK_KNOWN_FAILURES.md
+  - Added docs/evidence/release-remote-proof.md with remote/branch proof
+  - Updated CHANGELOG.md with Stage 6 release-docs entry
+  - Appended new user prompts to prompts.md
+- In progress:
+  - Final release gating items (fresh rebuild from HEAD and joint post-mortem feedback closure)
+- Decisions made:
+  - Mark build-from-HEAD and joint feedback closure as explicit pending checklist items
+- Open questions: None
+- Blockers: None
+- Next step:
+  - Commit release-doc artifacts and run fresh build/test verification for final Stage 6 closure
