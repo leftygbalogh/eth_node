@@ -80,6 +80,9 @@ pub fn simulate_tx(
 *Phase 3 Extension Point (R6):*
 - **StateProvider trait:** For state-fork scenarios (Reth historical state, Anvil custom state, custom backends), executor will accept `StateProvider` trait instead of hard-coding revm's default state. Phase 2 uses revm's default in-memory state.
 
+**Phase 2 Implementation Note:**  
+Phase 2 initializes revm with default `CacheDB`. In Phase 3, refactor to accept `impl StateProvider` via constructor. Current API remains unchanged; Phase 3 change is additive (new constructor variant).
+
 **Acceptance Criteria:**
 - **AC-001:** `simulate_tx()` executes known-good Anvil scenarios and matches gas usage within 5% tolerance.
 - **AC-002:** Expected error cases return proper `ExecutorError` variants (no panic).
@@ -146,6 +149,9 @@ pub struct ComparisonReport {
 2. Send same transaction to Anvil via RPC.
 3. Compare: gas used, return data, emitted logs.
 4. Return structured comparison report.
+
+**Return Semantics:**  
+`compare_to_anvil()` always returns `Ok(ComparisonReport)` unless RPC failure occurs. Report contains `gas_delta` field; caller interprets threshold. Does not fail on mismatch—reporting only.
 
 **Acceptance Criteria:**
 - **AC-006:** `compare_to_anvil()` identifies gas mismatches exceeding 5% threshold.
@@ -314,7 +320,7 @@ Fuzzing tests gated behind `fuzz` feature:
 3. ✅ Test suite grows to 170+ tests passing (Phase 1 baseline: 137, Phase 2 new: ~33).
 4. ✅ All Phase 1 tests still pass (regression check).
 5. ✅ G-001 and G-002 explicitly closed (no remaining Phase 1 quality debt).
-6. ✅ At least one Track B contribution submitted (if threshold met) or documented (if threshold not met).
+6. ✅ At least one Track B contribution submitted (if threshold met) or documented (if threshold not met). **Stage 6 success = PR submitted with traceability link.** Merge outcome (accepted/rejected/pending) tracked in feedback.json but does NOT block Stage 6 closure.
 7. ✅ Reth readiness checklist validated on target hardware.
 
 ---
@@ -384,6 +390,17 @@ pub enum ExecutorError {
         source: Option<Box<dyn std::error::Error + Send + Sync>>,
     },
 }
+
+// Example usage:
+// ExecutorError::Context {
+//     message: "Simulation failed during execution".into(),
+//     details: [
+//         ("tx_hash", "0x123..."),
+//         ("block_number", "12345"),
+//         ("revm_error", "OutOfGas"),
+//     ].iter().map(|(k, v)| (k.to_string(), v.to_string())).collect(),
+//     source: Some(Box::new(revm_error)),
+// }
 ```
 
 **Error Classification Rules:**
@@ -400,6 +417,7 @@ pub enum ExecutorError {
 | Stack overflow during execution | `RevmFailure` | EVM internal limit reached |
 | Out of gas during execution | `RevmFailure` | EVM ran out of gas (valid exhaustion) |
 | Precompile call failed | `RevmFailure` | EVM precompile rejected input |
+| Precompile input validation failure | `InvalidInput` | Caller provided malformed precompile args (e.g., ecrecover with invalid signature bytes); discovered during execution but represents caller data error |
 | Invalid contract address (0x0) | `InvalidInput` | Caller provided invalid target |
 | Malformed calldata (wrong ABI) | `InvalidInput` | Caller's encoding error |
 
@@ -436,6 +454,7 @@ pub enum ExecutorError {
 ```rust
 // Executor resilience
 proptest! {
+    #![proptest_config(ProptestConfig::with_cases(10_000))]
     #[cfg(feature = "fuzz")]
     fn executor_never_panics(tx in arb_transaction_request()) {
         let result = simulate_tx(tx, default_context());
@@ -539,6 +558,19 @@ async fn test_send_tx_nonce_collision() {
 - **Local:** `cargo test` (all tests run on developer machine).
 - **CI:** GitHub Actions workflow (existing ci.yml; no changes needed).
 - **Anvil dependency:** Integration tests start local Anvil instance before execution.
+
+### 8.4 Anvil Test Lifecycle
+
+Integration tests requiring Anvil use `std::process::Command` to spawn `anvil` in test setup and terminate in teardown. Each test spawns on random port to avoid conflicts.
+
+**Helper function** in `tests/common/mod.rs`:
+```rust
+pub fn spawn_anvil() -> (AnvilHandle, RpcUrl) {
+    // Spawns anvil on random port, returns handle and URL
+}
+```
+
+**Rationale:** Removes manual Anvil startup step; ensures test isolation; prevents "works on my machine" issues when different tests share state.
 
 ---
 

@@ -15,6 +15,9 @@ Phase 2 delivers 9 tasks across Track A (product continuation) and Track B (upst
 - **Track B:** 2 tasks (upstream audit, PR submission)
 - **Total estimated effort:** ~40-50 hours (solo developer, learning included)
 
+**Chronicle Entry Requirements:**  
+Each task links to a chronicle document (CHR-009, CHR-010, CHR-011, CHR-012, CHR-013). Minimum sections per chronicle: Context, Implementation, Decisions, Tests, Links to Spec. Reference `templates/IMPLEMENTATION_CHRONICLE_TEMPLATE.md` for structure.
+
 ---
 
 ## Sequencing Rules
@@ -125,6 +128,16 @@ Phase 2 delivers 9 tasks across Track A (product continuation) and Track B (upst
 
 ---
 
+### A-1 Completion Gate (T-003 → T-004/T-005)
+
+Before starting T-004 or T-005, verify A-1 foundation is complete:
+- ✅ All AC-001 through AC-007 passing
+- ✅ T-003 committed to master
+- ✅ No blocking executor issues in memory.md
+- ✅ CHR-009-executor.md complete with traceability links
+
+---
+
 ### T-004: Close G-001 Live Decode Completeness (Track A)
 
 **Description:** Expand contract event decoder to handle ERC-721 and ERC-1155 edge cases.
@@ -196,7 +209,7 @@ Phase 2 delivers 9 tasks across Track A (product continuation) and Track B (upst
 **Acceptance Criteria:**
 - AC-012: Fuzzing framework integrated; `cargo test --features fuzz` runs fuzz tests.
 - AC-013: 10k+ iterations per property without panic.
-- AC-014: Any discovered edge cases either fixed or documented.
+- AC-014: ≥95% of properties pass 10k iterations without panic. If <95%, document unfixed edges as known limitations with security impact assessment. Any critical-path panic (executor, signer, RPC) MUST be fixed before A-2 closure; non-critical panics (debug utils, pretty-printing) can be documented.
 - AC-015: Fuzzing tests complete in <60 seconds on CI.
 
 **Estimated Effort:** 8-10 hours (includes fixing any discovered panics)
@@ -238,7 +251,7 @@ Phase 2 delivers 9 tasks across Track A (product continuation) and Track B (upst
 - AC-021: Failing test case written and validated locally in upstream fork.
 - **Track B isolation check (R4):** Audit code in `src/upstream_contrib/` contains NO imports from `src/executor/`, `src/quality/`, or other `eth_node` modules (ensures portability for future repo split).
 
-**Estimated Effort:** 6-8 hours (includes learning upstream codebase)
+**Estimated Effort:** 10-15 hours (includes learning upstream codebase). **Time-box rule:** If alloy-provider audit exceeds 10 hours without identifying threshold-meeting gap, pivot to revm immediately (do not exceed 15 total hours on T-006 audit phase).
 
 **Chronicle:** CHR-013-upstream-audit.md (Section: Coverage Analysis)
 
@@ -292,7 +305,7 @@ Phase 2 delivers 9 tasks across Track A (product continuation) and Track B (upst
   - Reproducible test case and evidence.
 - Add feedback entry to eth_node `examples/feedback.json`: Track B contribution experience.
 
-**Permission Gate:** Explicit owner approval required before PR submission.
+**Permission Gate:** Explicit owner approval required before PR submission. **Escalation rule:** If owner unavailable >48 hours, team lead escalates to next session for expedited decision OR defers Track B to Phase 3 (all Track A work proceeds to Stage 6 normally).
 
 **Dependencies:** T-007 complete (test validated in fork).
 
@@ -329,9 +342,9 @@ Phase 2 delivers 9 tasks across Track A (product continuation) and Track B (upst
 - Run dry-run script on Windows with 190 GB SSD; verify it passes.
 - Validate disk-check command correctly identifies free space.
 
-**Dependencies:** T-004 + T-005 complete (A-2 mandatory before A-3).
+**Dependencies:** T-004 + T-005 complete (A-2 mandatory before A-3). **Early-start option:** T-009 can begin in parallel with T-005 if developer has low-complexity documentation cycles available (no dependency on A-2 code).
 
-**Deliverable:**
+**Deliverable:****
 - `docs/reth_readiness_checklist.md`
 - `scripts/reth_dryrun.ps1`
 
@@ -363,7 +376,8 @@ T-004 (G-001 decode) ← parallel → T-005 (G-002 fuzzing)
   ↓
 [A-2 complete; Track B + A-3 can begin]
   ↓
-T-006 (Track B audit) ← parallel → T-009 (A-3 prep)
+T-006 (Track B audit) ← parallel → T-009 (A-3 prep)  
+*Note: After A-2 completes, T-006 (Track B) and T-009 (A-3 prep) MAY run in parallel per max-2-parallel rule.*
   ↓
 T-007 (Track B test in fork)
   ↓

@@ -1731,4 +1731,40 @@ Next step: None pending.
 - Blockers: None
 - Next step:
   - Ask: "Do you approve this Phase 2 task list with role assignments?" for Stage 3 gate
-  - If approved, proceed to Stage 4 implementation starting with T-001 for Stage 2 gate approval
+  - If approved, proceed to Stage 4 implementation starting with T-001
+
+---
+
+## 2026-03-27 Status Snapshot - Phase 2 Specification Refinement Complete
+
+- Timestamp: 2026-03-27 (afternoon)
+- Current stage: Phase 2 Stage 3 - Plan (ready for gate approval)
+- Completed since last update:
+  - Document consolidation: PHASE2_FORMAL_SPEC.md reduced from 544 to 454 lines (17% reduction, 90 lines removed)
+  - Fixed duplications: Section 7.2-7.5 condensed from full FR descriptions to implementation notes only
+  - Fixed inconsistencies: header status (approved), test count (170+), removed obsolete gate text
+  - Committed consolidation as 5e1eddd, pushed to origin/master (2 commits: d1feea6 + 5e1eddd)
+  - Invoked Rust Backend Specialist review: 10KB structured response with 4 sections (product understanding, scope verification, implementation clarity analysis, 7 improvement recommendations)
+  - Invoked Team Lead review: 11KB structured response with 4 sections (product vision, delivery plan assessment, coordination clarity analysis, 7 execution advice items)
+  - Applied 13 specification improvements (3 critical + 10 high-value):
+    - **Critical:** T-005 fuzzing threshold (≥95% pass rate), A-1 → A-2 handoff gate checklist, T-008 permission-gate fallback (48hr escalation)
+    - **High-value:** Anvil lifecycle (spawn in test setup), precompile error classification, compare_to_anvil() semantics (reporting only), Track B parallel work note, StateProvider placeholder strategy, proptest iteration count config, ExecutorError context example, T-006 time buffer (10-15hr with pivot rule), Stage 6 success clarification (PR submitted not merged), T-009 early-start option, chronicle template reference
+- In progress:
+  - Ready to proceed to Stage 3 gate approval
+- Decisions made:
+  - T-005 fuzzing exit criteria: ≥95% pass 10k iterations or document with security impact; critical-path panics MUST be fixed
+  - A-1 complete means: AC-001 through AC-007 passing, T-003 committed, no blockers in memory.md, CHR-009 complete
+  - T-008 fallback: if owner unavailable >48hr, escalate to next session OR defer Track B to Phase 3 (Track A proceeds)
+  - compare_to_anvil() is reporting tool, not enforcement tool (caller interprets gas_delta threshold)
+  - Phase 2 hard-codes CacheDB; Phase 3 refactors to StateProvider trait (additive change)
+  - Anvil tests spawn per-test instance on random port (isolation + no manual startup)
+  - Precompile input validation failure = InvalidInput (discovered during execution but represents caller data error)
+  - T-006 time-boxed to 10-15hr (pivot to revm if alloy-provider exceeds 10hr without gap)
+  - Stage 6 success = PR submitted (merge outcome tracked in feedback.json but doesn't block closure)
+  - T-009 can parallel T-005 if documentation cycles available (no A-2 code dependency)
+  - Track B and A-3 can truly parallel after A-2 (max 2 parallel rule allows)
+  - Chronicle entries require minimum sections: Context, Implementation, Decisions, Tests, Links to Spec (reference templates/IMPLEMENTATION_CHRONICLE_TEMPLATE.md)
+- Open questions: None
+- Blockers: None
+- Next step:
+  - Ask: "Do you approve this Phase 2 task list with role assignments?" for Stage 3 gate  - If approved, proceed to Stage 4 implementation starting with T-001 for Stage 2 gate approval
