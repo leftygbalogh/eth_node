@@ -133,6 +133,37 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
 
 ---
 
+## 2026-03-27 Status Snapshot (session close — Stage 5 exploratory TDD)
+
+- Timestamp: 2026-03-27
+- Current stage: Stage 5 — Verify (IN PROGRESS — gate approval NOT yet given)
+- HEAD: `4b5dcc3` — clean, fully pushed to origin/master
+- Tests: 131 total (79 unit + 2 fixture + 6+5+6+5 lib integration + 8 CLI unit + 14 CLI integration + 6 doc-tests)
+- Clippy: clean
+- Completed this session:
+  - S5-D1: `--dump-state` global flag fix + regression test (`aa1f0eb`)
+  - S5-D2: 4× clippy `map_or` → `is_some_and` in events.rs (`10b482c`)
+  - S5-D3: `--abi-file` option added to `call` subcommand + regression test (`d3e7e6c`)
+  - All 5 CLI exploratory sessions captured in `output/sessions/` with state.json artifacts
+  - Architecture / Readability / Maintainability reviews: PASS (2 Phase 2 risks logged)
+  - PPL-001 audit: PASS
+  - Terminal env matrix: `output/S5-terminal-env-matrix.md` created and committed
+  - Claire Voyant gate review: complete (S5-D3 was the flagged issue)
+  - `CLI_REFERENCE.md` created — beginner-friendly bash reference for all 5 commands (`881ce37`)
+  - `capture-session.sh` fixed: JSON-RPC Anvil probe + full session output to screen.log (`134f5f4`)
+  - `scripts/test-capture-session-balance.sh` created — automated check for Test #1
+  - Test #2 (invalid address UX): FIXED × 2 attempts — error now reports actual char count (`d5853bf`)
+  - FB-005 added to examples/feedback.json: TDD red-gate protocol violation recorded
+- In progress: User-driven exploratory TDD session (Test #3 not yet provided)
+- Next step:
+  1. Lefty provides Test #3 bash session output
+  2. Write locked test → FAIL → FAIL → fix → PASS → PASS → commit
+  3. Continue through remaining numbered tests
+  4. Request explicit Stage 5 gate approval from Lefty
+  5. Stage 6: Release checklist, README polish
+
+---
+
 ## 2026-03-27 Status Snapshot (session close — Stage 5 gap fixes)
 
 - Timestamp: 2026-03-27
