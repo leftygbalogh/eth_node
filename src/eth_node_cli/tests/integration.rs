@@ -438,3 +438,53 @@ fn test_cli_balance_invalid_address_gives_friendly_hint() {
         "error should report the actual length of the input (10 chars).\nGot: {stderr}"
     );
 }
+
+/// Test #3 (S5-exploratory): a very long address must NOT be echoed verbatim
+/// in the error message.
+///
+/// Input: 151-character address (the real Anvil first account with ~109 extra
+/// hex digits appended) — valid hex, valid prefix, wrong length.
+///
+/// The error must still report the character count so the user knows what was
+/// wrong, but embedding a 151-char string verbatim makes the error line
+/// unreadably long (400+ characters of JSON).  The address must be truncated
+/// (e.g. "0xf39F...5154") in the output.
+///
+/// Locked before first run per TDD protocol (FB-005).
+#[test]
+fn test_cli_balance_very_long_address_not_echoed_verbatim() {
+    let long_addr = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb922662412343214312413241432432412432143143434343432141324314144142413243214431421332143435643774562635515154315154";
+
+    let out = binary()
+        .args([
+            "--endpoint",
+            "http://127.0.0.1:19999",
+            "balance",
+            long_addr,
+        ])
+        .output()
+        .expect("run binary");
+
+    assert_eq!(
+        out.status.code(),
+        Some(1),
+        "very long address should exit 1, got: {:?}\nstderr: {}",
+        out.status,
+        String::from_utf8_lossy(&out.stderr)
+    );
+
+    let stderr = String::from_utf8_lossy(&out.stderr);
+
+    // Must still tell the user the actual length so they know what was wrong.
+    assert!(
+        stderr.contains("151"),
+        "error should report the actual address length (151).\nGot: {stderr}"
+    );
+
+    // The full 151-char address must NOT appear verbatim — it makes the output
+    // unreadably long.  Expect a truncated form instead.
+    assert!(
+        !stderr.contains(long_addr),
+        "error must not echo the full 151-char address verbatim — truncate it.\nGot: {stderr}"
+    );
+}

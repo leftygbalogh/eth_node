@@ -165,8 +165,13 @@ async fn cmd_balance(address: &str, client: &RpcClient) -> Result<Value, String>
         .parse()
         .map_err(|_| {
             let len = address.len();
+            let display = if len > 20 {
+                format!("{}...{}", &address[..10], &address[len - 6..])
+            } else {
+                address.to_string()
+            };
             format!(
-                "invalid address '{address}': got {len} characters, expected exactly 42 (0x + 40 hex digits, e.g. 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266)"
+                "invalid address '{display}': got {len} characters, expected exactly 42 (0x + 40 hex digits, e.g. 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266)"
             )
         })?;
 
