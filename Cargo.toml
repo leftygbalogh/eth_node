@@ -30,6 +30,9 @@ url = "2"
 # Async runtime
 tokio = { version = "1", features = ["full"] }
 
+# Phase 2: EVM execution
+revm = { version = "14", default-features = false, features = ["std"] }
+
 # Serialization
 # Pinned to <1.0.215 — alloy-consensus 0.12.6 uses serde::__private directly.
 # serde 1.0.215+ introduced serde_core crate split which removed/restructured __private.
