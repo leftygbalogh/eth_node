@@ -650,3 +650,9 @@ approved go ahead
 
 ### Prompt (Session close)
 save state and files, commit and push. Get ready for session closing
+
+### Prompt (Stage transition)
+stage approved, let's go onto the next. tell me what is on that tasklist
+
+### Prompt (Task list update)
+go ahead

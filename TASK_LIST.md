@@ -162,7 +162,7 @@ Create the session capture wrapper scripts used by the Exploratory Tester for ma
 3. Scripts tested manually and confirmed working (Exploratory Tester sign-off)
 4. `chronicle/test-infrastructure.md` updated with session capture design note
 
-**Status:** `[ ]`
+**Status:** `[x]` — DONE 2026-03-27 (commits `7b322c9`, `875030f` and follow-up fixes)
 
 ---
 
@@ -199,7 +199,7 @@ Implement `eth_node::rpc` — typed JSON-RPC client over HTTP and WebSocket. All
 6. `cargo clippy -- -D warnings` clean
 7. `chronicle/rpc.md` entry complete
 
-**Status:** `[ ]`
+**Status:** `[x]` — DONE 2026-03-26 (commit `bd3bf26`)
 
 ---
 
@@ -235,7 +235,7 @@ Implement `eth_node::signer` — load private key from env, derive address, sign
 
 **TDD Navigator note:** The `test_key_not_in_logs` test is critical for NFR-002. It must use a tracing subscriber that captures output and asserts the key string is absent — not just "looks like it doesn't log it."
 
-**Status:** `[ ]`
+**Status:** `[x]` — DONE 2026-03-26 (commit `bef590e`)
 
 ---
 
@@ -272,7 +272,7 @@ Implement `eth_node::tx` — `TransactionBuilder` (FR-003) and `Broadcaster` (FR
 4. `cargo clippy -- -D warnings` clean
 5. `chronicle/tx.md` entry complete
 
-**Status:** `[ ]`
+**Status:** `[x]` — DONE 2026-03-26 (commit `79092a6`)
 
 ---
 
@@ -308,6 +308,10 @@ Implement `eth_node::events` — `Listener` with HTTP polling mode and WebSocket
 **Claire Voyant note:** *WebSocket reconnect under load is the highest-risk path. The 3-attempt cap and exponential backoff must be tested — not just the happy-path reconnect — because a silent infinite-loop reconnect would hang the stream without surfacing an error.*
 
 **Status:** `[x]` — DONE 2026-03-26 (commit `ea7379a`)
+
+---
+
+## T-008 — Contract Caller Module
 
 **Owner:** Rust API Contract Serialization Specialist + TDD Driver
 **Navigator:** TDD Navigator

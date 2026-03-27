@@ -1382,3 +1382,38 @@ Next step: None pending.
 - Open questions: None
 - Blockers: None
 - Next step: Resume Stage 5 verification (V-002 through V-010), then request Stage 5 gate approval from Team Lead
+
+## 2026-03-27 Status Snapshot - Stage 5 Approved
+
+- Timestamp: 2026-03-27
+- Current stage: Stage 6 - Release (ready to begin)
+- Completed since last update:
+  - Stage 5 gate explicitly approved by Lefty
+  - Recent docs fixes committed for CLI reference accuracy
+  - Latest commit: 92e04aa (tx-status placeholder clarification)
+- In progress:
+  - Stage 6 kickoff and release-task alignment
+- Decisions made:
+  - Proceed to next stage immediately after approval
+- Open questions:
+  - Whether to reconcile TASK_LIST.md status markers to match actual completion history
+- Blockers: None
+- Next step:
+  - Present current task list snapshot and identify remaining actionable items
+
+## 2026-03-27 Status Snapshot - Task List Reconciled
+
+- Timestamp: 2026-03-27
+- Current stage: Stage 6 - Release (in progress)
+- Completed since last update:
+  - TASK_LIST.md reconciled with actual completion state
+  - T-003, T-004, T-005, T-006 status markers corrected to done
+  - Missing T-008 heading restored for structural consistency
+- In progress:
+  - Release-stage alignment and housekeeping commits
+- Decisions made:
+  - Keep historical completion references directly on each task status line
+- Open questions: None
+- Blockers: None
+- Next step:
+  - Commit and push housekeeping updates, then continue Stage 6 flow
