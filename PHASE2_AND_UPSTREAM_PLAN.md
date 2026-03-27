@@ -122,11 +122,21 @@ Contribution loop per target:
 - Track B runs in parallel when a dependency gap is discovered that materially affects Track A confidence.
 - Track B actions remain permission-gated under governance when third-party repo operations are involved.
 
-## 7. Phase 2 Planning Baseline for Next Spec Cycle
+## 6.1 Program Scaling Decision (Explicit Record)
+
+**Date:** 2026-03-27  
+**Decision:** Hybrid conceptual + operational approach.
+
+- **Conceptually:** Track-Based-Split (Option 3) — think of Track A (local eth_node continuation) and Track B (upstream contributions) as architecturally separate concerns.
+- **Operationally:** Single-Repo (Option 1) — execute both tracks within the same eth_node repository initially.
+- **Future trajectory:** If Track A and Track B diverge in scale or team assignment in Phase 3+, split into separate repos (hub model). Merge logic remains bidirectional via code examples and test integration.
+- **Justification:** This hybrid preserves the conceptual clarity of two coordinated tracks while eliminating the setup/CI overhead of multiple repos in Phase 2. Decision can be revisited at Phase 3 Stage 1 discovery.
+
+## 8. Phase 2 Planning Baseline for Next Spec Cycle
 
 This section is intentionally "incomplete but detailed": enough for spec kickoffs, without pretending decisions are final.
 
-## 7.1 Proposed first backlog wave
+## 8.1 Proposed first backlog wave
 
 1. P2-001: Implement revm executor foundation (A-1)
 2. P2-002: Close G-001 live decode completeness
@@ -134,23 +144,27 @@ This section is intentionally "incomplete but detailed": enough for spec kickoff
 4. P2-004: Define Reth environment readiness checklist (A-3 prep)
 5. P2-005: Run first upstream audit candidate and choose first Track B target
 
-## 7.2 Required design questions for next brief/spec
+## 8.2 Required design questions for next brief/spec
 
 1. Should A-2 quality closure be mandatory before A-3 (Reth prep)?
+   - **Decision (2026-03-27):** Mandatory. A-2 must complete (G-001 + G-002) before A-3 begins.
 2. Which network target is preferred first for Reth experiments: Sepolia or Holesky?
+   - **Decision (2026-03-27):** Sepolia. Execution-layer focus aligns with eth_node modules; lower hardware requirements.
 3. What is the maximum parallelism allowed between Track A and Track B?
+   - **Decision (2026-03-27):** Max 2 parallel tasks (1 per track). Solo developer context; minimizes context-switching.
 4. What is the minimum acceptance threshold for an upstream side-project candidate (coverage delta, bug class, or risk class)?
+   - **Decision (2026-03-27):** Test coverage delta ≥ 10% OR missing edge case in critical path (panic, wrong-value, or security-relevant behavior).
 
-## 8. Entry Criteria for Phase 2 Kickoff
+## 9. Entry Criteria for Phase 2 Kickoff
 
 1. Confirm hardware/runtime target for Reth experiments (disk and memory).
 2. Approve Track A first increment (A-1) and whether A-2 is folded in immediately.
 3. Declare Track B intent explicitly at Stage 1 for the next project cycle:
-   - target repositories
-   - contribution type (tests/docs/fixes)
-   - permission acknowledgment
+   - target repositories → **Decided: alloy-provider, revm**
+   - contribution type (tests/docs/fixes) → **Decided: unit tests or property tests**
+   - permission acknowledgment → **Acknowledged: Track B submissions require explicit owner approval before PR**
 
-## 9. Definition of Done for This Planning Artifact
+## 10. Definition of Done for This Planning Artifact
 
 This document is complete when:
 
@@ -159,7 +173,7 @@ This document is complete when:
 3. It defines concrete first increments, carry-over quality debt, and phase-entry criteria.
 4. It is used as input to the next project brief/spec/task-list cycle.
 
-## 10. Explicitly Not Finalized Yet
+## 11. Explicitly Not Finalized Yet
 
 1. Final task sequencing and effort estimates.
 2. Specific upstream repositories selected for first Track B contribution.

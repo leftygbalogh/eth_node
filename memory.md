@@ -1593,3 +1593,142 @@ Next step: None pending.
 - Blockers: None
 - Next step:
   - Commit if approved
+
+## 2026-03-27 Status Snapshot - Plan Artifact Published
+
+- Timestamp: 2026-03-27
+- Current stage: Post-release planning follow-up
+- Completed since last update:
+  - Committed enriched planning artifact bundle: 4fc823f
+  - Pushed to origin/master (c862051..4fc823f)
+- In progress:
+  - None
+- Decisions made:
+  - Keep Phase 2 and upstream plan as baseline input for future brief/spec cycles
+- Open questions:
+  - None
+- Blockers: None
+- Next step:
+  - Use PHASE2_AND_UPSTREAM_PLAN.md as source for the next project cycle kickoff
+
+## 2026-03-27 Reference Note - Naming Check for "Primitives"
+
+- User asked whether "primitives" is still the right name for current foundational module set.
+- Current primitives module includes address parsing, ABI encode/decode helpers, RLP encode/decode helpers, and event selector utility.
+- Confirmed: name fits content; no renaming needed.
+
+## 2026-03-27 Status Snapshot - Program Scaling Structure Decision
+
+- Timestamp: 2026-03-27
+- Current stage: Phase 2 planning (pre-Stage 1)
+- Completed since last update:
+  - Analyzed three program scaling alternatives (Single-Repo, Hub+Child-Repos, Track-Based-Split)
+  - Defined carving logic for slicing future work (dependency-safe, demo-able per cycle, prioritized)
+- In progress:
+  - Awaiting user decision on structural approach
+- Decisions made:
+  - "Primitives" naming validated
+- Open questions:
+  - Which scaling structure to adopt for Phase 2 and beyond
+- Blockers: None
+- Next step:
+  - User to choose structural approach
+
+## 2026-03-27 Status Snapshot - Phase 2 Structural Decision Recorded
+
+- Timestamp: 2026-03-27
+- Current stage: Phase 2 planning (pre-Stage 1)
+- Completed since last update:
+  - User approved hybrid approach: Track-Based conceptually (Option 3), Single-Repo operationally (Option 1)
+  - Recorded decision explicitly in PHASE2_AND_UPSTREAM_PLAN.md Section 6.1
+  - Created PHASE2_TRANSITION_TASKLIST.md with 30-step execution plan (Stage 1-6 gates, Track A/B separation, permission-gating, post-release checkpoint)
+- In progress:
+  - Phase 2 Stage 1 discovery kickoff
+- Decisions made:
+  - Single-repo dual-track for Phase 2; can split to hub model in Phase 3 if needed
+  - Track A: product continuation in src/executor/, src/quality/
+  - Track B: upstream contributions in src/upstream_contrib/
+- Open questions:
+  - Design questions from PHASE2_AND_UPSTREAM_PLAN.md Section 8.2 (now Section 8.2 after numbering update)
+- Blockers: None
+- Next step:
+  - Drive forward using Socratic method; begin Phase 2 Stage 1 discovery
+
+## 2026-03-27 Status Snapshot - Phase 2 Stage 1 Discovery Complete
+
+- Timestamp: 2026-03-27
+- Current stage: Phase 2 Stage 1 - Discover (gate approved)
+- Completed since last update:
+  - Resolved all 4 design questions (A-2 mandatory before A-3, Sepolia target, max 2 parallel tasks, upstream threshold ≥10% coverage or critical edge case)
+  - Confirmed hardware target (16 GB RAM, 190 GB SSD)
+  - Approved first backlog wave (P2-001 through P2-005)
+  - Declared Track B intent (alloy-provider + revm, unit/property tests, permission-gated)
+  - Created PHASE2_PROJECT_BRIEF.md consolidating all discovery decisions
+  - Product owner approved Stage 1 gate (2026-03-27)
+- In progress:
+  - Awaiting "Can we start work now, boss?" confirmation before proceeding to Stage 2
+- Decisions made:
+  - A-2 mandatory before A-3
+  - Sepolia network target
+  - Max 2 parallel tasks (1 per track)
+  - Upstream acceptance threshold: coverage ≥10% OR critical-path edge case
+  - Track B targets: alloy-provider, revm
+- Open questions: None
+- Blockers: None
+- Next step:
+  - Ask "Can we start work now, boss?" per governance instruction; if yes, proceed to Stage 2 (formal specification)
+
+## 2026-03-27 Status Snapshot - Phase 2 Stage 2 Specification Begins
+
+- Timestamp: 2026-03-27
+- Current stage: Phase 2 Stage 2 - Specify (in progress)
+- Completed since last update:
+  - Received "yes" confirmation to start work
+  - Transitioning to formal specification phase
+- In progress:
+  - Decomposing A-1 (revm executor): API surface, error cases, acceptance criteria
+- Decisions made:
+  - Stage 1 gate closed with owner approval
+- Open questions:
+  - Detailed API design for executor module
+- Blockers: None
+- Next step:
+  - Decompose A-1, A-2, A-3 prep, Track B target selection; produce formal spec
+
+## 2026-03-27 Status Snapshot - Phase 2 Architecture Hardening Complete
+
+- Timestamp: 2026-03-27
+- Current stage: Phase 2 Stage 3 - Plan (awaiting gate approval)
+- Completed since last update:
+  - Stage 2 gate approved (2026-03-27, Lefty)
+  - Created PHASE2_FORMAL_SPEC.md with FR-001 through FR-007, NFR-001 through NFR-004
+  - Created PHASE2_TASK_LIST.md with T-001 through T-009 (40-50 hours, 170+ tests)
+  - Invoked Greenfield Evolution Architect subagent for review
+  - Received architect review: 5 strengths, 5 risks, 7 recommendations (R1-R7), 5 open questions (Q1-Q5)
+  - User accepted all 7 recommendations
+  - Resolved Q1: no executor caching in Phase 2 (defer to Phase 3 Component #8)
+  - Resolved Q2: error classification table with 12 scenarios (InvalidInput vs RevmFailure rules)
+  - Applied all 7 recommendations to PHASE2_FORMAL_SPEC.md, PHASE2_PROJECT_BRIEF.md, PHASE2_TASK_LIST.md:
+    - R1: SimulationContext wrapper (FR-001, FR-002)
+    - R2: ExecutorError::Context variant (Section 7.1)
+    - R3: Module dependency rules (Section 9.4)
+    - R4: Track B isolation policy (PHASE2_PROJECT_BRIEF.md Section 2, T-006 AC)
+    - R5: Fuzzing feature flag (FR-005, T-005)
+    - R6: StateProvider trait extension point (FR-001 out-of-scope section)
+    - R7: Track B extraction triggers (PHASE2_PROJECT_BRIEF.md Section 2)
+- In progress:
+  - Awaiting Stage 3 gate approval (task list with role assignments)
+- Decisions made:
+  - API decoupled from revm via SimulationContext (evolution-safe for revm v7.0+)
+  - Error types extensible via Context variant (supports Phase 3 diagnostics)
+  - Module boundaries defined (executor → contract one-way)
+  - Track B isolated (no eth_node imports)
+  - Fuzzing gated behind feature flag (local opt-in, CI automatic)
+  - StateProvider deferred to Phase 3 (state-fork scenarios not needed yet)
+  - Track B extraction triggers defined (>5 targets OR >1 contributor OR >50% commits OR >3 conflicts/month)
+  - Q3-Q5 deferred to Phase 3 planning (revm upgrade policy, fuzzing scope expansion, observability)
+- Open questions: None
+- Blockers: None
+- Next step:
+  - Ask: "Do you approve this Phase 2 task list with role assignments?" for Stage 3 gate
+  - If approved, proceed to Stage 4 implementation starting with T-001 for Stage 2 gate approval

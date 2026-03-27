@@ -697,3 +697,94 @@ what is the 12 component plan explicitly in  #file:PHASE2_AND_UPSTREAM_PLAN.md  
 
 ### Prompt (Expand plan with references)
 Can you pull in all the external references into this doc in a coherent format so we have an incomplete, but detailed plan that we can use for specs in all subsequent phases, please.
+
+### Prompt (Push plan commit)
+y
+
+### Prompt (Naming question - primitives)
+okay, so let's look at what we have, the primitives I think. Would that be a good name to call them?
+
+### Prompt (Request for extensible structure)
+okay, then let's figure out a extensible structure, and the logic how we can keep on adding more and more project to this one by [taking fragments and implementing them]. Suggestion only, no changes yet. Keep it succinct for now, present multiple alternatives
+
+### Prompt (Structural decision - hybrid Option 3/Option 1)
+Start with Option 3 conceptually (Track A vs Track B), but operationalize with Option 1 first.
+
+Also put this decision into writing so we have an explicit record
+
+What would be a step by step excution plan for this? Give me a numbered list.
+
+### Prompt (Design Q1 - A-2 sequencing)
+mandatory A-2 before A-3
+
+### Prompt (Design Q2 - network target + preference for single suggestion)
+going forward, jusy make one suggestion with reasoning; Sepo here is our choice
+
+### Prompt (Design Q3 - parallelism limit)
+agreed max 2
+
+### Prompt (Design Q4 - upstream threshold)
+yes
+
+### Prompt (Discovery Q2 - hardware specs)
+16 gig of ram, 190 gigs of ssd
+
+### Prompt (Discovery Q3 - backlog wave approval)
+yes
+
+### Prompt (Discovery Q4 - Track B target declaration)
+yes
+
+### Prompt (Stage 1 brief creation approval)
+y
+
+### Prompt (Stage 1 gate approval)
+approved
+
+### Prompt (Can we start work now confirmation)
+yes
+
+### Prompt (Stage 2 A-1 API design question - attack scenario scope)
+With the error cases can we also explore attack scenarios, fuzzing or intentional misuse - or is that too big a scope and we would be diluting the effort?
+
+### Prompt (Scope separation decision approval)
+yes, please record the impact of this decision in the governance docs
+
+### Prompt (Stage 2 Step 6 - A-1 API specification approval)
+y
+
+### Prompt (Stage 2 Step 7 - A-2 quality closure specification approval)
+y
+
+### Prompt (Stage 2 Step 8 - A-3 prep specification approval)
+y
+
+### Prompt (Stage 2 Step 9 - Track B audit specification approval)
+y
+
+### Prompt (Stage 2 Step 10 - formal spec creation approval)
+y
+
+### Prompt (Stage 2 gate approval)
+goog, lets move on
+
+### Prompt (Stage 3 Step 12 - directory creation timing decision)
+yes, we can defer it until later. Record this decision.
+
+Then invoke the #file:greenfield-evolution-architect.md agent and discuss the specs with him, ask for his advice and suggestions.
+
+### Prompt (Greenfield architect recommendations acceptance)
+accepted
+
+### Prompt (Architecture Q1 - executor caching decision)
+y
+
+### Prompt (Architecture Q2 - error classification table approval)
+ok
+
+### Prompt (Design Q1 - A-2 sequencing)
+mandatory A-2 before A-3
+
+---
+
+[2026-03-27 Architecture hardening complete: All 7 architect recommendations (R1-R7) incorporated into PHASE2_FORMAL_SPEC.md, PHASE2_PROJECT_BRIEF.md, PHASE2_TASK_LIST.md. Evolution-safety improvements: SimulationContext API wrapper, ExecutorError::Context variant, module dependency rules (executor ? contract one-way), Track B isolation policy (no eth_node imports), fuzzing feature flag (local opt-in, CI automatic), StateProvider extension point (Phase 3 state-fork scenarios), Track B extraction triggers (measurable criteria for repo split). Q3-Q5 deferred to Phase 3. Ready for Stage 3 gate approval.]
