@@ -396,3 +396,40 @@ fn test_cli_call_accepts_abi_file() {
     );
     let _ = std::fs::remove_file(&path);
 }
+
+/// Test #2 (S5-exploratory): malformed address gives a human-readable error.
+///
+/// When the user passes a malformed address (e.g. just "0x" — obviously too
+/// short), the CLI should exit 1 and print a message that:
+///   - explains the address is invalid, AND
+///   - tells the user what a valid address looks like (starts with 0x, 42 chars)
+///
+/// Currently the CLI emits the raw alloy hex-decode error which gives no
+/// actionable guidance. This test is locked before first run per TDD protocol.
+#[test]
+fn test_cli_balance_invalid_address_gives_friendly_hint() {
+    let out = binary()
+        .args([
+            "--endpoint",
+            "http://127.0.0.1:19999", // no server — fails immediately at parse
+            "balance",
+            "0x",  // obviously malformed: too short, no hex digits
+        ])
+        .output()
+        .expect("run binary");
+
+    assert_eq!(
+        out.status.code(),
+        Some(1),
+        "malformed address should exit 1, got: {:?}\nstderr: {}",
+        out.status,
+        String::from_utf8_lossy(&out.stderr)
+    );
+
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    // Must contain a hint about address format — not just a raw parse error.
+    assert!(
+        stderr.contains("42") || stderr.contains("0x") && stderr.contains("hex"),
+        "error message should tell the user what a valid address looks like.\nGot: {stderr}"
+    );
+}

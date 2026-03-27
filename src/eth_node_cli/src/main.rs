@@ -163,7 +163,10 @@ async fn run(cli: &Cli) -> Result<Value, String> {
 async fn cmd_balance(address: &str, client: &RpcClient) -> Result<Value, String> {
     let addr: Address = address
         .parse()
-        .map_err(|e| format!("invalid address: {e}"))?;
+        .map_err(|_| format!(
+            "invalid address '{}' — addresses must start with 0x and be exactly 42 hex characters (e.g. 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266)",
+            address
+        ))?;
 
     let wei = client.get_balance(addr).await.map_err(|e| e.to_string())?;
 
