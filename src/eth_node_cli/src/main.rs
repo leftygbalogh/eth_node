@@ -14,6 +14,7 @@ use clap::{Parser, Subcommand};
 use eth_node::{
     contract::ContractCaller,
     events::Listener,
+    primitives::event_selector,
     rpc::RpcClient,
     signer::EthSigner,
     tx::{Broadcaster, TxBuilder},
@@ -226,7 +227,7 @@ async fn cmd_watch(
 
     // Optional topic-0 filter.
     if let Some(sig) = event {
-        let topic0 = topic0_from_str(sig);
+        let topic0 = event_selector(sig);
         filter = filter.event_signature(topic0);
         info!(%contract, %topic0, "watching with topic-0 filter");
     } else {
@@ -385,21 +386,6 @@ fn parse_dyn_sol_value(s: &str) -> DynSolValue {
     DynSolValue::String(s.to_string())
 }
 
-/// Derive a topic-0 `B256` from an event descriptor string.
-///
-/// If the input is already a `0x`-prefixed 32-byte hash it is returned as-is.
-/// Otherwise the string is keccak256-hashed (Solidity event-signature style).
-fn topic0_from_str(s: &str) -> B256 {
-    // Already a 32-byte hex hash?
-    if (s.starts_with("0x") || s.starts_with("0X")) && s.len() == 66 {
-        if let Ok(hash) = s.parse::<B256>() {
-            return hash;
-        }
-    }
-    // Hash the raw bytes of the signature string (Solidity convention).
-    alloy_primitives::keccak256(s.as_bytes())
-}
-
 /// Initialise `tracing-subscriber` with a JSON layer on stderr.
 fn init_logging(cli: &Cli) {
     use tracing_subscriber::{fmt, EnvFilter};
@@ -461,7 +447,7 @@ mod tests {
     #[test]
     fn topic0_from_known_transfer_signature() {
         // keccak256("Transfer(address,address,uint256)") known constant
-        let topic = topic0_from_str("Transfer(address,address,uint256)");
+        let topic = event_selector("Transfer(address,address,uint256)");
         let hex = format!("{topic:?}");
         assert_eq!(
             hex,
@@ -472,7 +458,7 @@ mod tests {
     #[test]
     fn topic0_passthrough_existing_hash() {
         let hash = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
-        let topic = topic0_from_str(hash);
+        let topic = event_selector(hash);
         assert_eq!(format!("{topic:?}"), hash);
     }
 }

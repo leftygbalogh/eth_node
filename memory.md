@@ -1296,3 +1296,22 @@ Next step: None pending.
 - Open questions: None.
 - Blockers: None.
 - Next step: Review wording with Lefty and commit when approved.
+
+## 2026-03-27 Status Snapshot — Stage 5 Gap Fixes Applied
+
+- Timestamp: 2026-03-27
+- Current stage: Stage 5 — Verify (gap fixes complete, awaiting approval)
+- Completed since last update:
+  - Gap-001 (BLOCKER): Filled CHR-004 through CHR-008 with real implementation content
+  - Gap-002 (BLOCKER): Added #[tracing::instrument] to all 13 public async methods in rpc.rs
+  - Gap-003 (WARNING): Added 3 CLI integration tests: test_cli_send, test_cli_watch_prints_banner, test_cli_call_graceful
+  - Gap-004: Deferred (proptest is proportionate substitute for Phase 1)
+  - Gap-005 (WARNING): Moved topic0_from_str to eth_node::primitives::event_selector; CLI updated to call library
+- In progress: Commit and push, then continue Stage 5 verification activities
+- Decisions made:
+  - event_selector pass-through: if input is already a 0x 32-byte hash, return as-is
+  - CLI unit tests now call eth_node::primitives::event_selector (no domain logic in CLI)
+- Open questions: None
+- Blockers: None
+- Tests: 128 total (79 unit + 24 integration + 11 CLI integration + 8 CLI unit + 6 doc-tests), all passing
+- Next step: Commit/push, then V-002 through V-010 verification activities

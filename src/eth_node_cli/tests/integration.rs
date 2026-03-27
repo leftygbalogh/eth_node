@@ -197,3 +197,134 @@ fn test_cli_dump_state_writes_file() {
 
     std::fs::remove_file(&tmp_path).ok();
 }
+
+// ── Anvil account fixture ─────────────────────────────────────────────────────
+
+/// Anvil deterministic account 0 private key (well-known, non-secret).
+const ANVIL_KEY: &str = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
+/// Anvil deterministic account 1 address (used as send recipient).
+const ANVIL_ADDR_1: &str = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8";
+/// Anvil deterministic account 0 address.
+const ANVIL_ADDR_0: &str = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
+
+/// `send <to> <amount> --private-key <key>` broadcasts 0.001 ETH and prints a tx hash.
+///
+/// Skips when Anvil is not running on 127.0.0.1:8545.
+#[test]
+fn test_cli_send() {
+    let endpoint = match anvil_endpoint() {
+        Some(e) => e,
+        None => {
+            eprintln!("anvil not reachable — skipping test_cli_send");
+            return;
+        }
+    };
+
+    let out = binary()
+        .args([
+            "--endpoint",
+            &endpoint,
+            "send",
+            ANVIL_ADDR_1,
+            "1000000000000000", // 0.001 ETH in wei
+            "--private-key",
+            ANVIL_KEY,
+        ])
+        .output()
+        .expect("run binary");
+
+    assert!(
+        out.status.success(),
+        "send failed: {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    // The CLI prints "Transaction <status>: 0x<hash> in block <n>".
+    assert!(
+        stdout.contains("0x"),
+        "stdout should contain a tx hash: {stdout}"
+    );
+}
+
+/// `watch <contract>` connects, prints the watching banner, then is killed.
+///
+/// The test spawns the process, waits 800 ms (long enough for the banner to
+/// appear), kills it, and asserts the banner was printed.
+///
+/// Skips when Anvil is not running on 127.0.0.1:8545.
+#[test]
+fn test_cli_watch_prints_banner() {
+    let endpoint = match anvil_endpoint() {
+        Some(e) => e,
+        None => {
+            eprintln!("anvil not reachable — skipping test_cli_watch_prints_banner");
+            return;
+        }
+    };
+
+    let mut child = binary()
+        .args([
+            "--endpoint",
+            &endpoint,
+            "watch",
+            "0x0000000000000000000000000000000000000000",
+        ])
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()
+        .expect("spawn binary");
+
+    std::thread::sleep(std::time::Duration::from_millis(800));
+    let _ = child.kill();
+    let out = child.wait_with_output().expect("wait binary");
+
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(
+        stdout.contains("Watching"),
+        "expected 'Watching' banner in stdout: {stdout}"
+    );
+}
+
+/// `call <contract> <fn> <arg> --abi <json>` against the zero address.
+///
+/// A zero address holds no code on Anvil, so eth_call returns zero bytes.
+/// The CLI exits either 0 (empty/zero decode) or 1 (ABI decode error) — both
+/// are acceptable; the test asserts no panic (exit code 0 or 1, not ≥2 or signal).
+///
+/// Skips when Anvil is not running on 127.0.0.1:8545.
+#[test]
+fn test_cli_call_graceful() {
+    let endpoint = match anvil_endpoint() {
+        Some(e) => e,
+        None => {
+            eprintln!("anvil not reachable — skipping test_cli_call_graceful");
+            return;
+        }
+    };
+
+    let abi = r#"[{"name":"balanceOf","type":"function","inputs":[{"name":"account","type":"address"}],"outputs":[{"name":"","type":"uint256"}],"stateMutability":"view"}]"#;
+
+    let out = binary()
+        .args([
+            "--endpoint",
+            &endpoint,
+            "call",
+            "0x0000000000000000000000000000000000000000",
+            "balanceOf",
+            ANVIL_ADDR_0,
+            "--abi",
+            abi,
+        ])
+        .output()
+        .expect("run binary");
+
+    // Graceful exit: 0 (decoded value) or 1 (ABI decode error on empty bytes).
+    // Any other code (≥2 or signal) indicates a panic or crash — unacceptable.
+    let code = out.status.code().unwrap_or(99);
+    assert!(
+        code == 0 || code == 1,
+        "call should exit 0 or 1 (graceful), got {code}\nstderr: {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+}
+

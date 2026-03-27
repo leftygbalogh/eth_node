@@ -9,6 +9,7 @@ use alloy_rpc_types::{
     Block, BlockId, BlockNumberOrTag, Filter, Log, TransactionReceipt, TransactionRequest,
 };
 use thiserror::Error;
+use tracing::instrument;
 use url::Url;
 
 // ── Error type ───────────────────────────────────────────────────────────────
@@ -112,6 +113,7 @@ impl RpcClient {
     // ── eth_blockNumber ───────────────────────────────────────────────────
 
     /// `eth_blockNumber` — current chain head block number.
+    #[instrument(skip(self), err)]
     pub async fn block_number(&self) -> Result<u64, RpcError> {
         self.inner
             .get_block_number()
@@ -122,6 +124,7 @@ impl RpcClient {
     // ── eth_getBalance ────────────────────────────────────────────────────
 
     /// `eth_getBalance(address, "latest")` — account balance in Wei.
+    #[instrument(skip(self), err)]
     pub async fn get_balance(&self, address: Address) -> Result<U256, RpcError> {
         self.inner
             .get_balance(address)
@@ -130,6 +133,7 @@ impl RpcClient {
     }
 
     /// `eth_getBalance(address, block_id)` — balance at a specific block.
+    #[instrument(skip(self), err)]
     pub async fn get_balance_at(
         &self,
         address: Address,
@@ -145,6 +149,7 @@ impl RpcClient {
     // ── eth_getTransactionCount ───────────────────────────────────────────
 
     /// `eth_getTransactionCount(address, "latest")` — current account nonce.
+    #[instrument(skip(self), err)]
     pub async fn get_nonce(&self, address: Address) -> Result<u64, RpcError> {
         self.inner
             .get_transaction_count(address)
@@ -153,6 +158,7 @@ impl RpcClient {
     }
 
     /// `eth_getTransactionCount(address, block_id)` — nonce at a specific block.
+    #[instrument(skip(self), err)]
     pub async fn get_nonce_at(&self, address: Address, block: BlockId) -> Result<u64, RpcError> {
         self.inner
             .get_transaction_count(address)
@@ -166,6 +172,7 @@ impl RpcClient {
     /// `eth_getTransactionReceipt(tx_hash)` — receipt for a mined transaction.
     ///
     /// Returns `None` if the transaction is not yet mined or unknown.
+    #[instrument(skip(self), err)]
     pub async fn get_transaction_receipt(
         &self,
         hash: B256,
@@ -179,6 +186,7 @@ impl RpcClient {
     // ── eth_getBlockByNumber ──────────────────────────────────────────────
 
     /// `eth_getBlockByNumber(tag, false)` — block with transaction hashes (not full objects).
+    #[instrument(skip(self), err)]
     pub async fn get_block_by_number(
         &self,
         tag: BlockNumberOrTag,
@@ -196,6 +204,7 @@ impl RpcClient {
     /// Returns the transaction hash. Does **not** wait for confirmation;
     /// use [`get_transaction_receipt`](Self::get_transaction_receipt) to poll
     /// for the receipt.
+    #[instrument(skip(self, signed_rlp), err)]
     pub async fn send_raw_transaction(&self, signed_rlp: &[u8]) -> Result<B256, RpcError> {
         let pending = self
             .inner
@@ -210,6 +219,7 @@ impl RpcClient {
     /// `eth_call(call_object, "latest")` — simulate a call without a transaction.
     ///
     /// Returns the raw ABI-encoded return data.
+    #[instrument(skip(self, tx), err)]
     pub async fn call(&self, tx: TransactionRequest) -> Result<Bytes, RpcError> {
         self.inner.call(tx).await.map_err(map_transport_err)
     }
@@ -217,6 +227,7 @@ impl RpcClient {
     // ── eth_getLogs ───────────────────────────────────────────────────────
 
     /// `eth_getLogs(filter)` — query logs matching a filter.
+    #[instrument(skip(self, filter), err)]
     pub async fn get_logs(&self, filter: &Filter) -> Result<Vec<Log>, RpcError> {
         self.inner
             .get_logs(filter)
@@ -229,6 +240,7 @@ impl RpcClient {
     /// `eth_chainId` — chain ID of the connected network.
     ///
     /// For Anvil the default is `31337`.
+    #[instrument(skip(self), err)]
     pub async fn chain_id(&self) -> Result<u64, RpcError> {
         self.inner
             .get_chain_id()
@@ -239,6 +251,7 @@ impl RpcClient {
     // ── eth_gasPrice ──────────────────────────────────────────────────────
 
     /// `eth_gasPrice` — current gas price in Wei.
+    #[instrument(skip(self), err)]
     pub async fn gas_price(&self) -> Result<u128, RpcError> {
         self.inner
             .get_gas_price()
@@ -249,6 +262,7 @@ impl RpcClient {
     // ── eth_estimateGas ───────────────────────────────────────────────────
 
     /// `eth_estimateGas(call_object)` — estimate gas for a call or transaction.
+    #[instrument(skip(self, tx), err)]
     pub async fn estimate_gas(&self, tx: TransactionRequest) -> Result<u64, RpcError> {
         self.inner
             .estimate_gas(tx)

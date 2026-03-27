@@ -173,6 +173,32 @@ pub fn rlp_decode_list(data: &[u8]) -> Result<RlpList, PrimitiveError> {
     RlpList::decode(&mut buf).map_err(|e| PrimitiveError::RlpDecodeError(e.to_string()))
 }
 
+// ── Event selector ──────────────────────────────────────────────────────────
+
+/// Compute the topic-0 selector hash for an Ethereum event signature.
+///
+/// Equivalent to `keccak256(sig.as_bytes())` per the Solidity ABI specification.
+/// If `sig` is already a `0x`-prefixed 32-byte hex hash it is returned as-is.
+///
+/// # Examples
+/// ```
+/// use eth_node::primitives::event_selector;
+/// let t = event_selector("Transfer(address,address,uint256)");
+/// assert_eq!(
+///     format!("{t:?}"),
+///     "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+/// );
+/// ```
+pub fn event_selector(sig: &str) -> alloy_primitives::B256 {
+    // Already a 32-byte hex hash? Pass through unchanged.
+    if (sig.starts_with("0x") || sig.starts_with("0X")) && sig.len() == 66 {
+        if let Ok(hash) = sig.parse::<alloy_primitives::B256>() {
+            return hash;
+        }
+    }
+    alloy_primitives::keccak256(sig.as_bytes())
+}
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
