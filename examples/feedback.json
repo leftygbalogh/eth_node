@@ -32,7 +32,7 @@
       "observation": "The 'poke and probe' Q&A window at stage transitions (user's learning safety net) is not a named pattern in the governance. It emerged organically from this project's Stage 1 discussion.",
       "suggestion": "Codify a named 'Stage Transition Review Window' in the stage gate protocol: before presenting a gate for approval, the owner may ask any number of clarifying questions about the completed stage work. Agents must answer before the approval question is posed. This makes the learning pattern explicit and reproducible.",
       "priority": "medium"
-    }
+    },
     {
       "id": "FB-004",
       "source": "Developer in Test / Exploratory Tester gap observation",
@@ -41,6 +41,16 @@
       "section": "Agent Persona Library",
       "observation": "The persona library lacked a Developer in Test (test infrastructure, fixtures, CI, contract tests) and an Exploratory Tester (session-based manual investigation, charter-driven, artifact-producing). Both are distinct from TDD Driver/Navigator and Unit Test Completeness Engineer and fill a real gap in the quality coverage model.",
       "suggestion": "Add developer-in-test.md and exploratory-tester.md to the base template persona library. Register them in the Test and quality category in 04_PERSONA_DIRECTORY.md. These roles are relevant to all projects with CLI or interactive UX and should be listed as core, not optional.",
+      "priority": "high"
+    },
+    {
+      "id": "FB-005",
+      "source": "Exploratory Tester / Stage 5 TDD review",
+      "type": "process-improvement",
+      "target": "governance/02_WORKFLOW_STAGES.md",
+      "section": "Stage 5 — Verify: defect TDD protocol",
+      "observation": "When writing a regression test for a defect, the agent updated the test assertions mid-run after an unexpected PASS, producing the sequence: write test → PASS (too weak) → update assertions → FAIL → FAIL → fix → PASS. The required TDD sequence is: write test → FAIL → FAIL → fix → PASS → PASS. Updating assertions after a false green breaks the red-gate guarantee and means the test was not actually characterising the defect before the fix.",
+      "suggestion": "Add an explicit rule to the Stage 5 defect protocol: 'The regression test must be locked (no assertion changes) before the first run. If the first run produces an unexpected PASS, treat this as a test design failure — stop, diagnose why the test did not catch the defect, rewrite the test, and restart the two-run red sequence from the beginning. The fix may only begin after two consecutive identical FAILs with no changes to the test between them.'",
       "priority": "high"
     }
   ]
