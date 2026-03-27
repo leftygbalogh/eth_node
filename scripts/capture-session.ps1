@@ -68,7 +68,7 @@ try {
         # No args: print help so the transcript is not empty.
         & $CliBin --help
     } else {
-        & $CliBin @CliArgs --dump-state $StateJson
+        & $CliBin --dump-state $StateJson @CliArgs
     }
 } finally {
     Stop-Transcript | Out-Null
@@ -80,5 +80,5 @@ Write-Host "screen.log  : $ScreenLog"
 if (Test-Path $StateJson) {
     Write-Host "state.json  : $StateJson"
 } else {
-    Write-Host "state.json  : (not written — eth_node_cli did not produce one)"
+    Write-Host "state.json  : (not written - eth_node_cli did not produce one)"
 }

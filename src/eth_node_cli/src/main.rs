@@ -45,7 +45,7 @@ struct Cli {
     log_level: String,
 
     /// Write operation result as JSON to this path on success.
-    #[arg(long, value_name = "PATH")]
+    #[arg(long, value_name = "PATH", global = true)]
     dump_state: Option<PathBuf>,
 
     #[command(subcommand)]

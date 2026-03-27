@@ -328,3 +328,33 @@ fn test_cli_call_graceful() {
     );
 }
 
+/// Regression test (Stage 5 escaped-defect): `--dump-state` must be accepted
+/// when placed AFTER the subcommand, not only before it.
+///
+/// Clap `global = true` enables this.  Without it, placing `--dump-state`
+/// after `balance <address>` would cause Clap to reject it as an unknown arg.
+#[test]
+fn test_dump_state_flag_accepted_after_subcommand() {
+    // Use a non-existent dump-state path — the binary will fail to connect,
+    // but the arg parse must succeed (exit code != 2 which is Clap parse error).
+    let out = binary()
+        .args([
+            "--endpoint",
+            "http://127.0.0.1:19999", // nothing listening — instant transport error
+            "balance",
+            ANVIL_ADDR_0,
+            "--dump-state",
+            "/tmp/test_dump_state_regression.json",
+        ])
+        .output()
+        .expect("run binary");
+
+    let code = out.status.code().unwrap_or(99);
+    // Exit 0 (success) or 1 (transport error) are both fine.
+    // Exit 2 means Clap parse error — that would be a regression.
+    assert_ne!(
+        code, 2,
+        "--dump-state after subcommand must parse correctly (exit 2 = Clap reject)\nstderr: {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+}
