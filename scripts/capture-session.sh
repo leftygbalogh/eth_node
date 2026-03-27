@@ -81,6 +81,19 @@ else
 fi
 echo ""
 
+# ── Provision fixture ABI files ───────────────────────────────────────────────
+# Copy every config/*.abi.json into /tmp/ so that CLI_REFERENCE.md examples
+# using --abi-file /tmp/<name>.abi.json work out of the box.
+for abi_src in "$WORK_ROOT/config/"*.abi.json; do
+    [[ -e "$abi_src" ]] || continue           # skip if glob matched nothing
+    abi_name="$(basename "$abi_src")"
+    abi_dst="/tmp/$abi_name"
+    if [[ ! -f "$abi_dst" ]]; then
+        cp "$abi_src" "$abi_dst"
+        echo "Provisioned fixture: $abi_dst"
+    fi
+done
+
 # ── Build command string ───────────────────────────────────────────────────────
 if [[ $# -eq 0 ]]; then
     # No args: capture help output so the transcript is not empty.
