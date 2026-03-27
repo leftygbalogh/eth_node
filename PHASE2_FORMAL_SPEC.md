@@ -5,7 +5,7 @@
 **Mode:** Greenfield (continuation)  
 **Phase:** 2 of multi-phase roadmap  
 **Owner:** Lefty  
-**Stage 2 Status:** Specification in progress; pending Stage 2 gate approval
+**Stage 2 Status:** Approved 2026-03-27
 
 ---
 
@@ -67,26 +67,18 @@ pub fn simulate_tx(
 - Wrong nonce → `ExecutorError::InvalidInput`
 - Insufficient gas → `ExecutorError::RevmFailure`
 
-**Out of Scope (Deferred to P2-003 Fuzzing):**
+**Out of Scope for Phase 2:**
+
+*Deferred to P2-003 (G-002 Fuzzing):*
 - Attack scenarios (malicious calldata, reentrancy patterns)
 - Adversarial inputs (random byte arrays, extreme gas limits)
 - Intentional misuse testing (10k+ fuzzing iterations)
 
-**Out of Scope (Deferred to Phase 3, Decision Q1):**
-- **Executor contract caching:** Caching compiled contracts between simulations is deferred to Phase 3 Component #8 (mempool). Phase 2 executor operates in one-shot simulation mode (each call is isolated). Caching is justified only when batched simulations appear (mempool txpool preview), not yet present in Phase 2 scope.
+*Deferred to Phase 3 (Decision Q1):*
+- **Executor contract caching:** Caching compiled contracts between simulations deferred to Phase 3 Component #8 (mempool). Phase 2 operates in one-shot simulation mode. Caching justified only when batched simulations appear.
 
-**Future Extension Point (R6):**
-- **StateProvider trait:** For Phase 3 state-fork scenarios (Reth historical state, Anvil custom state, custom backends), the executor will accept a `StateProvider` trait abstraction instead of hard-coding revm's default state:
-
-```rust
-// Phase 3 extension example (not implemented in Phase 2):
-pub trait StateProvider {
-    fn get_account(&self, address: Address) -> Option<AccountInfo>;
-    fn get_storage(&self, address: Address, index: U256) -> U256;
-}
-```
-
-Phase 2 uses revm's default in-memory state; StateProvider abstraction is added in Phase 3 when state-fork scenarios appear.
+*Phase 3 Extension Point (R6):*
+- **StateProvider trait:** For state-fork scenarios (Reth historical state, Anvil custom state, custom backends), executor will accept `StateProvider` trait instead of hard-coding revm's default state. Phase 2 uses revm's default in-memory state.
 
 **Acceptance Criteria:**
 - **AC-001:** `simulate_tx()` executes known-good Anvil scenarios and matches gas usage within 5% tolerance.
@@ -319,16 +311,11 @@ Fuzzing tests gated behind `fuzz` feature:
 
 1. ✅ All FR-001 through FR-007 implemented and tested.
 2. ✅ All AC-001 through AC-021 verified.
-3. ✅ Test suite grows to 130+ tests passing (Phase 1: 137 baseline).
+3. ✅ Test suite grows to 170+ tests passing (Phase 1 baseline: 137, Phase 2 new: ~33).
 4. ✅ All Phase 1 tests still pass (regression check).
 5. ✅ G-001 and G-002 explicitly closed (no remaining Phase 1 quality debt).
 6. ✅ At least one Track B contribution submitted (if threshold met) or documented (if threshold not met).
 7. ✅ Reth readiness checklist validated on target hardware.
-
-**Stage 2 gate complete when:**
-- Product owner approves this formal specification.
-- All functional and non-functional requirements clearly defined.
-- Acceptance criteria are measurable and testable.
 
 ---
 
@@ -355,12 +342,8 @@ Fuzzing tests gated behind `fuzz` feature:
 - Actual Reth Sepolia sync and execution (A-3 prep only in Phase 2).
 - Multi-contributor team expansion.
 - Separate repository split for Track B.
-
-**Attack scenarios explicitly scoped to P2-003 (not P2-001):**
-- Random byte array fuzzing.
-- Extreme parameter values (u64::MAX gas, zero addresses).
-- Malicious calldata patterns.
-- Reentrancy simulation.
+- Executor contract caching (Q1: deferred until batched simulations needed).
+- StateProvider abstraction (R6: extension point for state-fork scenarios).
 
 ---
 
@@ -433,201 +416,102 @@ pub enum ExecutorError {
 
 ---
 
-### 7.2 Component G-001: Live Decode Completeness (FR-004)
+### 7.2 G-001 Implementation Notes (FR-004)
 
-**Module:** `src/contract/` (extend existing decoder)
+**Event signatures to implement:**
+- ERC-721: Transfer, Approval, ApprovalForAll
+- ERC-1155: TransferSingle, TransferBatch, ApprovalForAll, URI
 
-**Missing Coverage:**
-- ERC-721: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
-- ERC-721: Approval(address indexed owner, address indexed approved, uint256 indexed tokenId)
-- ERC-721: ApprovalForAll(address indexed owner, address indexed operator, bool approved)
-- ERC-1155: TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value)
-- ERC-1155: TransferBatch(address indexed operator, address indexed from, address indexed to, uint256[] ids, uint256[] values)
-- ERC-1155: ApprovalForAll(address indexed account, address indexed operator, bool approved)
-- ERC-1155: URI(string value, uint256 indexed id)
+**Critical edge cases:**
+- Zero-value transfers, self-transfers, max uint256 token IDs, empty arrays in TransferBatch, non-ASCII URI strings
 
-**Edge Cases:**
-1. Zero-value transfers (value=0, but valid event).
-2. Self-transfers (from == to).
-3. Max uint256 token IDs.
-4. Empty array in TransferBatch.
-5. URI with non-ASCII characters.
-
-**Test Data Source:**
-- Deploy test ERC-721/ERC-1155 contracts to local Anvil.
-- Trigger each event variant via contract calls.
-- Capture logs via RPC and decode.
-
-**Acceptance Criteria:**
-- **AC-008:** All ERC-721 event types decode correctly with proper field extraction.
-- **AC-009:** All ERC-1155 event types decode correctly with proper field extraction.
-- **AC-010:** Edge cases documented in test comments with expected behavior.
-- **AC-011:** At least 15 new decode tests added (5 ERC-721, 10 ERC-1155).
-
-**Traceability:**
-- Chronicle entry: CHR-010-decode-completeness.md
-- Links to: FORMAL_SPEC.md Phase 1 AC-005 gap
+**Test approach:** Deploy test contracts to Anvil, trigger events, capture via RPC, decode and validate.
 
 ---
 
-### 7.3 Component G-002: Fuzzing Baseline (FR-005)
+### 7.3 G-002 Implementation Notes (FR-005)
 
-**Module:** `src/quality/fuzz.rs` (new module)
+**Proptest code examples:**
 
-**Framework:** proptest
+```rust
+// Executor resilience
+proptest! {
+    #[cfg(feature = "fuzz")]
+    fn executor_never_panics(tx in arb_transaction_request()) {
+        let result = simulate_tx(tx, default_context());
+        // Assert: result is Ok or Err, never panics
+    }
+}
 
-**Properties:**
+// Decoder resilience
+proptest! {
+    #[cfg(feature = "fuzz")]
+    fn decoder_never_panics(log_data in prop::collection::vec(any::<u8>(), 0..1024)) {
+        let result = decode_event_log(&log_data);
+        // Assert: result is Ok or Err, never panics
+    }
+}
 
-1. **Executor resilience:**
-   ```rust
-   proptest! {
-       fn executor_never_panics(tx in arb_transaction_request()) {
-           let result = simulate_tx(tx, default_block_env());
-           // Assert: result is Ok or Err, never panics
-       }
-   }
-   ```
-
-2. **Decoder resilience:**
-   ```rust
-   proptest! {
-       fn decoder_never_panics(log_data in prop::collection::vec(any::<u8>(), 0..1024)) {
-           let result = decode_event_log(&log_data);
-           // Assert: result is Ok or Err, never panics
-       }
-   }
-   ```
-
-3. **ABI round-trip:**
-   ```rust
-   proptest! {
-       fn abi_roundtrip_preserves_value(value in arb_abi_token()) {
-           let encoded = encode(&value);
-           let decoded = decode(&encoded);
-           assert_eq!(decoded, value);
-       }
-   }
-   ```
-
-**Adversarial Inputs (Explicit Scope):**
-- Random byte arrays (0-10k bytes).
-- Extreme parameter values (u64::MAX, u256::ZERO, u256::MAX).
-- Malicious calldata patterns (buffer overruns, format string injection attempts).
-- Reentrancy simulation (nested contract calls with state changes).
-
-**Acceptance Criteria:**
-- **AC-012:** Fuzzing framework integrated; `cargo test` runs fuzz tests.
-- **AC-013:** 10k+ iterations per property without panic.
-- **AC-014:** Any discovered edge cases either fixed (return proper error) or documented as known limitations with justification.
-- **AC-015:** Fuzzing tests complete in <60 seconds on CI (timeout protection).
-
-**Traceability:**
-- Chronicle entry: CHR-011-fuzzing-baseline.md
-- Links to: FORMAL_SPEC.md Phase 1 NFR-001 gap
+// ABI round-trip
+proptest! {
+    #[cfg(feature = "fuzz")]
+    fn abi_roundtrip_preserves_value(value in arb_abi_token()) {
+        assert_eq!(decode(&encode(&value)), value);
+    }
+}
+```
 
 ---
 
-### 7.4 Component A-3: Reth Readiness (FR-006)
+### 7.4 A-3 Prep Implementation Notes (FR-006)
 
-**Deliverable:** `docs/reth_readiness_checklist.md`
+**PowerShell dry-run script example:**
 
-**Content Requirements:**
+```powershell
+# scripts/reth_dryrun.ps1
+$freespace = (Get-PSDrive C).Free / 1GB
+if ($freespace -lt 50) {
+    Write-Error "Insufficient disk: $freespace GB free (need 50 GB)"
+    exit 1
+}
+Write-Host "Disk check: OK ($freespace GB free)"
 
-1. **Disk Space Validation:**
-   ```powershell
-   # Check free space on C: drive
-   $freespace = (Get-PSDrive C).Free / 1GB
-   if ($freespace -lt 50) {
-       Write-Error "Insufficient disk space for Reth sync. Required: 50 GB free."
-   }
-   ```
+# Check Rust toolchain
+if (!(Get-Command cargo -ErrorAction SilentlyContinue)) {
+    Write-Error "Rust toolchain not found"
+    exit 1
+}
+Write-Host "Rust toolchain: OK"
+```
 
-2. **Environment Configuration Template:**
-   ```bash
-   RETH_DATA_DIR=C:\Users\geb\Documents\reth_data\sepolia
-   RETH_CHAIN=sepolia
-   RETH_RPC_URL=https://sepolia.infura.io/v3/YOUR_PROJECT_ID
-   ```
-
-3. **Reth Installation Guide:**
-   - Option A: Build from source (`git clone https://github.com/paradigmxyz/reth.git && cargo build --release`)
-   - Option B: Download binary from GitHub releases.
-   - Verify installation: `reth --version`
-
-4. **Dry-Run Script:** `scripts/reth_dryrun.ps1`
-   ```powershell
-   # Validate prerequisites without syncing
-   # Check: disk space, Rust toolchain, network connectivity
-   # Exit with error if any prereq fails
-   ```
-
-5. **Rollback Procedure:**
-   - Stop Reth process.
-   - Delete `$RETH_DATA_DIR` to free disk space.
-   - Restart from clean state if needed.
-
-**Acceptance Criteria:**
-- **AC-016:** Checklist is runnable on Windows with 190 GB SSD.
-- **AC-017:** Dry-run script validates environment without downloading chain data (fails fast if prereqs missing).
-- **AC-018:** Documentation includes rollback steps if sync fails or disk fills.
-
-**Traceability:**
-- Chronicle entry: CHR-012-reth-prep.md
-- Links to: PHASE2_PROJECT_BRIEF.md A-3 mandatory sequencing (after A-2 complete)
+**Environment template:**
+```
+RETH_DATA_DIR=C:\Users\geb\Documents\reth_data\sepolia
+RETH_CHAIN=sepolia
+RETH_RPC_URL=https://sepolia.infura.io/v3/YOUR_PROJECT_ID
+```
 
 ---
 
-### 7.5 Track B: Upstream Audit (FR-007)
+### 7.5 TrackB Audit Implementation Notes (FR-007)
 
-**Deliverable:** `src/upstream_contrib/audits/AUDIT_REPORT_001.md`
+**Coverage analysis commands:**
+```bash
+git clone https://github.com/alloy-rs/alloy.git
+cd alloy/crates/provider
+cargo tarpaulin --out Html
+```
 
-**Audit Target Priority:**
-1. **alloy-provider** (high priority: direct A-1 dependency)
-2. **revm** (medium priority: A-1 dependency, but mature codebase may have fewer gaps)
+**Failing test example:**
+```rust
+#[tokio::test]
+async fn test_send_tx_nonce_collision() {
+    // Demonstrates gap: two txs with same nonce submitted rapidly
+    // Expected: second tx fails with proper error, no panic
+}
+```
 
-**Audit Methodology:**
-
-1. **Clone and setup:**
-   ```bash
-   git clone https://github.com/alloy-rs/alloy.git
-   cd alloy/crates/provider
-   cargo tarpaulin --out Html
-   ```
-
-2. **Identify gaps:**
-   - Modules with <90% branch coverage.
-   - Uncovered error-handling paths.
-   - Missing edge-case tests (timeout, nonce collision, gas estimation failure).
-
-3. **Write failing test:**
-   ```rust
-   #[tokio::test]
-   async fn test_send_tx_nonce_collision() {
-       // Demonstrates missing test: what happens when two transactions
-       // with same nonce are submitted in quick succession?
-       // Expected: second tx fails with proper error, no panic
-   }
-   ```
-
-4. **Validate locally:**
-   - Run failing test in upstream fork.
-   - Confirm it reproduces the gap.
-   - Add fix if gap is real (not cosmetic).
-
-5. **Decision gate:**
-   - If gap meets threshold (≥10% coverage OR critical path): proceed to PR.
-   - If gap below threshold: document in audit report; skip contribution for this cycle.
-
-**Acceptance Criteria:**
-- **AC-019:** At least one candidate audited with coverage report.
-- **AC-020:** Gap meets threshold (≥10% delta OR critical-path edge case).
-- **AC-021:** Failing test case written and validated locally in upstream fork.
-
-**Permission Gate:** Before opening upstream PR, explicit owner approval required.
-
-**Traceability:**
-- Chronicle entry: CHR-013-upstream-audit.md
-- Links to: Upstream PR (when submitted), audit report, feedback.json entry
+**Decision criteria:** Coverage delta ≥10% OR critical-path edge case (panic, security issue, wrong-value error).
 
 ---
 
@@ -716,3 +600,5 @@ pub enum ExecutorError {
 ## Revision History
 
 - 2026-03-27: Created from Stage 2 specification decomposition (A-1, A-2, A-3 prep, Track B audit).
+- 2026-03-27: Applied architect recommendations R1-R7 (SimulationContext wrapper, ExecutorError::Context, module dependencies, Track B isolation, fuzzing feature flag, StateProvider extension point, extraction triggers).
+- 2026-03-27: Consolidated Section 7 to remove duplication; condensed from 544 to 453 lines (~17% reduction). Fixed header status (approved) and test count (170+).
