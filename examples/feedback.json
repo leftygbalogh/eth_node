@@ -72,6 +72,26 @@
       "observation": "Release evidence requirements are strong, but there is no explicit template field to capture tool-output quirks when command wrappers truncate or simplify command output. This can leave proof artifacts incomplete (for example only fetch remote shown without explicit push line) unless the operator manually compensates.",
       "suggestion": "Add a checklist item requiring proof artifacts to include both fetch and push remote lines, the active branch, and the exact pushed commit hash. Add a note that if tooling truncates output, the operator must rerun with alternate commands or annotate the evidence with the limitation and compensating verification.",
       "priority": "medium"
+    },
+    {
+      "id": "FB-008",
+      "source": "Product owner process improvement request / Stage 6 session 2026-03-27",
+      "type": "process-improvement",
+      "target": "governance/00_INTERACTION_GUARDRAILS.md",
+      "section": "Context refresh and policy compliance",
+      "observation": "On longer projects, policy compliance can drift as context windows fill up. There is no explicit owner-invokable instruction to refresh policy context while preserving current stage progress and task continuity.",
+      "suggestion": "Add a Policy Refresh protocol with a canonical owner command (for example: 'Policy Refresh - Reload Core Governance Context'). On receipt, the agent must re-read core governance documents, reaffirm active stage/task state from project artifacts, and continue execution without resetting in-flight work.",
+      "priority": "high"
+    },
+    {
+      "id": "FB-009",
+      "source": "Product owner process improvement request / Stage 6 session 2026-03-27",
+      "type": "process-improvement",
+      "target": "governance/02_WORKFLOW_STAGES.md",
+      "section": "Stage 6 Joint post-mortem protocol",
+      "observation": "The joint post-mortem requirement states that both agent and owner must contribute, but it does not define a required Q-and-A exchange format or explicitly require traceable file citations in the summary.",
+      "suggestion": "Clarify that joint post-mortem is a structured Q-and-A process. Require the agent's consolidated presentation to include direct references to the exact files/sections where findings and evidence are recorded (for example feedback.json entries, memory snapshots, prompts log, and release evidence files).",
+      "priority": "high"
     }
   ]
 }

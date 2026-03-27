@@ -668,3 +668,11 @@ can you go back to #file:.github  contents and reread all the instructions befor
 
 ### Prompt (Joint post-mortem kickoff)
 hten lets follow it, your turn
+
+### Prompt (Add post-mortem feedback items)
+I would like you to add a few more items to #file:feedback.json :
+
+help me phrase it better:
+I would like soe magic instructions to give you which refreshes your context with regards to our rules, because the bigger the project gets, your compliance with overall policy reuces because it runs out of context, so I'd like to refresh your compliance WITHOUT you losing track of where we are.
+
+we should also clarify that the joint post mortem is a question and answer process and that your presenation need to include direct references to the files where these are recorded.

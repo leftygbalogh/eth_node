@@ -1486,3 +1486,21 @@ Next step: None pending.
 - Blockers: None
 - Next step:
   - Record owner response in examples/feedback.json and commit closure evidence
+
+## 2026-03-27 Status Snapshot - Feedback Additions Requested by Owner
+
+- Timestamp: 2026-03-27
+- Current stage: Stage 6 - Release (in progress)
+- Completed since last update:
+  - Added FB-008 (policy refresh command/protocol) to examples/feedback.json
+  - Added FB-009 (joint post-mortem as structured Q-and-A with direct file references) to examples/feedback.json
+  - Validated examples/feedback.json parses successfully
+- In progress:
+  - Awaiting owner confirmation for joint post-mortem response closure
+- Decisions made:
+  - Phrase both new items as high-priority process improvements
+- Open questions:
+  - Whether to commit these additions immediately
+- Blockers: None
+- Next step:
+  - Commit feedback updates and continue Stage 6 closure workflow
