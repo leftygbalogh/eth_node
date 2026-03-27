@@ -62,6 +62,16 @@
       "observation": "The agent skipped the FAIL×2 red-gate entirely for Test #4 (missing ABI file), classifying it as a 'setup gap' rather than a defect and going straight to the fix. The protocol applies regardless of root cause category — code bug, missing fixture, or configuration error. Additionally, after applying the fix the agent ran the scenario only once before declaring success, and that single run still exited 1 (different error). The green-gate requires two consecutive clean passes of the exact user scenario, not just internal tests passing.",
       "suggestion": "Add two explicit rules to the Stage 5 defect protocol: (1) The FAIL×2 red-gate is mandatory for every reported defect, including setup gaps, missing fixtures, and configuration errors — root cause category does not exempt the run. (2) The green-gate requires the exact user-reported scenario to be re-run twice and exit 0 both times before the fix is declared complete. Internal test-suite green is necessary but not sufficient.",
       "priority": "high"
+    },
+    {
+      "id": "FB-007",
+      "source": "Release orchestration review / Stage 6 session 2026-03-27",
+      "type": "template-improvement",
+      "target": "templates/RELEASE_CHECKLIST_TEMPLATE.md",
+      "section": "Stage 6 Release evidence and publish proof",
+      "observation": "Release evidence requirements are strong, but there is no explicit template field to capture tool-output quirks when command wrappers truncate or simplify command output. This can leave proof artifacts incomplete (for example only fetch remote shown without explicit push line) unless the operator manually compensates.",
+      "suggestion": "Add a checklist item requiring proof artifacts to include both fetch and push remote lines, the active branch, and the exact pushed commit hash. Add a note that if tooling truncates output, the operator must rerun with alternate commands or annotate the evidence with the limitation and compensating verification.",
+      "priority": "medium"
     }
   ]
 }

@@ -1435,3 +1435,19 @@ Next step: None pending.
 - Blockers: None
 - Next step:
   - Commit release-doc artifacts and run fresh build/test verification for final Stage 6 closure
+
+## 2026-03-27 Status Snapshot - Stage 6 Feedback Update
+
+- Timestamp: 2026-03-27
+- Current stage: Stage 6 - Release (in progress)
+- Completed since last update:
+  - Added FB-007 to examples/feedback.json for release evidence completeness improvement
+- In progress:
+  - Awaiting product owner response for joint post-mortem closure
+- Decisions made:
+  - Keep Stage 6 gate open until explicit owner response is captured
+- Open questions:
+  - Owner response for joint post-mortem: additions or explicit pass
+- Blockers: None
+- Next step:
+  - Commit feedback update, capture owner response, then run final pre-push rebuild if release closure is requested
