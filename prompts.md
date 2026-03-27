@@ -788,3 +788,19 @@ mandatory A-2 before A-3
 ---
 
 [2026-03-27 Architecture hardening complete: All 7 architect recommendations (R1-R7) incorporated into PHASE2_FORMAL_SPEC.md, PHASE2_PROJECT_BRIEF.md, PHASE2_TASK_LIST.md. Evolution-safety improvements: SimulationContext API wrapper, ExecutorError::Context variant, module dependency rules (executor ? contract one-way), Track B isolation policy (no eth_node imports), fuzzing feature flag (local opt-in, CI automatic), StateProvider extension point (Phase 3 state-fork scenarios), Track B extraction triggers (measurable criteria for repo split). Q3-Q5 deferred to Phase 3. Ready for Stage 3 gate approval.]
+### Prompt (Document consolidation approval)
+y
+
+### Prompt (Save, commit, and push request)
+please save current state changes, and commit, and push
+
+### Prompt (Implementer/coordinator review request)
+invoke the #file:rust-backend-specialist.md and the #file:team-lead.md agents and discuss the specs with them, ask them to describe in their own words what they would deliver as a product based on these specs. Check if it is what we have in scope. Ask them for advice and suggestions how to make their jobs easier by clarifying ambiguous areas
+
+### Prompt (Apply critical + high-value improvements)
+2
+
+---
+
+[2026-03-27 Phase 2 specification refinement complete: Applied 13 improvements from implementer (Rust Backend Specialist) and coordinator (Team Lead) reviews. Critical clarifications (3): T-005 fuzzing threshold (=95% pass, critical panics MUST fix), A-1?A-2 handoff gate checklist (explicit exit criteria), T-008 permission fallback (48hr escalation rule). High-value improvements (10): Anvil lifecycle automation, precompile error classification, compare_to_anvil() reporting semantics, Track B parallel work, StateProvider placeholder, proptest config, ExecutorError context example, T-006 time buffer (10-15hr pivot rule), Stage 6 PR-submitted success, T-009 early-start option, chronicle template reference. Spec clarity: 85% ? 98% per implementer assessment. Both agents confirmed scope alignment and implementation readiness. Committed as 471c5ca, pushed to origin/master. Ready for Stage 3 gate approval.]
+
