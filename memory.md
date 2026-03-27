@@ -187,6 +187,71 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
 
 ---
 
+## 2026-03-27 Status Snapshot (session close — Phase 2 T-003 partial + agent team setup)
+
+- Timestamp: 2026-03-27
+- Current stage: Stage 4 — Build (IN PROGRESS; T-003 partial)
+- Phase: Phase 2 Track A (executor foundation)
+- Last commit: `521a173` — pushed to origin/master
+- Tests: 90 total (79 Phase 1 baseline + 11 Phase 2 executor, all passing)
+- Build: clean (cargo build succeeds, no warnings)
+
+### Completed this session
+
+- **T-000** ✅ Directory structure (563950f)
+- **T-001** ✅ revm boilerplate scaffold (10ca482)
+- **T-002** ✅ simulate_tx() implementation + Anvil validation (31aea62)
+  - AC-001 ✓ gas matches Anvil exactly (21k local = 21k Anvil, delta=0)
+  - AC-002 ✓ error cases return ExecutorError (no panics)
+  - AC-003 ✓ 11 tests (10 passing + 1 ignored) exceeds 10 minimum
+- **T-003 scaffolding** (521a173, partial):
+  - `simulate_contract_call()` implemented (48 lines): calldata ≥4 bytes validation, static call from Address::ZERO, Success→Bytes / Revert/Halt→ExecutorError
+  - `compare.rs` created: ComparisonReport struct (gas_delta, return_data_match, logs_match, differences) + compare_to_anvil() stub with FR-003 semantics
+  - `mod.rs` exports updated
+  - `tests/executor_call.rs` created: 3 unit tests (valid selector, too short, empty)
+- **Agent team registered** (.github/agents/):
+  - `team-lead.agent.md` — coordination + handoffs
+  - `rust-backend-specialist.agent.md` — Rust implementation
+  - `tdd-driver.agent.md` — red-green-refactor
+  - `tdd-navigator.agent.md` — test review + coverage challenges
+- **Team coordination model agreed**: user retains approval rights; Team Lead coordinates; XP pairing for implementation; user tests/probes at phase end
+
+### In progress
+
+- T-003 implementation (remaining ~4-5hr):
+  - compare_to_anvil() function body NOT YET implemented (stub only)
+  - tests/executor_compare.rs NOT YET created (≥3 integration tests, AC-006, AC-007)
+  - A-1 gate criteria NOT YET verified (AC-004 through AC-007 pending)
+  - CHR-009-executor.md NOT YET created
+
+### Decisions made
+
+- Team Lead + XP specialist agents now registered as VS Code custom agents
+- User retains stage gate approval rights (agents coordinate, do not approve)
+- Agent team activated: Team Lead dispatches TDD Driver/Navigator pair + Rust Backend Specialist
+- Unused imports cleaned from compare.rs before commit
+
+### Open questions
+
+- None
+
+### Blockers
+
+- None
+
+### Next step (open next session via Team Lead agent)
+
+1. **Start Team Lead agent** from VS Code agent picker (@ menu or `#team-lead`)
+2. Team Lead dispatches TDD Navigator → TDD Driver pair for compare_to_anvil() tests-first
+3. Rust Backend Specialist implements compare_to_anvil() in compare.rs
+4. Create tests/executor_compare.rs (≥3 integration tests)
+5. Verify AC-004 through AC-007 all passing
+6. Create CHR-009-executor.md chronicle (traceability: T-000→T-003, FR-001→FR-003, AC-001→AC-007)
+7. A-1 gate report to user (user probes before approving)
+8. Then proceed to T-004 (ERC-721/1155 decode) + T-005 (fuzzing baseline)
+
+---
+
 ## 2026-03-27 Status Snapshot (session close — Stage 5 gap fixes)
 
 - Timestamp: 2026-03-27
