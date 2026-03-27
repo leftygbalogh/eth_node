@@ -713,3 +713,199 @@ fn test_cli_call_undeployed_contract_gives_friendly_error() {
         "error must tell the user the contract may not be deployed at the address.\nGot: {stderr}"
     );
 }
+
+/// Test #7 (S5-exploratory): `watch` captures live events emitted by a
+/// payable contract as separate ETH sends arrive during the watch window.
+///
+/// # Setup
+/// 1. Write a minimal `Receiver.sol` to `$TMPDIR` — a contract whose
+///    `receive()` function emits `Received(address, uint256)` on every ETH
+///    deposit.
+/// 2. Deploy it with `forge create` (skip if forge is absent).
+/// 3. Spawn `eth_node_cli watch <contract>` with stdout piped (WatcherGuard
+///    ensures the child is always killed, even on assertion failure).
+/// 4. Sleep 1 s for the watcher to connect and print its banner.
+/// 5. Send `7919` wei to the contract — a prime chosen to be recognisable in
+///    the log output.
+/// 6. Sleep 2 s (≥ 2 HTTP poll cycles at the default 1 s interval).
+/// 7. Send `7907` wei to the contract — a different prime.
+/// 8. Sleep 2 s (another 2 poll cycles).
+/// 9. Kill the watcher via the guard and read its buffered stdout.
+/// 10. Assert both `Event #1` and `Event #2` appear in the output.
+///
+/// # Skips when
+/// - Anvil is not reachable on 127.0.0.1:8545
+/// - `forge` is not installed (Oracle requirement: external binary must not
+///   be assumed present in all environments)
+///
+/// # Defensive design (Rust Defensive Specialist requirements)
+/// - `WatcherGuard` kills the child process on drop, preventing zombie
+///   processes even when assertions panic mid-test.
+/// - Prime amounts are chosen to be distinct and easily searched in output.
+///
+/// Locked before first run per TDD protocol (FB-005).
+#[test]
+fn test_cli_watch_captures_live_events() {
+    use std::io::Write;
+    use std::process::Child;
+
+    // ── Skip if Anvil is not running ─────────────────────────────────────────
+    let endpoint = match anvil_endpoint() {
+        Some(e) => e,
+        None => {
+            eprintln!("anvil not reachable — skipping test_cli_watch_captures_live_events");
+            return;
+        }
+    };
+
+    // ── Skip if forge is not installed (Oracle guard) ────────────────────────
+    let forge_ok = std::process::Command::new("forge")
+        .arg("--version")
+        .output()
+        .map(|o| o.status.success())
+        .unwrap_or(false);
+    if !forge_ok {
+        eprintln!("forge not found — skipping test_cli_watch_captures_live_events");
+        return;
+    }
+
+    // ── WatcherGuard: kills child on drop (Defensive Specialist requirement) ─
+    struct WatcherGuard(Option<Child>);
+    impl WatcherGuard {
+        fn take_output(mut self) -> std::process::Output {
+            if let Some(mut child) = self.0.take() {
+                let _ = child.kill();
+                child.wait_with_output().expect("wait watcher")
+            } else {
+                panic!("WatcherGuard already consumed");
+            }
+        }
+    }
+    impl Drop for WatcherGuard {
+        fn drop(&mut self) {
+            if let Some(mut child) = self.0.take() {
+                let _ = child.kill();
+                let _ = child.wait();
+            }
+        }
+    }
+
+    // ── Write Receiver.sol to a temp file ────────────────────────────────────
+    let sol_src = r#"// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+contract Receiver {
+    event Received(address from, uint256 amount);
+    receive() external payable {
+        emit Received(msg.sender, msg.value);
+    }
+}
+"#;
+    let sol_path = std::env::temp_dir().join("Receiver_watch_test.sol");
+    std::fs::File::create(&sol_path)
+        .and_then(|mut f| f.write_all(sol_src.as_bytes()))
+        .expect("write Receiver.sol");
+
+    // ── Deploy Receiver.sol ───────────────────────────────────────────────────
+    let sol_arg = format!("{}:Receiver", sol_path.to_str().expect("utf8 path"));
+    let deploy_out = std::process::Command::new("forge")
+        .args([
+            "create",
+            &sol_arg,
+            "--rpc-url",
+            &endpoint,
+            "--private-key",
+            ANVIL_KEY,
+            "--broadcast",
+        ])
+        .output()
+        .expect("run forge create");
+
+    assert!(
+        deploy_out.status.success(),
+        "forge create failed:\n{}",
+        String::from_utf8_lossy(&deploy_out.stderr)
+    );
+
+    // Parse "Deployed to: 0x..." from forge stdout
+    let deploy_stdout = String::from_utf8_lossy(&deploy_out.stdout);
+    let contract_addr = deploy_stdout
+        .lines()
+        .find(|l| l.contains("Deployed to:"))
+        .and_then(|l| l.split_whitespace().last())
+        .expect("forge create output should contain 'Deployed to: <addr>'")
+        .to_owned();
+
+    // ── Spawn watcher ─────────────────────────────────────────────────────────
+    let watcher_child = binary()
+        .args(["--endpoint", &endpoint, "watch", &contract_addr])
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()
+        .expect("spawn watcher");
+    let guard = WatcherGuard(Some(watcher_child));
+
+    // Allow watcher to connect and print its banner (1 s).
+    std::thread::sleep(std::time::Duration::from_secs(1));
+
+    // ── Send prime #1: 7919 wei ───────────────────────────────────────────────
+    let send1 = binary()
+        .args([
+            "--endpoint",
+            &endpoint,
+            "send",
+            "--private-key",
+            ANVIL_KEY,
+            &contract_addr,
+            "7919", // prime
+        ])
+        .output()
+        .expect("run send #1");
+    assert!(
+        send1.status.success(),
+        "send #1 (7919 wei) failed:\n{}",
+        String::from_utf8_lossy(&send1.stderr)
+    );
+
+    // Wait ≥ 2 poll cycles (default poll interval = 1 s).
+    std::thread::sleep(std::time::Duration::from_secs(2));
+
+    // ── Send prime #2: 7907 wei ───────────────────────────────────────────────
+    let send2 = binary()
+        .args([
+            "--endpoint",
+            &endpoint,
+            "send",
+            "--private-key",
+            ANVIL_KEY,
+            &contract_addr,
+            "7907", // different prime
+        ])
+        .output()
+        .expect("run send #2");
+    assert!(
+        send2.status.success(),
+        "send #2 (7907 wei) failed:\n{}",
+        String::from_utf8_lossy(&send2.stderr)
+    );
+
+    // Wait ≥ 2 more poll cycles for the second event to arrive.
+    std::thread::sleep(std::time::Duration::from_secs(2));
+
+    // ── Kill watcher and collect output ──────────────────────────────────────
+    let watcher_out = guard.take_output();
+    let stdout = String::from_utf8_lossy(&watcher_out.stdout);
+    let stderr = String::from_utf8_lossy(&watcher_out.stderr);
+
+    // Both events must have been received.
+    assert!(
+        stdout.contains("Event #1"),
+        "watcher must report Event #1.\nstdout: {stdout}\nstderr: {stderr}"
+    );
+    assert!(
+        stdout.contains("Event #2"),
+        "watcher must report Event #2 (two separate deposits).\nstdout: {stdout}\nstderr: {stderr}"
+    );
+
+    // Clean up temp file.
+    let _ = std::fs::remove_file(&sol_path);
+}
