@@ -137,7 +137,7 @@ This design preserves focus on core capability delivery while ensuring adversari
 - ✅ Upstream PR submitted (if gap meets acceptance threshold and owner approves).
 
 **Quality:**
-- ✅ Test suite grows to 130+ tests passing (Phase 1: 137; Phase 2 adds ~30+).
+- ✅ Test suite grows to 170+ tests passing (Phase 1 baseline: 137; Phase 2 adds ~33).
 - ✅ All Phase 1 tests still pass (regression check).
 - ✅ Traceability: each task linked to spec, each test linked to AC.
 

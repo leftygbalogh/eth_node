@@ -163,17 +163,21 @@ pub struct ComparisonReport {
 
 **Description:** Close Phase 1 acceptance criterion gap AC-005 by adding ERC-721 and ERC-1155 live-decode scenarios.
 
-**Scope:**
-- ERC-721: Transfer, Approval, ApprovalForAll events.
-- ERC-1155: TransferSingle, TransferBatch, ApprovalForAll, URI events.
+**Scope (Explicit):**
 
-**Edge Cases:**
-- Zero-value transfers.
-- Self-transfers (from == to).
-- Max uint256 token IDs.
-- Batch transfers with empty arrays.
+**IN SCOPE (Standard Events Only):**
+- ERC-721: Transfer, Approval, ApprovalForAll
+- ERC-1155: TransferSingle, TransferBatch, ApprovalForAll, URI
+- Edge cases: zero-value transfers, self-transfers, max uint256 token IDs, empty arrays in TransferBatch
 
-**Acceptance Criteria:**
+**OUT OF SCOPE (Defer to Phase 3):**
+- Extension events: Paused, Unpaused, Burned, Minted, ConsecutiveTransfer (ERC-2309)
+- Enumerable extensions (ERC-721Enumerable): event types beyond standard
+- Supply tracking extensions (ERC-1155Supply): not required for Phase 2
+
+**Test Contract Selection:** Use minimal test contracts (SimpleERC721, SimpleERC1155) OR filter events from full OpenZeppelin contracts to standard events only. If extension event encountered during testing, document in test comments: "Extension event observed but decoding deferred to Phase 3 per FR-004 scope."
+
+**Acceptance Criteria:
 - **AC-008:** All ERC-721 event types decode correctly from live Sepolia contracts.
 - **AC-009:** All ERC-1155 event types decode correctly from live Sepolia contracts.
 - **AC-010:** Edge cases documented in test comments with expected behavior.
@@ -214,7 +218,12 @@ Fuzzing tests gated behind `fuzz` feature:
 **Acceptance Criteria:**
 - **AC-012:** Fuzzing framework integrated; runs via `cargo test --features fuzz`.
 - **AC-013:** 10k+ iterations per property without panic.
-- **AC-014:** Any discovered edge cases either fixed (return proper error) or documented as known limitations with justification.
+- **AC-014:** Fuzzing success criteria (3-tier threshold):
+  - **Pass definition:** Property passes if returns `Ok` or `Err` without panic. Panic = fail.
+  - **≥95% pass rate:** A-2 closure approved automatically.
+  - **90-94% pass rate:** Owner approval required; document gap assessment (security impact? user-facing?).
+  - **<90% pass rate:** A-2 BLOCKED; extend T-005 to 25hr cap or triage panics (fix critical, document non-critical).
+  - **Phase 1 panic policy:** If fuzzing discovers panic in Phase 1 module (primitives, RPC, signer): critical-path panics (executor, signer, RPC core) MUST be fixed before A-2 closure; non-critical panics (debug utils, pretty-printing, CLI helpers) MAY be documented as known limitations. Time-box Phase 1 fixes: 8 hours maximum; remaining panics documented and deferred to Phase 3.
 - **AC-015:** Fuzzing tests run in <60 seconds on CI (timeout protection).
 
 ---
@@ -287,7 +296,7 @@ Fuzzing tests gated behind `fuzz` feature:
 
 ### NFR-001: Performance
 
-- **Executor simulation:** <100ms per transaction on typical hardware (16 GB RAM).
+- **Executor simulation:** Latency baseline established during T-003 implementation by measuring 100 varied transactions (simple transfer, ERC-20 call, complex contract interaction). Target: ≤2x Anvil RPC round-trip time for equivalent transactions. If empirical baseline exceeds 200ms, justify with revm version and hardware specs.
 - **Fuzzing throughput:** 10k+ iterations complete in <60 seconds.
 - **Anvil comparison:** <200ms round-trip (local simulation + RPC call).
 
@@ -436,9 +445,23 @@ pub enum ExecutorError {
 
 ### 7.2 G-001 Implementation Notes (FR-004)
 
-**Event signatures to implement:**
-- ERC-721: Transfer, Approval, ApprovalForAll
-- ERC-1155: TransferSingle, TransferBatch, ApprovalForAll, URI
+#### 7.2.1 Event Signature Reference
+
+**Standard Event Signatures (EIP-721, EIP-1155):**
+
+| Standard | Event | Signature | Topic[0] Hash |
+|----------|-------|-----------|---------------|
+| ERC-721 | Transfer | `Transfer(address indexed from, address indexed to, uint256 indexed tokenId)` | `0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef` |
+| ERC-721 | Approval | `Approval(address indexed owner, address indexed approved, uint256 indexed tokenId)` | `0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925` |
+| ERC-721 | ApprovalForAll | `ApprovalForAll(address indexed owner, address indexed operator, bool approved)` | `0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31` |
+| ERC-1155 | TransferSingle | `TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value)` | `0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62` |
+| ERC-1155 | TransferBatch | `TransferBatch(address indexed operator, address indexed from, address indexed to, uint256[] ids, uint256[] values)` | `0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb` |
+| ERC-1155 | ApprovalForAll | `ApprovalForAll(address indexed account, address indexed operator, bool approved)` | `0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31` |
+| ERC-1155 | URI | `URI(string value, uint256 indexed id)` | `0x6bb7ff708619ba0610cba295a58592e0451dee2622938c8755667688daf3529b` |
+
+**Sources:** [EIP-721](https://eips.ethereum.org/EIPS/eip-721), [EIP-1155](https://eips.ethereum.org/EIPS/eip-1155)
+
+#### 7.2.2 Implementation Details
 
 **Critical edge cases:**
 - Zero-value transfers, self-transfers, max uint256 token IDs, empty arrays in TransferBatch, non-ASCII URI strings

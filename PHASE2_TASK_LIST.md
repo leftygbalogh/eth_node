@@ -31,6 +31,34 @@ Each task links to a chronicle document (CHR-009, CHR-010, CHR-011, CHR-012, CHR
 
 ## Task List
 
+### T-000: Establish Phase 2 Directory Structure (Track A)
+
+**Description:** Create canonical folder structure for Phase 2 modules before any source files are created.
+
+**Scope:**
+- Create `src/executor/` directory for revm integration components.
+- Create `src/quality/` directory for fuzzing and quality-debt closure work.
+- Create `src/upstream_contrib/audits/` directory for Track B audit reports.
+- Update module references in `src/lib.rs` (stubs only; no implementation).
+
+**Dependencies:** None (first task after Stage 3 approval).
+
+**Deliverable:**
+- Directory structure established.
+- `src/lib.rs` updated with module declarations (commented out until implementation).
+
+**Acceptance Criteria:**
+- Cargo build succeeds with new directory structure.
+- All directories are empty except for placeholder `.gitkeep` files (if needed).
+
+**Estimated Effort:** 30 minutes
+
+**Chronicle:** CHR-009-executor.md (Section: Project Structure)
+
+**Links to Spec:** Governance Stage 3 DoD requirement.
+
+---
+
 ### T-001: Setup revm Integration Boilerplate (Track A)
 
 **Description:** Add revm dependency and create executor module scaffold.
@@ -131,10 +159,25 @@ Each task links to a chronicle document (CHR-009, CHR-010, CHR-011, CHR-012, CHR
 ### A-1 Completion Gate (T-003 → T-004/T-005)
 
 Before starting T-004 or T-005, verify A-1 foundation is complete:
-- ✅ All AC-001 through AC-007 passing
+
+**Mandatory for A-1 Closure:**
+- ✅ All AC-001 through AC-007 passing (tests green)
 - ✅ T-003 committed to master
-- ✅ No blocking executor issues in memory.md
+- ✅ No blocking executor issues in memory.md (see blocking definition below)
 - ✅ CHR-009-executor.md complete with traceability links
+
+**Blocking Issues (Prevent A-1 Closure):**
+- Panic in executor on valid input
+- AC failure (gas mismatch >5%, incorrect return data, missing logs)
+- Executor returns success but Anvil returns failure (or vice versa) for same input
+- >3 unresolved executor error cases logged in memory.md
+
+**Non-Blocking Issues (Document and Proceed):**
+- Executor returns error but correctness unclear (e.g., edge-case precompile rejection)
+- Anvil comparison shows 4.8% gas delta (below 5% threshold but suspiciously high)
+- Unclear if behavior matches EVM spec → document as "Phase 3 edge-case validation"
+
+**Tiebreaker:** If ambiguous issue encountered, implementer documents in memory.md with assessment: "Known limitation: [behavior]. Impact: [user-facing? silent error?]. Recommendation: [defer to Phase 3 OR fix now]." Owner reviews and decides: block A-1 OR proceed with documented limitation.
 
 ---
 
@@ -212,7 +255,7 @@ Before starting T-004 or T-005, verify A-1 foundation is complete:
 - AC-014: ≥95% of properties pass 10k iterations without panic. If <95%, document unfixed edges as known limitations with security impact assessment. Any critical-path panic (executor, signer, RPC) MUST be fixed before A-2 closure; non-critical panics (debug utils, pretty-printing) can be documented.
 - AC-015: Fuzzing tests complete in <60 seconds on CI.
 
-**Estimated Effort:** 8-10 hours (includes fixing any discovered panics)
+**Estimated Effort:** 12-18 hours (includes Phase 1 panic triage; revised from 8-10hr based on fuzzing complexity forecast)
 
 **Chronicle:** CHR-011-fuzzing-baseline.md
 
@@ -232,6 +275,12 @@ Before starting T-004 or T-005, verify A-1 foundation is complete:
 - Analyze uncovered branches: error-handling paths, edge cases, timeout scenarios.
 - Select one gap meeting threshold (≥10% coverage delta OR critical-path edge case).
 - Write failing test case demonstrating gap.
+
+**Audit Time-Boxing (Revised):**
+1. **Alloy-provider phase (max 6hr initial sweep):** Run coverage at hour 0; identify modules <90%. If no module <90% at hour 6: pivot to revm immediately.
+2. **Alloy-provider deep-dive (if gap candidate found):** Extend to hour 12 if gap candidate identified but validation incomplete (gap validated = uncovered branch + failing test drafted).
+3. **Revm phase (if alloy-provider yielded no gap):** Max 6hr audit (do not exceed 12hr total across both repos).
+4. **Early exit rule:** If both repos show no gap ≥5% by hour 12 total: STOP audit. Document in AUDIT_REPORT: "Both repos have high existing coverage (>90%); no threshold-meeting gap identified in Phase 2 time budget. Track B deferred to Phase 3."
 
 **Dependencies:** T-004 + T-005 complete (A-2 done; Track B begins after A-2 per sequencing rule).
 
