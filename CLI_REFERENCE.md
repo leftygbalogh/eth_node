@@ -431,7 +431,7 @@ Return: Uint(1000, 256)
 ### `watch` — Stream live contract events
 
 **What it does**: Connects to the chain and prints events (logs) emitted by a
-contract as they happen, in real time. Press `Ctrl+C` to stop.
+contract as they happen, in real time. Press `Ctrl-C` to stop.
 
 > Events are how contracts signal that something happened — a transfer, an
 > approval, a vote. `watch` lets you observe these live.
@@ -441,40 +441,116 @@ contract as they happen, in real time. Press `Ctrl+C` to stop.
 eth watch <CONTRACT_ADDRESS> [EVENT_SIGNATURE]
 ```
 
-**Example** — watch all events from the StubToken contract (no filter):
-
-```bash
-eth watch 0x5FbDB2315678afecb367f032d93F642f64180aa3
-```
-
-**Example** — filter to only "Transfer" events:
-
-```bash
-eth watch \
-  0x5FbDB2315678afecb367f032d93F642f64180aa3 \
-  "Transfer(address,address,uint256)"
-```
-
-You can also pass a pre-computed topic hash:
-
-```bash
-eth watch \
-  0x5FbDB2315678afecb367f032d93F642f64180aa3 \
-  0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
-```
-
 **Expected output when running**:
 ```
 2026-...: INFO eth_node_cli: watching contract contract=0x5FbD... topic0=None
-Watching 0x5FbDB2315678afecb367f032d93F642f64180aa3 for events (Ctrl+C to stop)
+Watching contract 0x5FbDB2315678afecb367f032d93F642f64180aa3 for events (Ctrl-C to stop)...
 ```
 
-Events will appear as they are emitted. On a quiet test network with no
-transactions, you'll see no further output until something happens.
+When an event fires, a line like this appears for each one:
+```
+Event #1: tx=0x43aa... topics=2
+Event #2: tx=0x7bc1... topics=2
+```
+
+On a quiet test network with nothing happening, you'll see no further output
+until a transaction touches the contract.
 
 Stop with:
 ```
-Ctrl+C
+Ctrl-C
+```
+
+---
+
+#### Quick walkthrough — see events live in under 2 minutes
+
+This deploys a minimal `Receiver` contract that fires an event on every ETH
+deposit, then triggers it twice so you can see `Event #1` and `Event #2`
+appear in the watcher.
+
+**Terminal 1** — open Anvil (skip if already running):
+```bash
+anvil
+```
+
+**Terminal 2** — create and deploy the contract:
+```bash
+# Write Receiver.sol
+cat > /tmp/Receiver.sol << 'EOF'
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+contract Receiver {
+    event Received(address from, uint256 amount);
+    receive() external payable {
+        emit Received(msg.sender, msg.value);
+    }
+}
+EOF
+
+# Deploy it
+forge create /tmp/Receiver.sol:Receiver \
+  --rpc-url http://127.0.0.1:8545 \
+  --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
+  --broadcast
+```
+
+`forge create` prints:
+```
+Deployed to: 0x<CONTRACT_ADDRESS>
+```
+
+Copy that address.
+
+**Terminal 2** — start watching (replace `<CONTRACT_ADDRESS>`):
+```bash
+eth watch <CONTRACT_ADDRESS>
+```
+
+Output:
+```
+Watching contract <CONTRACT_ADDRESS> for events (Ctrl-C to stop)...
+```
+
+**Terminal 3** — send two deposits (use any two distinct amounts):
+```bash
+# First deposit — 7919 wei (prime)
+eth send \
+  --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
+  <CONTRACT_ADDRESS> \
+  7919
+
+# Second deposit — 7907 wei (a different prime)
+eth send \
+  --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
+  <CONTRACT_ADDRESS> \
+  7907
+```
+
+Back in **Terminal 2** you will see:
+```
+Event #1: tx=0x... topics=2
+Event #2: tx=0x... topics=2
+```
+
+Press `Ctrl-C` to stop.
+
+---
+
+#### Filter to a specific event signature
+
+```bash
+eth watch \
+  <CONTRACT_ADDRESS> \
+  "Received(address,uint256)"
+```
+
+You can also pass a pre-computed topic-0 hash:
+
+```bash
+eth watch \
+  <CONTRACT_ADDRESS> \
+  0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
 ```
 
 ---
@@ -532,8 +608,13 @@ All five commands work:
   balanceOf \
   0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
 
-# Watch for events (press Ctrl+C to stop; session log captures everything up to that point)
-./scripts/capture-session.sh watch 0x5FbDB2315678afecb367f032d93F642f64180aa3
+# Watch for events (press Ctrl-C to stop; session log captures everything up to that point)
+#
+# PREREQUISITE: Use a contract that emits events — the Receiver contract from
+# §7 "Quick walkthrough" is ideal. StubToken emits Transfer events only when
+# token balances change, not on plain ETH sends.
+# Replace 0x67d2... with the address forge create printed for YOUR Receiver.
+./scripts/capture-session.sh watch 0x67d269191c92Caf3cD7723F116c85e6E9bf55933
 ```
 
 Artifacts are written to `output/sessions/<timestamp>/`:
