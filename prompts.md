@@ -662,3 +662,9 @@ so whats next
 
 ### Prompt (Proceed)
 ok
+
+### Prompt (Re-read .github instructions)
+can you go back to #file:.github  contents and reread all the instructions before we go further please
+
+### Prompt (Joint post-mortem kickoff)
+hten lets follow it, your turn
