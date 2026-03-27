@@ -210,6 +210,67 @@ fn test_revert_scenario() {
     assert!(result.return_data.is_empty(), "EOA call returns empty data");
 }
 
+#[test]
+fn test_transfer_with_value_and_data() {
+    // Transfer ETH with calldata (valid but unusual for EOA)
+    let tx = TransactionRequest {
+        from: Some(test_sender()),
+        to: Some(TxKind::Call(test_recipient())),
+        value: Some(U256::from(5000)),
+        input: alloy_rpc_types::TransactionInput::new(Bytes::from(vec![0x12, 0x34, 0x56])),
+        gas: Some(25_000),
+        gas_price: Some(10_000_000_000),
+        nonce: Some(0),
+        ..Default::default()
+    };
+
+    let result = simulate_tx(&tx, &test_context()).expect("transfer with data should succeed");
+
+    assert!(result.success, "transfer with data should succeed");
+    assert!(result.gas_used >= 21_000, "should consume at least 21k base gas");
+}
+
+#[test]
+fn test_zero_value_transfer() {
+    // Zero-value transfer (valid, should succeed)
+    let tx = TransactionRequest {
+        from: Some(test_sender()),
+        to: Some(TxKind::Call(test_recipient())),
+        value: Some(U256::ZERO),
+        gas: Some(21_000),
+        gas_price: Some(10_000_000_000),
+        nonce: Some(0),
+        ..Default::default()
+    };
+
+    let result = simulate_tx(&tx, &test_context()).expect("zero-value transfer should succeed");
+
+    assert!(result.success, "zero-value transfer is valid");
+    assert_eq!(result.gas_used, 21_000, "zero-value transfer uses 21k gas");
+}
+
+#[test]
+fn test_self_transfer() {
+    // Transfer to self (valid edge case)
+    let sender = test_sender();
+
+    let tx = TransactionRequest {
+        from: Some(sender),
+        to: Some(TxKind::Call(sender)), // Same as sender
+        value: Some(U256::from(100)),
+        gas: Some(21_000),
+        gas_price: Some(10_000_000_000),
+        nonce: Some(0),
+        ..Default::default()
+    };
+
+    let result = simulate_tx(&tx, &test_context()).expect("self-transfer should succeed");
+
+    assert!(result.success, "self-transfer is valid");
+    assert_eq!(result.gas_used, 21_000, "self-transfer uses 21k gas");
+}
+
+
 // ---------------------------------------------------------------------------
 // Integration Tests (Anvil Comparison)
 // ---------------------------------------------------------------------------
