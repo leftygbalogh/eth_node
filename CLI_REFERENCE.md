@@ -520,6 +520,12 @@ All five commands work:
 ./scripts/capture-session.sh tx-status 0x43aab2ff75b7c9b2a3a345de2e2de2ae41ea6ea8a62c8aa5bef4c3b7a24c7421
 
 # Call a contract (ABI file auto-provisioned from config/)
+#
+# PREREQUISITE: The contract must already be deployed at the address below.
+# The address 0x5FbDB... is deterministic ONLY when StubToken is the first
+# contract deployed by account 0 on a FRESH Anvil session (no prior txs).
+# If Anvil has had prior transactions (e.g. the `send` example above ran),
+# restart Anvil and first run the `forge create` step from §7 Step 1.
 ./scripts/capture-session.sh call \
   --abi-file /tmp/stubtoken.abi.json \
   0x5FbDB2315678afecb367f032d93F642f64180aa3 \
@@ -662,11 +668,19 @@ Output (stdout only, no labels, no logs):
 }
 ```
 
-Pipe it to `jq` for field extraction:
+Pipe it to `jq` for field extraction (requires `jq` installed):
 
 ```bash
 eth --porcelain balance 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 | jq .balance_wei
 # "10000000000000000000000"
+```
+
+On Windows without `jq`, use PowerShell:
+
+```powershell
+& eth --porcelain balance 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 |
+  ConvertFrom-Json | Select-Object -ExpandProperty balance_wei
+# 10000000000000000000000
 ```
 
 `--porcelain` works with all five commands. The JSON shapes are:

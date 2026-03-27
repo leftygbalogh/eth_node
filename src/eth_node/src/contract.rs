@@ -144,6 +144,16 @@ impl ContractCaller {
             }
         })?;
 
+        // Empty return data means the address has no deployed contract code.
+        // Surfacing the raw "buffer overrun" message from the ABI decoder is
+        // confusing; give the user an actionable hint instead.
+        if raw.is_empty() {
+            return Err(ContractError::AbiDecodeError(format!(
+                "contract at {} returned no data — it may not be deployed at this address",
+                self.address
+            )));
+        }
+
         func.abi_decode_output(&raw, true)
             .map_err(|e: alloy_dyn_abi::Error| ContractError::AbiDecodeError(e.to_string()))
     }

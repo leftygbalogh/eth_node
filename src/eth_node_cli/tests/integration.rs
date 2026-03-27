@@ -645,4 +645,71 @@ fn test_cli_balance_porcelain_stdout_is_json() {
         stderr.is_empty(),
         "--porcelain must produce no stderr output.\nGot: {stderr}"
     );
+
+    // Required keys must be present (catches silent key renames)
+    let parsed: serde_json::Value =
+        serde_json::from_str(&stdout).expect("already validated above");
+    assert!(
+        parsed.get("address").is_some(),
+        "--porcelain JSON must contain 'address' key.\nGot: {stdout}"
+    );
+    assert!(
+        parsed.get("balance_wei").is_some(),
+        "--porcelain JSON must contain 'balance_wei' key.\nGot: {stdout}"
+    );
+}
+
+/// Test #6 (S5-exploratory): calling a view function on an address with no
+/// deployed contract must produce a friendly error — not the cryptic
+/// "buffer overrun while deserialising" message from the ABI decoder.
+///
+/// Root cause: `eth_call` to a non-contract address returns empty bytes `0x`.
+/// The ABI decoder cannot decode empty bytes as uint256, so it panics with
+/// "buffer overrun". The fix detects empty return data before decoding and
+/// emits an actionable message: "contract at <addr> returned no data —
+/// it may not be deployed at this address".
+///
+/// Locked before first run per TDD protocol (FB-005).
+#[test]
+fn test_cli_call_undeployed_contract_gives_friendly_error() {
+    let endpoint = match anvil_endpoint() {
+        Some(e) => e,
+        None => {
+            eprintln!("anvil not reachable — skipping test_cli_call_undeployed_contract_gives_friendly_error");
+            return;
+        }
+    };
+
+    let abi = r#"[{"name":"balanceOf","type":"function","inputs":[{"name":"account","type":"address"}],"outputs":[{"name":"","type":"uint256"}],"stateMutability":"view"}]"#;
+
+    // An address that is definitely not a deployed contract on any fresh Anvil.
+    // Random non-zero address — eth_call returns empty bytes `0x` for it.
+    let undeployed = "0x1234567890AbcdEF1234567890aBcdef12345678";
+
+    let out = binary()
+        .args([
+            "--endpoint",
+            &endpoint,
+            "call",
+            "--abi",
+            abi,
+            undeployed,
+            "balanceOf",
+            ANVIL_ADDR_0,
+        ])
+        .output()
+        .expect("run binary");
+
+    assert_eq!(
+        out.status.code(),
+        Some(1),
+        "call on undeployed contract should exit 1\nstderr: {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("not be deployed") || stderr.contains("returned no data"),
+        "error must tell the user the contract may not be deployed at the address.\nGot: {stderr}"
+    );
 }
