@@ -9,14 +9,17 @@
 //! - AC-005: Invalid calldata returns ExecutorError::InvalidInput (no panic)
 
 use alloy_primitives::{Address, Bytes};
+use alloy_rpc_types::{TransactionInput, TransactionRequest};
 use eth_node::executor::{simulate_contract_call, ExecutorError, SimulationContext};
+
+mod helpers;
 
 /// Default test context.
 fn test_context() -> SimulationContext {
     SimulationContext {
         block_number: 1,
         timestamp: 1_710_000_000,
-        base_fee_per_gas: Some(10_000_000_000),
+        base_fee_per_gas: Some(0),
         gas_limit: 30_000_000,
     }
 }
@@ -71,6 +74,40 @@ fn test_contract_call_empty_calldata() {
     assert!(
         matches!(result, Err(ExecutorError::InvalidInput(_))),
         "empty calldata should return InvalidInput"
+    );
+}
+
+#[tokio::test]
+async fn test_contract_call_matches_anvil_eth_call_empty_account() {
+    // AC-004 parity check against Anvil eth_call on an empty account.
+    let Some(anvil) = helpers::anvil_fixture::AnvilInstance::spawn().unwrap() else {
+        println!("SKIP — Anvil not on PATH");
+        return;
+    };
+
+    let client = eth_node::rpc::RpcClient::new(&anvil.endpoint).expect("valid anvil endpoint");
+    let from = Address::repeat_byte(0x01);
+    let contract_addr = Address::repeat_byte(0x99);
+
+    // balanceOf(address) selector + 32-byte address arg
+    let mut calldata = vec![0x70, 0xa0, 0x82, 0x31];
+    calldata.extend_from_slice(&[0u8; 32]);
+    let calldata = Bytes::from(calldata);
+
+    let local = simulate_contract_call(contract_addr, calldata.clone(), &test_context())
+        .expect("local contract call should succeed");
+
+    let rpc_tx = TransactionRequest {
+        from: Some(from),
+        to: Some(contract_addr.into()),
+        input: TransactionInput::new(calldata),
+        ..Default::default()
+    };
+    let anvil_out = client.call(rpc_tx).await.expect("eth_call should succeed");
+
+    assert_eq!(
+        local, anvil_out,
+        "simulate_contract_call output should match Anvil eth_call output"
     );
 }
 

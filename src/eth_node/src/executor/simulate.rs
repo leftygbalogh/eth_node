@@ -275,7 +275,8 @@ pub fn simulate_contract_call(
         value: U256::ZERO, // Static calls have no value
         data: calldata.clone(),
         gas_limit: 30_000_000, // High limit for read calls
-        gas_price: U256::ZERO, // No cost for static calls
+        // Keep gas price aligned with basefee to avoid basefee validation failures.
+        gas_price: U256::from(context.base_fee_per_gas.unwrap_or(0)),
         nonce: None,           // Static calls don't increment nonce
         ..Default::default()
     };

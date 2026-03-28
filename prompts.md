@@ -817,3 +817,5 @@ invoke the #file:oracle-agent.md and the #file:claire-voyant-agent.md agents and
 - 'I would like to retain approver rights AND I would like you to use the team setup and use the various agents best suited for the task, using the agree XP model if possible. The team-lead.md can facilitate the task implementation, but I would like to test and probe at the end of the phase. Can you do that for me?'
 - '2' (selected: configure Team Lead as invokable subagent)
 - 'save current state and files, commit and push. prepare for session closing. Write instructions for the new session so we know where to carry on from.'
+
+- 'here are your instructions To continue this session: Reload VS Code... Key files for context: memory.md, compare.rs, simulate.rs, executor_call.rs, PHASE2_FORMAL_SPEC.md FR-002, FR-003'

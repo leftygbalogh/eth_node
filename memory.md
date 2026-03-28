@@ -187,6 +187,38 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
 
 ---
 
+## 2026-03-28 Status Snapshot (Stage 4 — T-003 implementation complete, awaiting A-1 approval)
+
+- Timestamp: 2026-03-28
+- Current stage: Stage 4 — Build (IN PROGRESS; A-1 gate ready for user probe/approval)
+- Completed since last update:
+  - T-003 implementation completed in code:
+    - `compare_to_anvil()` implemented in `src/eth_node/src/executor/compare.rs`
+    - Field-level diff reporting added (gas mismatch details incl. 5% threshold flag, return byte index diff, log mismatch diagnostics)
+    - `simulate_contract_call()` updated to align gas price with context basefee (avoids fee-floor failures)
+  - Test coverage expanded:
+    - `src/eth_node/tests/executor_call.rs`: now 4 tests including Anvil eth_call parity test
+    - `src/eth_node/tests/executor_compare.rs`: new file with 3 integration tests for report shape, gas-threshold detection, field-level detail
+  - Verification completed:
+    - `cargo build --package eth_node` passed
+    - `cargo test --package eth_node` passed
+    - executor suites all green: `executor_call` (4), `executor_compare` (3), `executor_anvil_compare` (1), `executor_sim` (10 pass, 1 ignored)
+  - Chronicle created:
+    - `chronicle/CHR-009-executor.md` with traceability T-000→T-003 and FR-001→FR-003
+- In progress:
+  - Prepare/submit A-1 gate report to user for explicit approval decision
+- Decisions made:
+  - FR-003 compare path implemented as signer-agnostic Anvil reference (`eth_estimateGas` + `eth_call`) with mismatch reporting semantics preserved (`Ok(report)` unless RPC failure)
+  - Detailed mismatch entries standardized for AC-007 evidence
+- Open questions:
+  - None
+- Blockers:
+  - None
+- Next step:
+  - User probes A-1 evidence, then gives explicit approve/reject for A-1 gate before T-004/T-005.
+
+---
+
 ## 2026-03-27 Status Snapshot (session close — Phase 2 T-003 partial + agent team setup)
 
 - Timestamp: 2026-03-27
