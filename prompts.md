@@ -820,5 +820,70 @@ invoke the #file:oracle-agent.md and the #file:claire-voyant-agent.md agents and
 
 - 'here are your instructions To continue this session: Reload VS Code... Key files for context: memory.md, compare.rs, simulate.rs, executor_call.rs, PHASE2_FORMAL_SPEC.md FR-002, FR-003'
 - 'approved' (A-1 gate approved on 2026-03-28)
-- 'Context Recovery — Do Not Reset ... For the remainder of this stage, I would like the team-lead.agent.md to carry on with the approvals and facilitation.'
+- 'Context Recovery ï¿½ Do Not Reset ... For the remainder of this stage, I would like the team-lead.agent.md to carry on with the approvals and facilitation.'
 - 'no, carry on'
+- 'Implement the suggestion - and also add this explicitly to the plan so we do not forget it So the practical sequencing would be: Start T-005 now. Complete the fuzzing work. Before asking you for A-2 approval, add the Anvil deploy-and-capture tests for T-004. Then present T-004 + T-005 together for the A-2 gate.'
+- 'y'
+- 'I would like approvals to be handled by #file:team-lead.agent.md until this phase is over. He is the custodian of keepig all the rules.'
+- 'Context Recovery â€” Do Not Reset ... (full context refresh prompt provided)'
+- 'no, just carry on and ask the #file:team-lead.agent.md  for the approvals until all the code is done'
+- 'Context handoff summary provided; continue from latest operations and outputs.'
+- 'I dont want to run cargo tests manually; I want to call the functionality directly via API calls from a terminal using the capture-session style scripts.'
+- 'Search memory and git history for the previous-project admin guide with live terminal examples; it seems erased.'
+- 'Implement a decode-log or decode-receipt CLI command, then extend CLI_REFERENCE.md in the same style using the technical writer and Rust backend specialist guidance.'
+
+### Prompt (Delegated Team Lead A-2 gate review request)
+You are acting as delegated stage approver for the current phase window. Review whether A-2 (T-004 + T-005) is approval-ready based on repository evidence.
+
+Context and required checks:
+- User delegated approvals to Team Lead for this phase.
+- A-2 requires both:
+	1) T-004 functional decoder coverage + deploy-driven Anvil event capture/decode evidence
+	2) T-005 fuzzing baseline completion
+- Relevant new work in this session:
+	- Added live deploy/capture tests: src/eth_node/tests/decode_anvil_live.rs (7 tests)
+	- Added Solidity fixtures: src/eth_node/tests/contracts/TestERC721.sol, TestERC1155.sol
+	- Updated decoder robustness for live dynamic payloads in src/eth_node/src/quality/decode.rs
+	- T-005 already implemented with fuzz feature and tests
+- Verification evidence from latest runs:
+	- cargo test --package eth_node --test decode_anvil_live => 7 passed
+	- cargo test --package eth_node --all-features => full package green (includes decode_live, decode_anvil_live, fuzz_properties)
+
+Your task:
+1) Evaluate DoR/DoD and A-2 acceptance readiness at a governance level.
+2) State explicit decision: APPROVED or REJECTED for A-2.
+3) If rejected, list exact blockers.
+4) If approved, list concise evidence summary and next stage/task recommendation.
+
+Return a compact report with sections:
+- Completed
+- In Progress
+- Blocked
+
+### Prompt (CLI decode command design review)
+Review a planned Rust CLI change in c:/Users/geb/Documents/VScode/ethereum_node_rust. We want to add a terminal-facing NFT event decode command to eth_node_cli, likely decode-receipt <tx_hash>, using the existing decoder in src/eth_node/src/quality/decode.rs. CLI code lives in src/eth_node_cli/src/main.rs. Goal: users can manually decode ERC-721/ERC-1155 logs from a terminal using tx hashes from live Anvil interactions. Please recommend a minimal, robust implementation design, especially how to represent decoded logs in JSON/human output and how to handle shared ApprovalForAll ambiguity without lying. Return: Implementation recommendation, output schema suggestion, error-handling guidance, and any refactor you would or would not do.
+- Next
+- Decision
+
+### Prompt (Delegated review: decode-receipt CLI slice)
+You are acting as delegated coordinator/reviewer for the current phase window in c:/Users/geb/Documents/VScode/ethereum_node_rust. Review the just-completed slice: a new eth_node_cli command for manual NFT receipt decoding plus guide updates. Facts: new CLI command is decode-receipt; it decodes ERC-721/ERC-1155 logs from a tx receipt by hash; shared ApprovalForAll is ambiguous by default and can be forced with --approval-for-all-as erc721|erc1155. New tests added in src/eth_node_cli/tests/decode_receipt_cli.rs. Guide updated in CLI_REFERENCE.md and capture-session script comments updated. Verification already run: cargo test --package eth_node_cli passed fully, and cargo test --package eth_node --test decode_live passed. Please provide a compact governance-style review with sections Completed, In Progress, Blocked, Next, Decision.
+
+### Prompt (Re-review: decode-receipt CLI slice after governance follow-up)
+Re-review the decode-receipt CLI slice in c:/Users/geb/Documents/VScode/ethereum_node_rust after governance follow-up. Since the last review, these additional closure steps were completed: 1) chronicle/CHR-010-decode-completeness.md now records the new CLI decode surface, tests, and manual evidence; 2) memory.md now records a status snapshot for the decode-receipt addition; 3) a real manual transcript artifact was created at output/sessions/2026-03-28_19-34-52/ using scripts/capture-session.ps1 decode-receipt 0x32b8051c09b9644997ac9b06ab346aa08f30ca6fb2a40cbca2f42572f0c1fef6; 4) verification already passed: cargo test --package eth_node_cli and cargo test --package eth_node --test decode_live. Please provide a compact governance-style review with sections Completed, In Progress, Blocked, Next, Decision.
+
+### Prompt (Final delegated governance review: decode-receipt CLI slice)
+Perform a final delegated governance review for the decode-receipt CLI slice in c:/Users/geb/Documents/VScode/ethereum_node_rust. Current closure evidence: 1) implementation in src/eth_node_cli/src/main.rs with safe ambiguous ApprovalForAll handling; 2) tests in src/eth_node_cli/tests/decode_receipt_cli.rs; 3) guide updates in CLI_REFERENCE.md; 4) chronicle/CHR-010-decode-completeness.md updated to trace the CLI surface and evidence; 5) memory.md updated with slice status; 6) manual evidence artifact exists at output/sessions/2026-03-28_19-38-53/ and the screen.log now includes the command body and decoded output because scripts/capture-session.ps1 was fixed to tee native command output; 7) verification already passed: cargo test --package eth_node_cli and cargo test --package eth_node --test decode_live. Return a compact governance-style report with sections Completed, In Progress, Blocked, Next, Decision.
+
+### Prompt (capture-session behavior + chained docs)
+#1 can you modify the bash script so it does not stop anvil please?
+
+#2 Can you get the #file:technical-writer-live-examples.md  to update the docs in a way that the chained execution is included i the examples? (extracting the hash might be a headache, but pleas try toi figure it out)
+
+### Prompt (PowerShell parity + managed Anvil stop)
+yes please.
+
+Also, do we have a way to stop anvil, maybe from within the scripts, document that as well
+
+### Prompt (session close preparation)
+prepare for session closing, save state anf files, commit and push.
+Write a note for the new session so we can carry on from where we left off.

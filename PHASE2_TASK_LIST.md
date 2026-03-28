@@ -26,6 +26,7 @@ Each task links to a chronicle document (CHR-009, CHR-010, CHR-011, CHR-012, CHR
 2. **Foundation first:** A-1 (T-001, T-002, T-003) completes before A-2 begins.
 3. **Track B after A-2:** T-006 begins after T-004 + T-005 complete.
 4. **Max 2 parallel:** 1 Track A task + 1 Track B task active simultaneously.
+5. **Owner-approved sequencing clarification (2026-03-28):** T-005 may begin after T-004 functional decoder coverage is in place, but **A-2 cannot be presented for approval** until T-004 also includes deploy-driven live contract event capture against Anvil, with logs retrieved via RPC and decoded end-to-end.
 
 ---
 
@@ -209,6 +210,19 @@ Before starting T-004 or T-005, verify A-1 foundation is complete:
 - AC-010: Edge cases documented in test comments with expected behavior.
 - AC-011: At least 15 new decode tests added.
 
+**A-2 Gate Clarification (Owner-approved, 2026-03-28):**
+- Functional decoder coverage may land before T-005 starts.
+- T-004 is **not fully gate-complete for A-2** until deploy-driven Anvil tests are added:
+  - deploy ERC-721 and ERC-1155 test contracts to local Anvil
+  - trigger event emission via contract calls
+  - capture emitted logs through RPC
+  - pass captured logs through the decoder and validate extracted fields
+- Practical sequencing:
+  1. Start T-005 after functional decoder coverage is in place.
+  2. Complete T-005.
+  3. Before asking for A-2 approval, add the Anvil deploy-and-capture tests for T-004.
+  4. Present T-004 + T-005 together for the A-2 gate.
+
 **Estimated Effort:** 6-8 hours
 
 **Chronicle:** CHR-010-decode-completeness.md
@@ -242,7 +256,7 @@ Before starting T-004 or T-005, verify A-1 foundation is complete:
 - Tests complete in <60 seconds total (timeout protection).
 - Any discovered panics fixed or documented as known limitations.
 
-**Dependencies:** T-004 complete (decoder extended; A-2 in progress).
+**Dependencies:** T-004 functional decoder coverage complete. Final A-2 approval still depends on the T-004 Anvil deploy-and-capture tests described above.
 
 **Deliverable:**
 - `src/quality/fuzz.rs`

@@ -10,11 +10,15 @@ use std::path::PathBuf;
 use alloy_dyn_abi::DynSolValue;
 use alloy_primitives::{Address, B256, U256};
 use alloy_rpc_types::Filter;
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
 use eth_node::{
     contract::ContractCaller,
     events::Listener,
     primitives::event_selector,
+    quality::{
+        decode_nft_event_lossless, AmbiguousApprovalForAllEvent, ApprovalForAllStandard,
+        DecodedEvent, LosslessDecodedEvent,
+    },
     rpc::RpcClient,
     signer::EthSigner,
     tx::{Broadcaster, TxBuilder},
@@ -116,6 +120,31 @@ enum Commands {
         /// Transaction hash (0x-prefixed hex).
         hash: String,
     },
+
+    /// Decode ERC-721/ERC-1155 NFT logs from a mined transaction receipt.
+    DecodeReceipt {
+        /// Transaction hash (0x-prefixed hex).
+        hash: String,
+
+        /// Resolve shared ApprovalForAll(address,address,bool) logs as a specific standard.
+        #[arg(long, value_enum)]
+        approval_for_all_as: Option<CliApprovalForAllStandard>,
+    },
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq, ValueEnum)]
+enum CliApprovalForAllStandard {
+    Erc721,
+    Erc1155,
+}
+
+impl From<CliApprovalForAllStandard> for ApprovalForAllStandard {
+    fn from(value: CliApprovalForAllStandard) -> Self {
+        match value {
+            CliApprovalForAllStandard::Erc721 => ApprovalForAllStandard::Erc721,
+            CliApprovalForAllStandard::Erc1155 => ApprovalForAllStandard::Erc1155,
+        }
+    }
 }
 
 // ── Entrypoint ────────────────────────────────────────────────────────────────
@@ -165,6 +194,9 @@ async fn run(cli: &Cli) -> Result<Value, String> {
             cmd_call(contract, function, args, &abi_json, &client, porcelain).await
         }
         Commands::TxStatus { hash } => cmd_tx_status(hash, &client, porcelain).await,
+        Commands::DecodeReceipt { hash, approval_for_all_as } => {
+            cmd_decode_receipt(hash, *approval_for_all_as, &client, porcelain).await
+        }
     }
 }
 
@@ -405,7 +437,296 @@ async fn cmd_tx_status(hash: &str, client: &RpcClient, porcelain: bool) -> Resul
     }
 }
 
+async fn cmd_decode_receipt(
+    hash: &str,
+    approval_for_all_as: Option<CliApprovalForAllStandard>,
+    client: &RpcClient,
+    porcelain: bool,
+) -> Result<Value, String> {
+    let tx_hash: B256 = hash
+        .parse()
+        .map_err(|e| format!("invalid tx hash: {e}"))?;
+
+    let receipt = client
+        .get_transaction_receipt(tx_hash)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    let Some(receipt) = receipt else {
+        if !porcelain {
+            println!("Transaction {hash}: pending (receipt not yet available)");
+        }
+        return Ok(json!({ "hash": hash, "status": "pending" }));
+    };
+
+    let block = receipt.block_number.unwrap_or(0);
+    let status = if receipt.status() { "success" } else { "reverted" };
+    let approval_for_all_as = approval_for_all_as.map(Into::into);
+
+    let rendered_logs: Vec<(Value, String)> = receipt
+        .logs()
+        .iter()
+        .enumerate()
+        .map(|(index, log)| render_decoded_log(index, log, approval_for_all_as))
+        .collect();
+
+    if !porcelain {
+        println!(
+            "Transaction {hash}: {status} in block {block} ({}) log(s)",
+            rendered_logs.len()
+        );
+        for (_, line) in &rendered_logs {
+            println!("{line}");
+        }
+    }
+
+    Ok(json!({
+        "hash": hash,
+        "status": status,
+        "block_number": block,
+        "logs": rendered_logs.into_iter().map(|(value, _)| value).collect::<Vec<_>>(),
+    }))
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+fn render_decoded_log(
+    index: usize,
+    log: &alloy_rpc_types::Log,
+    approval_for_all_as: Option<ApprovalForAllStandard>,
+) -> (Value, String) {
+    let address = log.address().to_string();
+    let topic0 = log
+        .topic0()
+        .map(|topic| format!("{topic:?}"))
+        .unwrap_or_default();
+
+    match decode_nft_event_lossless(log, approval_for_all_as) {
+        Ok(LosslessDecodedEvent::Decoded(event)) => render_decoded_event(index, &address, &topic0, event),
+        Ok(LosslessDecodedEvent::AmbiguousApprovalForAll(event)) => {
+            render_ambiguous_approval_for_all(index, &address, &topic0, &event)
+        }
+        Err(err @ eth_node::quality::DecodeError::UnsupportedEvent(_)) => {
+            let value = json!({
+                "index": index,
+                "address": address,
+                "topic0": topic0,
+                "decode_status": "unsupported",
+                "error": err.to_string(),
+            });
+            let line = format!("[{index}] {address} unsupported topic0={topic0}");
+            (value, line)
+        }
+        Err(err) => {
+            let value = json!({
+                "index": index,
+                "address": address,
+                "topic0": topic0,
+                "decode_status": "invalid_data",
+                "error": err.to_string(),
+            });
+            let line = format!("[{index}] {address} invalid_data error={}", err);
+            (value, line)
+        }
+    }
+}
+
+fn render_decoded_event(index: usize, address: &str, topic0: &str, event: DecodedEvent) -> (Value, String) {
+    match event {
+        DecodedEvent::Erc721Transfer(event) => {
+            let value = json!({
+                "index": index,
+                "address": address,
+                "topic0": topic0,
+                "decode_status": "decoded",
+                "standard": "erc721",
+                "event_name": "Transfer",
+                "fields": {
+                    "from": event.from.to_string(),
+                    "to": event.to.to_string(),
+                    "token_id": event.token_id.to_string(),
+                }
+            });
+            let line = format!(
+                "[{index}] {address} ERC-721 Transfer from={} to={} token_id={}",
+                event.from,
+                event.to,
+                event.token_id
+            );
+            (value, line)
+        }
+        DecodedEvent::Erc721Approval(event) => {
+            let value = json!({
+                "index": index,
+                "address": address,
+                "topic0": topic0,
+                "decode_status": "decoded",
+                "standard": "erc721",
+                "event_name": "Approval",
+                "fields": {
+                    "owner": event.owner.to_string(),
+                    "approved": event.approved.to_string(),
+                    "token_id": event.token_id.to_string(),
+                }
+            });
+            let line = format!(
+                "[{index}] {address} ERC-721 Approval owner={} approved={} token_id={}",
+                event.owner,
+                event.approved,
+                event.token_id
+            );
+            (value, line)
+        }
+        DecodedEvent::Erc721ApprovalForAll(event) => {
+            let value = json!({
+                "index": index,
+                "address": address,
+                "topic0": topic0,
+                "decode_status": "decoded",
+                "standard": "erc721",
+                "event_name": "ApprovalForAll",
+                "fields": {
+                    "owner": event.owner.to_string(),
+                    "operator": event.operator.to_string(),
+                    "approved": event.approved,
+                }
+            });
+            let line = format!(
+                "[{index}] {address} ERC-721 ApprovalForAll owner={} operator={} approved={}",
+                event.owner,
+                event.operator,
+                event.approved
+            );
+            (value, line)
+        }
+        DecodedEvent::Erc1155TransferSingle(event) => {
+            let value = json!({
+                "index": index,
+                "address": address,
+                "topic0": topic0,
+                "decode_status": "decoded",
+                "standard": "erc1155",
+                "event_name": "TransferSingle",
+                "fields": {
+                    "operator": event.operator.to_string(),
+                    "from": event.from.to_string(),
+                    "to": event.to.to_string(),
+                    "id": event.id.to_string(),
+                    "value": event.value.to_string(),
+                }
+            });
+            let line = format!(
+                "[{index}] {address} ERC-1155 TransferSingle operator={} from={} to={} id={} value={}",
+                event.operator,
+                event.from,
+                event.to,
+                event.id,
+                event.value
+            );
+            (value, line)
+        }
+        DecodedEvent::Erc1155TransferBatch(event) => {
+            let ids = event.ids.iter().map(ToString::to_string).collect::<Vec<_>>();
+            let values = event.values.iter().map(ToString::to_string).collect::<Vec<_>>();
+            let value = json!({
+                "index": index,
+                "address": address,
+                "topic0": topic0,
+                "decode_status": "decoded",
+                "standard": "erc1155",
+                "event_name": "TransferBatch",
+                "fields": {
+                    "operator": event.operator.to_string(),
+                    "from": event.from.to_string(),
+                    "to": event.to.to_string(),
+                    "ids": ids,
+                    "values": values,
+                }
+            });
+            let line = format!(
+                "[{index}] {address} ERC-1155 TransferBatch operator={} from={} to={} ids=[{}] values=[{}]",
+                event.operator,
+                event.from,
+                event.to,
+                ids.join(", "),
+                values.join(", ")
+            );
+            (value, line)
+        }
+        DecodedEvent::Erc1155ApprovalForAll(event) => {
+            let value = json!({
+                "index": index,
+                "address": address,
+                "topic0": topic0,
+                "decode_status": "decoded",
+                "standard": "erc1155",
+                "event_name": "ApprovalForAll",
+                "fields": {
+                    "account": event.account.to_string(),
+                    "operator": event.operator.to_string(),
+                    "approved": event.approved,
+                }
+            });
+            let line = format!(
+                "[{index}] {address} ERC-1155 ApprovalForAll account={} operator={} approved={}",
+                event.account,
+                event.operator,
+                event.approved
+            );
+            (value, line)
+        }
+        DecodedEvent::Erc1155Uri(event) => {
+            let value = json!({
+                "index": index,
+                "address": address,
+                "topic0": topic0,
+                "decode_status": "decoded",
+                "standard": "erc1155",
+                "event_name": "URI",
+                "fields": {
+                    "value": event.value,
+                    "id": event.id.to_string(),
+                }
+            });
+            let line = format!(
+                "[{index}] {address} ERC-1155 URI id={} value={}",
+                event.id,
+                event.value
+            );
+            (value, line)
+        }
+    }
+}
+
+fn render_ambiguous_approval_for_all(
+    index: usize,
+    address: &str,
+    topic0: &str,
+    event: &AmbiguousApprovalForAllEvent,
+) -> (Value, String) {
+    let value = json!({
+        "index": index,
+        "address": address,
+        "topic0": topic0,
+        "decode_status": "ambiguous",
+        "standard": "unknown",
+        "event_name": "ApprovalForAll",
+        "candidate_standards": ["erc721", "erc1155"],
+        "fields": {
+            "subject": event.subject.to_string(),
+            "operator": event.operator.to_string(),
+            "approved": event.approved,
+        },
+        "ambiguity_reason": "shared event signature and identical payload shape; contract standard is not knowable from the log alone"
+    });
+    let line = format!(
+        "[{index}] {address} ApprovalForAll ambiguous subject={} operator={} approved={} (ERC-721 owner or ERC-1155 account)",
+        event.subject,
+        event.operator,
+        event.approved
+    );
+    (value, line)
+}
 
 /// Best-effort parse of a CLI string into a [`DynSolValue`].
 ///

@@ -241,6 +241,126 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
 
 ---
 
+## 2026-03-28 Status Snapshot (Sequencing clarification applied for A-2)
+
+- Timestamp: 2026-03-28
+- Current stage: Stage 4 — Build (IN PROGRESS)
+- Completed since last update:
+  - Owner-approved sequencing clarification recorded in project plan
+- Decisions made:
+  - T-005 starts now
+  - T-004 deploy-driven live Anvil event-capture tests are explicitly deferred only until immediately before A-2 approval
+  - A-2 presentation must include both:
+    - T-005 fuzzing completion
+    - T-004 deploy -> emit -> RPC capture -> decode evidence
+- Open questions:
+  - None
+- Blockers:
+  - None
+- Next step:
+  - Begin T-005 implementation, then return to T-004 live Anvil capture tests before requesting A-2 approval.
+
+---
+
+## 2026-03-28 Status Snapshot (T-005 fuzzing baseline implemented)
+
+- Timestamp: 2026-03-28
+- Current stage: Stage 4 — Build (IN PROGRESS)
+- Completed since last update:
+  - Added `fuzz = []` feature flag to `src/eth_node/Cargo.toml`
+  - Added `src/eth_node/src/quality/fuzz.rs` with shared fuzz-input builders for transaction requests, simulation contexts, and logs
+  - Added `src/eth_node/tests/fuzz_properties.rs` with 3 feature-gated 10k-case proptest properties:
+    - executor simulation never panics on random `TransactionRequest`
+    - NFT decoder never panics on random logs
+    - ABI encode/decode round-trip preserves values
+  - Updated `.github/workflows/ci.yml` to run `cargo test --all --all-features`
+  - Verification completed:
+    - `cargo test --package eth_node --features fuzz --test fuzz_properties` => 3 passed in 18.82s
+    - `cargo test --package eth_node --all-features` => full package green; fuzz suite passed in 19.69s
+- In progress:
+  - A-2 workstream still requires T-004 deploy-driven Anvil capture coverage before gate presentation
+- Decisions made:
+  - Keep fuzzing opt-in locally behind a feature flag and always-on in CI through `--all-features`
+  - Use `catch_unwind` in the no-panic properties to make panic boundaries explicit
+- Open questions:
+  - None for T-005
+- Blockers:
+  - None for T-005
+- Next step:
+  - Return to T-004 and add Anvil deploy -> emit -> RPC capture -> decode tests before requesting A-2 approval.
+
+---
+
+## 2026-03-28 Status Snapshot (Approval delegation update)
+
+- Timestamp: 2026-03-28
+- Current stage: Stage 4 — Build (IN PROGRESS)
+- Completed since last update:
+  - Owner delegated stage approvals to Team Lead for the remainder of the current phase
+  - Team Lead agent policy updated to allow explicit delegation-window gate approvals while preserving default owner-approval behavior outside delegated windows
+- Decisions made:
+  - Acting stage approver for current phase window: Team Lead
+  - Scope continuity maintained: resume at T-004 deploy-driven Anvil capture tests before A-2 gate request
+- Open questions:
+  - None
+- Blockers:
+  - None
+- Next step:
+  - Execute T-004 deploy -> emit -> RPC capture -> decode tests and prepare joint T-004 + T-005 A-2 gate package for Team Lead approval.
+
+---
+
+## 2026-03-28 Status Snapshot (T-004 live deploy/capture closure complete)
+
+- Timestamp: 2026-03-28
+- Current stage: Stage 4 — Build (IN PROGRESS; A-2 evidence package ready)
+- Completed since last update:
+  - Added deploy-driven Anvil live decode suite: `src/eth_node/tests/decode_anvil_live.rs` (7 tests)
+  - Added Solidity emitter contracts for live capture:
+    - `src/eth_node/tests/contracts/TestERC721.sol`
+    - `src/eth_node/tests/contracts/TestERC1155.sol`
+  - Live test flow now verifies:
+    - forge compile -> deploy contracts -> emit events via tx -> capture receipt logs -> decode -> assert fields
+  - Decoder hardening in `src/eth_node/src/quality/decode.rs`:
+    - URI decode fallback for live-chain string payload shape
+    - TransferBatch decode fallback with explicit dynamic-array word parsing for live payload compatibility
+  - Verification completed:
+    - `cargo test --package eth_node --test decode_anvil_live` => 7 passed
+    - `cargo test --package eth_node --all-features` => full package green
+- In progress:
+  - Team Lead delegated gate review for A-2 (T-004 + T-005 bundle)
+- Decisions made:
+  - Keep live Solidity artifacts as runtime-generated outputs (not committed source assets)
+  - Retain canonical synthetic decoder tests and live deploy/capture tests together for complementary evidence
+- Open questions:
+  - None
+- Blockers:
+  - None
+- Next step:
+  - Request Team Lead delegated approval for A-2 package; on approval, proceed to next phase tasking.
+
+---
+
+## 2026-03-28 Status Snapshot (CLI decode command design review)
+
+- Timestamp: 2026-03-28
+- Current stage: Stage 4 — Build (design review only; no code changes)
+- Completed since last update:
+  - Reviewed governance constraints, CLI/API boundary rules, existing NFT decoder implementation, live decode tests, and current receipt RPC surface for planned `decode-receipt` CLI work
+- In progress:
+  - Implementation design recommendation for terminal-facing receipt decode using existing `eth_node::quality::decode` helpers
+- Decisions made:
+  - Preserve thin-CLI architecture: recommendation will keep receipt fetch + decode orchestration in library-facing APIs where practical, with CLI limited to parsing and presentation
+  - Treat shared `ApprovalForAll` as ambiguous in generic decoding unless explicit contract standard context is available
+- Open questions:
+  - None for the review itself
+- Blockers:
+  - None
+- Next step:
+  - Deliver concrete recommendation covering command shape, JSON/human output, ambiguity semantics, and minimal refactor boundaries.
+
+---
+
 ## 2026-03-28 Status Snapshot (Stage 4 — T-003 implementation complete, awaiting A-1 approval)
 
 - Timestamp: 2026-03-28
@@ -416,6 +536,192 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
 - Open questions: None.
 - Blockers: None.
 - Next step: User review and approval; commit.
+
+---
+
+## 2026-03-28 Status Snapshot (A-2 delegated gate review complete)
+
+- Timestamp: 2026-03-28
+- Current stage: Stage 4 - Build (A-2 gate reviewed by delegated Team Lead approver)
+- Completed since last update:
+  - Governance review executed for A-2 bundle (T-004 + T-005) under delegated Team Lead approval window.
+  - Repository evidence validated for T-004 live deploy/capture requirement:
+    - `src/eth_node/tests/decode_anvil_live.rs` contains 7 deploy-driven tests.
+    - `src/eth_node/tests/contracts/TestERC721.sol` and `src/eth_node/tests/contracts/TestERC1155.sol` present and used by live tests.
+    - `src/eth_node/src/quality/decode.rs` includes robustness fallback handling for live dynamic payload shapes.
+  - Repository evidence validated for T-005 fuzzing baseline requirement:
+    - `src/eth_node/tests/fuzz_properties.rs` contains 3 feature-gated proptest properties with 10k cases.
+    - `src/eth_node/Cargo.toml` includes `fuzz = []` feature.
+    - `.github/workflows/ci.yml` runs `cargo test --all --all-features`.
+  - Fresh verification run executed during gate review:
+    - `cargo test --package eth_node --test decode_anvil_live` => 7 passed; 0 failed.
+    - `cargo test --package eth_node --all-features` => full `eth_node` package green, including `decode_live`, `decode_anvil_live`, and `fuzz_properties`.
+- In progress:
+  - Transition planning from A-2 completion to next Phase 2 dependency path.
+- Decisions made:
+  - A-2 gate decision: APPROVED.
+  - Approval rationale: owner-required deploy-driven Anvil decode evidence and fuzzing baseline evidence are both present and passing.
+- Open questions:
+  - None.
+- Blockers:
+  - None.
+- Next step:
+  - User can run the chained example directly to verify success path end-to-end.
+  - Advance to next Phase 2 task sequence that depends on A-2 completion (per `PHASE2_TASK_LIST.md`, begin A-3 path / T-009 readiness check and Track B sequencing as planned).
+
+---
+
+## 2026-03-28 Status Snapshot (Post-approval stabilization verified)
+
+- Timestamp: 2026-03-28
+- Current stage: Stage 4 - Build (A-2 approved; repository stabilization confirmed)
+- Completed since last update:
+  - Updated live deploy test forge output path to OS temp directory to prevent generated artifact churn in repository paths.
+  - Removed previously generated `src/eth_node/output/forge-artifacts` directory.
+  - Re-ran targeted live verification after cleanup:
+    - `cargo test --package eth_node --test decode_anvil_live` => 7 passed; 0 failed.
+  - Re-validated changed-file set and core touched files for errors: no new static errors in live decode test or decoder files.
+- In progress:
+  - Preparing final transition from A-2 closure into next approved task path.
+- Decisions made:
+  - Keep forge artifact output external to tracked repository paths for live tests.
+- Open questions:
+  - None.
+- Blockers:
+  - None.
+- Next step:
+  - Move to next Stage 4 task sequence after A-2 completion, preserving Team Lead delegated approvals for the current phase window.
+
+---
+
+## 2026-03-28 Status Snapshot (Manual terminal validation requested)
+
+- Timestamp: 2026-03-28
+- Current stage: Stage 4 - Build (A-2 approved; user exploring manual validation)
+- Completed since last update:
+  - Confirmed existing terminal/capture tooling for direct CLI usage via `scripts/capture-session.sh` and `scripts/capture-session.ps1`.
+  - Confirmed current CLI supports direct `balance`, `send`, `watch`, `call`, and `tx-status` operations.
+  - Confirmed current gap: T-004 decoder functionality is exercised in library/integration tests but is not yet exposed as a dedicated CLI/API command for direct terminal-driven log decode.
+- In progress:
+  - Providing happy-path and negative-path manual validation guidance using current CLI surface.
+- Decisions made:
+  - Manual testing guidance should distinguish between what is directly testable today and what would require a small CLI extension.
+- Open questions:
+  - Whether to add a new terminal-facing decode command after the user tries current manual checks.
+- Blockers:
+  - None.
+- Next step:
+  - User runs direct CLI/capture flows and reports findings; if needed, add a first-class decode/log-inspection command.
+
+---
+
+## 2026-03-28 Status Snapshot (decode-receipt CLI and guide addition complete)
+
+- Timestamp: 2026-03-28
+- Current stage: Stage 4 - Build (manual decoder access added)
+- Completed since last update:
+  - Added `decode-receipt` command to `src/eth_node_cli/src/main.rs` for manual terminal decoding of ERC-721/ERC-1155 logs by transaction hash.
+  - Added lossless decoder surface in `src/eth_node/src/quality/decode.rs` for safe CLI handling of shared `ApprovalForAll(address,address,bool)`.
+  - Added CLI integration coverage in `src/eth_node_cli/tests/decode_receipt_cli.rs` for:
+    - invalid hash
+    - pending receipt
+    - live ERC-721 receipt decode
+    - ambiguous vs forced-standard ApprovalForAll handling
+  - Extended `CLI_REFERENCE.md` with a new `decode-receipt` command section and live examples in the existing guide style.
+  - Updated capture-session helper comments for command discoverability.
+  - Recorded a successful live transcript artifact:
+    - `output/sessions/2026-03-28_19-38-53/`
+- Verification completed:
+  - `cargo test --package eth_node_cli` => full CLI package green (32 passed)
+  - `cargo test --package eth_node --test decode_live` => 16 passed
+  - `scripts/capture-session.ps1 decode-receipt 0xa81c52b998ee2b353815d1c7790eb1b67f0840b4b86d0f2e9e97445c1e4bb983` => successful live ERC-721 transfer decode artifact captured with screen.log body and state.json
+- Decisions made:
+  - Shared `ApprovalForAll` stays ambiguous by default in terminal output unless the operator supplies `--approval-for-all-as`
+  - The new manual decode surface is documented as a natural extension of the existing CLI reference rather than a separate admin guide
+- Open questions:
+  - None.
+- Blockers:
+  - None.
+- Next step:
+  - User can now run manual receipt-decode happy and negative paths directly from the terminal and report any findings.
+
+---
+
+## 2026-03-28 Status Snapshot (Delegated review: decode-receipt CLI slice)
+
+- Timestamp: 2026-03-28
+- Current stage: Stage 4 - Build (delegated review only; slice not yet gate-complete)
+- Completed since last update:
+  - Reviewed new `eth_node_cli` `decode-receipt` command implementation, CLI tests, guide updates, and capture-session script comment updates.
+  - Confirmed implementation behavior aligns with the stated user-facing facts:
+    - decodes ERC-721 and ERC-1155 logs from a receipt by tx hash
+    - treats shared `ApprovalForAll(address,address,bool)` as ambiguous by default
+    - supports forced interpretation via `--approval-for-all-as erc721|erc1155`
+  - Confirmed repository evidence for automated verification:
+    - `src/eth_node_cli/tests/decode_receipt_cli.rs` covers invalid hash, pending receipt, ERC-721 decode, and ambiguous/forced `ApprovalForAll`
+    - `CLI_REFERENCE.md` documents the command and ambiguity semantics
+    - no static editor errors reported in `src/eth_node_cli/src/main.rs`, `src/eth_node_cli/tests/decode_receipt_cli.rs`, or `CLI_REFERENCE.md`
+- In progress:
+  - Governance closure for this CLI slice remains incomplete pending traceability and interactive evidence alignment.
+- Decisions made:
+  - Delegated review decision for the slice: REJECTED for gate-complete closure in its current form.
+- Open questions:
+  - Which approved task/spec item should own this CLI/manual-decode increment.
+- Blockers:
+  - No matching Phase 2 task, formal-spec requirement, or chronicle entry currently traces this `decode-receipt` slice.
+  - No stored capture-session artifact or linked exploratory/manual evidence was found for the new interactive CLI command.
+- Next step:
+  - Add explicit task/spec/chronicle traceability for the CLI slice and record one capture-session-backed manual run before requesting another delegated review.
+
+---
+
+## 2026-03-28 Status Snapshot (Re-review: decode-receipt CLI slice after follow-up)
+
+- Timestamp: 2026-03-28
+- Current stage: Stage 4 - Build (delegated re-review complete)
+- Completed since last update:
+  - Re-checked the decode-receipt CLI slice after follow-up governance work.
+  - Fixed `scripts/capture-session.ps1` so native command output is written into `screen.log`, not just transcript metadata.
+  - Captured corrected manual evidence in `output/sessions/2026-03-28_19-38-53/` with both `screen.log` and `state.json` containing the new decode-receipt interaction.
+  - Re-confirmed implementation/test alignment across src/eth_node_cli/src/main.rs, src/eth_node_cli/tests/decode_receipt_cli.rs, src/eth_node/tests/decode_live.rs, and src/eth_node/tests/decode_anvil_live.rs.
+- In progress:
+  - None.
+- Decisions made:
+  - Manual capture evidence is now considered compliant for this slice because the visible command interaction is preserved in `screen.log`.
+- Open questions:
+  - None.
+- Blockers:
+  - None.
+- Next step:
+  - Request final delegated closure review for the decode-receipt CLI slice.
+
+---
+
+## 2026-03-28 Status Snapshot (Final delegated review: decode-receipt CLI slice)
+
+- Timestamp: 2026-03-28
+- Current stage: Stage 4 - Build (delegated slice review complete)
+- Completed since last update:
+  - Validated final closure evidence for the decode-receipt CLI slice across implementation, tests, guide, chronicle, memory log, and manual capture artifacts.
+  - Reconfirmed `src/eth_node_cli/src/main.rs` keeps the CLI layer thin and handles shared `ApprovalForAll(address,address,bool)` safely by reporting ambiguity unless the operator supplies `--approval-for-all-as`.
+  - Reconfirmed `src/eth_node_cli/tests/decode_receipt_cli.rs` covers invalid hash, pending receipt, live ERC-721 decode, and ambiguous versus forced-standard `ApprovalForAll` behavior.
+  - Reconfirmed `CLI_REFERENCE.md` documents the command, live walkthroughs, and the ambiguity contract.
+  - Reconfirmed `chronicle/CHR-010-decode-completeness.md` links the CLI surface, verification commands, and manual evidence artifact.
+  - Reconfirmed `output/sessions/2026-03-28_19-38-53/` contains both `state.json` and a `screen.log` with the executed command body and decoded ERC-721 transfer output after the PowerShell capture helper tee fix.
+  - Reviewed existing verification evidence without rerunning it:
+    - `cargo test --package eth_node_cli`
+    - `cargo test --package eth_node --test decode_live`
+- In progress:
+  - None.
+- Decisions made:
+  - Delegated governance decision for the decode-receipt CLI slice: APPROVED.
+  - Closure is accepted on the basis of complete traceability plus compliant interactive evidence.
+- Open questions:
+  - None.
+- Blockers:
+  - None.
+- Next step:
+  - Fold this approved slice into the next broader phase or gate package without reopening it unless new behavior changes land.
 
 
 ## 2026-03-19 Status Snapshot 001
@@ -1942,3 +2248,66 @@ Next step: None pending.
 - Blockers: None
 - Next step:
   - Ask: "Do you approve this Phase 2 task list with role assignments?" for Stage 3 gate  - If approved, proceed to Stage 4 implementation starting with T-001 for Stage 2 gate approval
+
+## 2026-03-28 Status Snapshot (capture-session Anvil persistence + chained docs)
+
+- Timestamp: 2026-03-28
+- Current stage: Stage 4 - Build (IN PROGRESS)
+- Completed since last update:
+  - Updated scripts/capture-session.sh to keep Anvil running after command completion when auto-started by the script.
+  - Updated CLI_REFERENCE.md Section 8 with explicit behavior note and a chained Bash example: send -> tx-status -> decode-receipt.
+  - Added hash extraction workflow in docs using shell parsing to avoid manual copy/paste.
+- In progress:
+  - None for this slice.
+- Decisions made:
+  - Keep Anvil persistence scoped to capture-session.sh so sequential manual commands reuse chain state.
+  - Preserve capture-multi.sh bounded-session behavior as documented.
+- Open questions:
+  - None.
+- Blockers:
+  - None.
+- Next step:
+  - User can run the chained example directly to verify success path end-to-end.
+
+## 2026-03-28 Status Snapshot (PowerShell capture parity + managed Anvil stop)
+
+- Timestamp: 2026-03-28
+- Current stage: Stage 4 - Build (IN PROGRESS)
+- Completed since last update:
+  - Updated scripts/capture-session.ps1 to auto-start Anvil when needed, leave it running after the command, and record the same lifecycle messages as the Bash helper.
+  - Added a managed Anvil stop path to both scripts: `capture-session.sh --stop-anvil` and `capture-session.ps1 --stop-anvil`.
+  - Updated CLI_REFERENCE.md Section 8 with PowerShell parity notes and explicit stop instructions.
+- In progress:
+  - None for this slice.
+- Decisions made:
+  - Managed stop only targets the Anvil instance started and tracked by the helper scripts.
+  - Manually started Anvil sessions remain manual and should be stopped with Ctrl-C in their original terminal.
+- Open questions:
+  - None.
+- Blockers:
+  - None.
+- Next step:
+  - User can reuse the helpers for chained sessions and stop the managed Anvil instance explicitly when finished.
+
+## 2026-03-28 Session Close Handoff Note
+
+- Timestamp: 2026-03-28
+- Current stage: Stage 4 - Build (IN PROGRESS)
+- Stage approver: Team Lead, delegated for the current phase window
+- Latest completed work:
+  - `decode-receipt` CLI support, lossless shared `ApprovalForAll` handling, live decode tests, fuzz baseline, session-capture helper improvements, and CLI guide updates are present in the worktree.
+  - Bash and PowerShell capture helpers now both support leaving managed Anvil running and stopping it later with `--stop-anvil`.
+- Repository state at close preparation:
+  - Current branch: `master`
+  - Remote configured: `origin https://github.com/leftygbalogh/eth_node.git`
+  - Worktree includes substantive code/docs/governance changes plus generated Forge artifact churn under `cache/` and `out/`.
+- Recommended next-session starting point:
+  - Resume from Stage 4 on the current phase branch/worktree.
+  - First decide whether generated Forge artifact churn in `cache/` and `out/` belongs in version control or should be excluded before commit/push.
+  - If push target remains unchanged, publish to `origin/master` after that scope decision.
+- Open questions:
+  - Whether the generated Forge artifact changes should be committed with the rest of the Stage 4 work.
+- Blockers:
+  - Push is pending explicit confirmation of the target (`origin/master`) and final artifact scope for the closing commit.
+- Next step:
+  - On resume, confirm commit scope, create the closing commit, then push to the approved remote/branch.

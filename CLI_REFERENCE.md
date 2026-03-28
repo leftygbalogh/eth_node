@@ -17,6 +17,7 @@
    - [balance](#balance--check-an-account-balance)
    - [send](#send--transfer-eth)
    - [tx-status](#tx-status--check-what-happened-to-a-transaction)
+  - [decode-receipt](#decode-receipt--decode-nft-events-from-a-transaction)
    - [call](#call--read-data-from-a-smart-contract)
    - [watch](#watch--stream-live-contract-events)
 8. [Recording a session](#8-recording-a-session)
@@ -97,6 +98,7 @@ Commands:
   watch      Watch and print logs emitted by a contract
   call       Call a view function on a deployed contract
   tx-status  Print the receipt for a transaction
+  decode-receipt  Decode NFT logs from a transaction receipt
   help       Print this message or the help of the given subcommand(s)
 ...
 ```
@@ -302,6 +304,160 @@ Transaction 0x43aa...: pending (not yet mined)
 
 > On Anvil, transactions mine instantly, so you'll almost always see "success".
 > On a real network, you might see "pending" for several seconds.
+
+---
+
+### `decode-receipt` — Decode NFT events from a transaction
+
+**What it does**: Fetches a mined transaction receipt by hash, scans every log
+in that receipt, and decodes any standard **ERC-721** or **ERC-1155** NFT
+events it finds.
+
+This is the easiest way to manually test the Phase 2 NFT decoder from the
+terminal. You trigger an event on-chain, copy the transaction hash, then ask
+`eth_node_cli` to decode the logs for you.
+
+**Syntax**:
+```bash
+eth decode-receipt [--approval-for-all-as erc721|erc1155] <TX_HASH>
+```
+
+**Important note about `ApprovalForAll`**:
+
+The event signature `ApprovalForAll(address,address,bool)` is shared by both
+ERC-721 and ERC-1155. The log alone does **not** contain enough information to
+know which standard the contract meant.
+
+So by default:
+- `eth decode-receipt` reports that event as **ambiguous**
+- you can force an interpretation with `--approval-for-all-as erc721`
+- or with `--approval-for-all-as erc1155`
+
+---
+
+#### Quick walkthrough — decode a live ERC-721 `Transfer`
+
+This uses the repo's test emitter contract so you can exercise the real decoder
+from a terminal, without running Rust tests.
+
+**Terminal 1** — start Anvil if it is not already running:
+```bash
+anvil
+```
+
+**Terminal 2** — deploy the ERC-721 emitter contract from the repo:
+```bash
+forge create src/eth_node/tests/contracts/TestERC721.sol:TestERC721 \
+  --rpc-url http://127.0.0.1:8545 \
+  --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
+  --broadcast
+```
+
+`forge create` prints something like:
+```
+Deployed to: 0x<ERC721_CONTRACT_ADDRESS>
+Transaction Hash: 0x<DEPLOY_TX_HASH>
+```
+
+Copy the deployed contract address.
+
+**Terminal 2** — emit a `Transfer` event using `cast send`:
+```bash
+cast send <ERC721_CONTRACT_ADDRESS> \
+  "emitTransfer(address,address,uint256)" \
+  0x2121212121212121212121212121212121212121 \
+  0x2222222222222222222222222222222222222222 \
+  42 \
+  --rpc-url http://127.0.0.1:8545 \
+  --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+```
+
+`cast send` prints a transaction hash. Copy it.
+
+**Terminal 2** — decode the receipt:
+```bash
+eth decode-receipt 0x<TRANSFER_TX_HASH>
+```
+
+**Expected output**:
+```
+Transaction 0x<TRANSFER_TX_HASH>: success in block 2 (1) log(s)
+[0] 0x<ERC721_CONTRACT_ADDRESS> ERC-721 Transfer from=0x2121... to=0x2222... token_id=42
+```
+
+**Machine-readable output**:
+```bash
+eth --porcelain decode-receipt 0x<TRANSFER_TX_HASH>
+```
+
+Example JSON shape:
+```json
+{
+  "hash": "0x...",
+  "status": "success",
+  "block_number": 2,
+  "logs": [
+    {
+      "index": 0,
+      "address": "0x...",
+      "topic0": "0xddf252ad...",
+      "decode_status": "decoded",
+      "standard": "erc721",
+      "event_name": "Transfer",
+      "fields": {
+        "from": "0x2121212121212121212121212121212121212121",
+        "to": "0x2222222222222222222222222222222222222222",
+        "token_id": "42"
+      }
+    }
+  ]
+}
+```
+
+---
+
+#### Shared `ApprovalForAll` example
+
+Deploy the ERC-1155 emitter:
+```bash
+forge create src/eth_node/tests/contracts/TestERC1155.sol:TestERC1155 \
+  --rpc-url http://127.0.0.1:8545 \
+  --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
+  --broadcast
+```
+
+Emit `ApprovalForAll`:
+```bash
+cast send <ERC1155_CONTRACT_ADDRESS> \
+  "emitApprovalForAll(address,address,bool)" \
+  0x9191919191919191919191919191919191919191 \
+  0x9292929292929292929292929292929292929292 \
+  false \
+  --rpc-url http://127.0.0.1:8545 \
+  --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+```
+
+Decode it without an override:
+```bash
+eth decode-receipt 0x<APPROVAL_TX_HASH>
+```
+
+Expected shape:
+```
+Transaction 0x<APPROVAL_TX_HASH>: success in block 3 (1) log(s)
+[0] 0x<ERC1155_CONTRACT_ADDRESS> ApprovalForAll ambiguous subject=0x9191... operator=0x9292... approved=false (ERC-721 owner or ERC-1155 account)
+```
+
+Force ERC-1155 interpretation:
+```bash
+eth decode-receipt --approval-for-all-as erc1155 0x<APPROVAL_TX_HASH>
+```
+
+Expected shape:
+```
+Transaction 0x<APPROVAL_TX_HASH>: success in block 3 (1) log(s)
+[0] 0x<ERC1155_CONTRACT_ADDRESS> ERC-1155 ApprovalForAll account=0x9191... operator=0x9292... approved=false
+```
 
 ---
 
@@ -570,6 +726,11 @@ Both scripts:
 - Save a `screen.log` (full terminal transcript) to `output/sessions/<timestamp>/`
 - Save one `state.json` per successful command
 
+Behavior difference:
+- `capture-session.sh` keeps Anvil running after the command finishes (so you can chain follow-up commands)
+- `capture-session.ps1` now does the same on Windows PowerShell
+- `capture-multi.sh` still runs as one bounded session and stops the temporary Anvil it started
+
 ---
 
 ### Single command — `capture-session.sh`
@@ -580,7 +741,16 @@ chmod +x scripts/capture-session.sh    # one-time setup
 ./scripts/capture-session.sh <subcommand> [args...]
 ```
 
-All five commands work:
+If the script starts Anvil for you, it now leaves Anvil running after the
+command exits. That means your next command can reuse the same chain state.
+
+On Windows PowerShell, use the sibling helper with the same behavior:
+
+```powershell
+.\scripts\capture-session.ps1 balance 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+```
+
+All six commands work:
 
 ```bash
 # Check a balance
@@ -595,6 +765,12 @@ All five commands work:
 # Check transaction status
 # Replace 0x43aa... with the transaction hash printed by the `send` command above.
 ./scripts/capture-session.sh tx-status 0x43aab2ff75b7c9b2a3a345de2e2de2ae41ea6ea8a62c8aa5bef4c3b7a24c7421
+
+# Decode NFT logs from a transaction receipt
+./scripts/capture-session.sh decode-receipt 0x43aab2ff75b7c9b2a3a345de2e2de2ae41ea6ea8a62c8aa5bef4c3b7a24c7421
+
+# Force the shared ApprovalForAll signature to decode as ERC-1155
+./scripts/capture-session.sh decode-receipt --approval-for-all-as erc1155 0x43aab2ff75b7c9b2a3a345de2e2de2ae41ea6ea8a62c8aa5bef4c3b7a24c7421
 
 # Call a contract (ABI file auto-provisioned from config/)
 #
@@ -617,6 +793,51 @@ All five commands work:
 # Replace 0x67d2... with the address forge create printed for YOUR Receiver.
 ./scripts/capture-session.sh watch 0x67d269191c92Caf3cD7723F116c85e6E9bf55933
 ```
+
+#### Chained execution example (send -> tx-status -> decode-receipt)
+
+This keeps everything in one shell and reuses the transaction hash from `send`
+without manual copy/paste.
+
+```bash
+SEND_OUT="$(./scripts/capture-session.sh send \
+  --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
+  0x70997970C51812dc3A010C7d01b50e0d17dc79C8 \
+  1000000000000000000)"
+
+TX_HASH="$(printf '%s\n' "$SEND_OUT" | grep -Eo '0x[a-fA-F0-9]{64}' | head -n 1)"
+
+if [[ -z "$TX_HASH" ]]; then
+  echo "Could not extract transaction hash from send output."
+  exit 1
+fi
+
+echo "Using tx hash: $TX_HASH"
+
+./scripts/capture-session.sh tx-status "$TX_HASH"
+./scripts/capture-session.sh decode-receipt "$TX_HASH"
+```
+
+Expected behavior:
+- `tx-status` reports the same transaction as `success` (not pending)
+- `decode-receipt` inspects logs from that exact transaction receipt
+
+#### Stop the managed Anvil instance
+
+If `capture-session.sh` or `capture-session.ps1` started Anvil for you, you can
+stop that managed instance later with one of these commands:
+
+```bash
+./scripts/capture-session.sh --stop-anvil
+```
+
+```powershell
+.\scripts\capture-session.ps1 --stop-anvil
+```
+
+Important scope note:
+- these commands stop only the Anvil process that the helper script started and tracked
+- if you started `anvil` manually in another terminal, stop it there with `Ctrl-C`
 
 Artifacts are written to `output/sessions/<timestamp>/`:
 
@@ -772,6 +993,7 @@ On Windows without `jq`, use PowerShell:
 | `balance` | `address`, `balance_wei` |
 | `send` | `transaction_hash`, `block_number`, `status` |
 | `tx-status` | `hash`, `status`, `block_number` |
+| `decode-receipt` | `hash`, `status`, `block_number`, `logs` |
 | `call` | `contract`, `function`, `return_values` |
 | `watch` | `contract`, `events_received` |
 
@@ -834,6 +1056,25 @@ The address is malformed. Make sure it starts with `0x` and is exactly 42 charac
 
 ### `invalid amount: ...`
 Amounts must be in wei (whole numbers, no decimals). `1.5` is not valid; use `1500000000000000000` for 1.5 ETH.
+
+### `decode-receipt` says `pending`
+The transaction exists as a hash, but the receipt is not available yet. On
+Anvil this is uncommon because blocks mine immediately. On other networks,
+wait a few seconds and try again.
+
+### `decode-receipt` says `unsupported`
+The receipt log was real, but it was not one of the NFT events this decoder
+currently understands. Right now the command targets standard ERC-721 and
+ERC-1155 events only.
+
+### `decode-receipt` says `ambiguous`
+This happens for `ApprovalForAll(address,address,bool)` because ERC-721 and
+ERC-1155 use the same event signature and data layout. Re-run with one of:
+
+```bash
+eth decode-receipt --approval-for-all-as erc721 0x<TX_HASH>
+eth decode-receipt --approval-for-all-as erc1155 0x<TX_HASH>
+```
 
 ### `one of --abi or --abi-file is required`
 The `call` command needs an ABI. Pass either:

@@ -9,9 +9,11 @@
 # Task ref: T-003
 #
 # Usage:
+#   ./scripts/capture-session.sh --stop-anvil
 #   ./scripts/capture-session.sh balance 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
 #   ./scripts/capture-session.sh send --private-key 0xac09... 0x7099... 1000000000000000000
 #   ./scripts/capture-session.sh tx-status 0x43aa...
+#   ./scripts/capture-session.sh decode-receipt 0x43aa...
 #   ./scripts/capture-session.sh call --abi-file /tmp/stubtoken.abi.json 0x5FbD... balanceOf 0xf39...
 #   ./scripts/capture-session.sh watch 0x5FbD...
 #
@@ -22,6 +24,67 @@ set -euo pipefail
 # ── Resolve workspace root (parent of scripts/) ───────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORK_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+MANAGED_ANVIL_DIR="$WORK_ROOT/output/anvil"
+MANAGED_ANVIL_PID_FILE="$MANAGED_ANVIL_DIR/managed.pid"
+
+mkdir -p "$MANAGED_ANVIL_DIR"
+
+is_windows_shell() {
+    case "$(uname -s)" in
+        MINGW*|MSYS*|CYGWIN*) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+managed_anvil_running() {
+    [[ -f "$MANAGED_ANVIL_PID_FILE" ]] || return 1
+
+    local pid
+    pid="$(<"$MANAGED_ANVIL_PID_FILE")"
+    [[ -n "$pid" ]] || return 1
+
+    if is_windows_shell; then
+        tasklist.exe /FI "PID eq $pid" 2>/dev/null | grep -q "$pid"
+    else
+        kill -0 "$pid" 2>/dev/null
+    fi
+}
+
+clear_stale_managed_pid() {
+    if [[ -f "$MANAGED_ANVIL_PID_FILE" ]] && ! managed_anvil_running; then
+        rm -f "$MANAGED_ANVIL_PID_FILE"
+    fi
+}
+
+stop_managed_anvil() {
+    clear_stale_managed_pid
+
+    if [[ ! -f "$MANAGED_ANVIL_PID_FILE" ]]; then
+        echo "No managed Anvil instance is currently tracked."
+        echo "If you started Anvil manually, stop it in that terminal with Ctrl-C."
+        return 0
+    fi
+
+    local pid
+    pid="$(<"$MANAGED_ANVIL_PID_FILE")"
+
+    if is_windows_shell; then
+        taskkill.exe /PID "$pid" /T /F >/dev/null 2>&1 || true
+    else
+        kill "$pid" 2>/dev/null || true
+    fi
+
+    rm -f "$MANAGED_ANVIL_PID_FILE"
+    echo "Stopped managed Anvil (pid $pid)."
+}
+
+if [[ ${1-} == "--stop-anvil" ]]; then
+    stop_managed_anvil
+    exit 0
+fi
+
+clear_stale_managed_pid
 
 # ── Locate eth_node_cli binary ─────────────────────────────────────────────────
 RELEASE_BIN="$WORK_ROOT/target/release/eth_node_cli"
@@ -73,6 +136,7 @@ if ! anvil_ready; then
         sleep 0.5
         if anvil_ready; then
             echo "Anvil ready (pid $ANVIL_PID)."
+            printf '%s\n' "$ANVIL_PID" > "$MANAGED_ANVIL_PID_FILE"
             break
         fi
     done
@@ -124,10 +188,10 @@ else
     echo "State JSON  : (not written — command exited with error)"
 fi
 
-# ── Stop Anvil if we started it ───────────────────────────────────────────────
+# ── Keep Anvil running for chained/manual follow-up commands ──────────────────
 if [[ $ANVIL_STARTED -eq 1 ]]; then
-    kill "$ANVIL_PID" 2>/dev/null || true
-    echo "Anvil stopped (pid $ANVIL_PID)."
+    echo "Anvil left running (pid $ANVIL_PID)."
+    echo "Stop it later with: ./scripts/capture-session.sh --stop-anvil"
 fi
 
 exit "$EXIT_CODE"

@@ -104,6 +104,25 @@ pub enum DecodedEvent {
     Erc1155Uri(Erc1155UriEvent),
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ApprovalForAllStandard {
+    Erc721,
+    Erc1155,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct AmbiguousApprovalForAllEvent {
+    pub subject: Address,
+    pub operator: Address,
+    pub approved: bool,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum LosslessDecodedEvent {
+    Decoded(DecodedEvent),
+    AmbiguousApprovalForAll(AmbiguousApprovalForAllEvent),
+}
+
 pub fn decode_standard_nft_event(log: &Log) -> Result<DecodedEvent, DecodeError> {
     let topic0 = *log.topic0().ok_or(DecodeError::MissingTopic(0))?;
 
@@ -128,6 +147,34 @@ pub fn decode_standard_nft_event(log: &Log) -> Result<DecodedEvent, DecodeError>
     }
 
     Err(DecodeError::UnsupportedEvent(topic0))
+}
+
+pub fn decode_nft_event_lossless(
+    log: &Log,
+    approval_for_all_as: Option<ApprovalForAllStandard>,
+) -> Result<LosslessDecodedEvent, DecodeError> {
+    let topic0 = *log.topic0().ok_or(DecodeError::MissingTopic(0))?;
+
+    if topic0 == event_selector("ApprovalForAll(address,address,bool)") {
+        return match approval_for_all_as {
+            Some(ApprovalForAllStandard::Erc721) => decode_erc721_approval_for_all(log)
+                .map(DecodedEvent::Erc721ApprovalForAll)
+                .map(LosslessDecodedEvent::Decoded),
+            Some(ApprovalForAllStandard::Erc1155) => decode_erc1155_approval_for_all(log)
+                .map(DecodedEvent::Erc1155ApprovalForAll)
+                .map(LosslessDecodedEvent::Decoded),
+            None => decode_erc721_approval_for_all(log)
+                .map(|event| {
+                    LosslessDecodedEvent::AmbiguousApprovalForAll(AmbiguousApprovalForAllEvent {
+                        subject: event.owner,
+                        operator: event.operator,
+                        approved: event.approved,
+                    })
+                }),
+        };
+    }
+
+    decode_standard_nft_event(log).map(LosslessDecodedEvent::Decoded)
 }
 
 fn decode_erc721_transfer(log: &Log) -> Result<Erc721TransferEvent, DecodeError> {
@@ -190,24 +237,45 @@ fn decode_erc1155_transfer_single(log: &Log) -> Result<Erc1155TransferSingleEven
 }
 
 fn decode_erc1155_transfer_batch(log: &Log) -> Result<Erc1155TransferBatchEvent, DecodeError> {
-    let data = TransferBatchData::abi_decode(log.data().data.as_ref(), true)
-        .map_err(|e| DecodeError::InvalidData(format!("transferBatch decode failed: {e}")))?;
+    let (ids, values) = match TransferBatchData::abi_decode(log.data().data.as_ref(), true) {
+        Ok(data) => (
+            data.ids.into_iter().collect::<Vec<U256>>(),
+            data.values.into_iter().collect::<Vec<U256>>(),
+        ),
+        Err(primary_err) => {
+            // Live-chain logs may require direct tuple word parsing for dynamic arrays.
+            parse_u256_array_pair(log.data().data.as_ref()).map_err(|secondary_err| {
+                DecodeError::InvalidData(format!(
+                    "transferBatch decode failed: {primary_err}; fallback failed: {secondary_err}"
+                ))
+            })?
+        }
+    };
 
     Ok(Erc1155TransferBatchEvent {
         operator: topic_to_address(log.topics().get(1), 1)?,
         from: topic_to_address(log.topics().get(2), 2)?,
         to: topic_to_address(log.topics().get(3), 3)?,
-        ids: data.ids.into_iter().collect(),
-        values: data.values.into_iter().collect(),
+        ids,
+        values,
     })
 }
 
 fn decode_erc1155_uri(log: &Log) -> Result<Erc1155UriEvent, DecodeError> {
-    let data = UriData::abi_decode(log.data().data.as_ref(), true)
-        .map_err(|e| DecodeError::InvalidData(format!("uri decode failed: {e}")))?;
+    let value = match UriData::abi_decode(log.data().data.as_ref(), true) {
+        Ok(data) => data.value,
+        Err(primary_err) => {
+            // Live-chain logs may present URI payload as direct ABI string bytes.
+            String::abi_decode(log.data().data.as_ref(), true).map_err(|secondary_err| {
+                DecodeError::InvalidData(format!(
+                    "uri decode failed: {primary_err}; fallback failed: {secondary_err}"
+                ))
+            })?
+        }
+    };
 
     Ok(Erc1155UriEvent {
-        value: data.value,
+        value,
         id: topic_to_u256(log.topics().get(1), 1)?,
     })
 }
@@ -221,4 +289,50 @@ fn topic_to_address(topic: Option<&B256>, index: usize) -> Result<Address, Decod
 fn topic_to_u256(topic: Option<&B256>, index: usize) -> Result<U256, DecodeError> {
     let topic = topic.ok_or(DecodeError::MissingTopic(index))?;
     Ok(U256::from_be_slice(topic.as_slice()))
+}
+
+fn parse_u256_array_pair(data: &[u8]) -> Result<(Vec<U256>, Vec<U256>), String> {
+    let first_offset = read_word_as_usize(data, 0)?;
+    let second_offset = read_word_as_usize(data, 32)?;
+
+    let ids = read_u256_array_at(data, first_offset)?;
+    let values = read_u256_array_at(data, second_offset)?;
+
+    Ok((ids, values))
+}
+
+fn read_word_as_usize(data: &[u8], offset: usize) -> Result<usize, String> {
+    if data.len() < offset + 32 {
+        return Err(format!("buffer too short reading word at offset {offset}"));
+    }
+    let word = &data[offset..offset + 32];
+    let mut out: usize = 0;
+    for byte in word {
+        out = out
+            .checked_mul(256)
+            .ok_or_else(|| format!("offset overflow while parsing word at {offset}"))?;
+        out = out
+            .checked_add(*byte as usize)
+            .ok_or_else(|| format!("offset overflow while parsing word at {offset}"))?;
+    }
+    Ok(out)
+}
+
+fn read_u256_array_at(data: &[u8], offset: usize) -> Result<Vec<U256>, String> {
+    let len = read_word_as_usize(data, offset)?;
+    let mut out = Vec::with_capacity(len);
+    let mut cursor = offset
+        .checked_add(32)
+        .ok_or_else(|| "array cursor overflow".to_string())?;
+
+    for _ in 0..len {
+        if data.len() < cursor + 32 {
+            return Err("buffer too short reading dynamic array value".to_string());
+        }
+        out.push(U256::from_be_slice(&data[cursor..cursor + 32]));
+        cursor = cursor
+            .checked_add(32)
+            .ok_or_else(|| "array cursor overflow".to_string())?;
+    }
+    Ok(out)
 }

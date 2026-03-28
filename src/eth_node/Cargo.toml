@@ -3,6 +3,9 @@ name = "eth_node"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+fuzz = []
+
 [dependencies]
 alloy-primitives = { workspace = true }
 alloy-core = { workspace = true }
