@@ -819,3 +819,6 @@ invoke the #file:oracle-agent.md and the #file:claire-voyant-agent.md agents and
 - 'save current state and files, commit and push. prepare for session closing. Write instructions for the new session so we know where to carry on from.'
 
 - 'here are your instructions To continue this session: Reload VS Code... Key files for context: memory.md, compare.rs, simulate.rs, executor_call.rs, PHASE2_FORMAL_SPEC.md FR-002, FR-003'
+- 'approved' (A-1 gate approved on 2026-03-28)
+- 'Context Recovery — Do Not Reset ... For the remainder of this stage, I would like the team-lead.agent.md to carry on with the approvals and facilitation.'
+- 'no, carry on'

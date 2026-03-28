@@ -187,6 +187,60 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
 
 ---
 
+## 2026-03-28 Status Snapshot (A-1 approved; T-004 started)
+
+- Timestamp: 2026-03-28
+- Current stage: Stage 4 — Build (IN PROGRESS)
+- Gate status:
+  - A-1 foundation gate: APPROVED by Lefty (2026-03-28)
+- Completed since last update:
+  - A-1 approval received after T-003 verification and chronicle submission
+- In progress:
+  - T-004 (FR-004) discovery and implementation planning for ERC-721/ERC-1155 live decode completeness
+- Decisions made:
+  - Proceed to A-2 workstream (T-004 then T-005 per sequencing)
+- Open questions:
+  - None
+- Blockers:
+  - None
+- Next step:
+  - Implement T-004 decoder/test expansion targeting AC-008 through AC-011.
+
+---
+
+## 2026-03-28 Status Snapshot (T-004 decode module + 16-test suite implemented)
+
+- Timestamp: 2026-03-28
+- Current stage: Stage 4 — Build (IN PROGRESS; T-004 substantial implementation complete)
+- Completed since last update:
+  - Added quality module exports in `src/eth_node/src/lib.rs`
+  - Added `src/eth_node/src/quality/mod.rs`
+  - Added `src/eth_node/src/quality/decode.rs` with standard NFT decoders:
+    - ERC-721: Transfer, Approval, ApprovalForAll
+    - ERC-1155: TransferSingle, TransferBatch, ApprovalForAll, URI
+    - Structured decoded event types + `DecodeError` + `decode_standard_nft_event`
+    - Explicit `decode_erc721_approval_for_all` and `decode_erc1155_approval_for_all`
+  - Added `src/eth_node/tests/decode_live.rs` with 16 decode tests:
+    - 5 ERC-721 tests
+    - 10 ERC-1155 tests
+    - 1 unsupported/missing-topic error-path coverage bundle
+    - Includes edge cases: zero-value transfer, self-transfer, max uint256 id, empty TransferBatch arrays
+  - Verification:
+    - `cargo test --package eth_node --test decode_live` => 16 passed
+    - `cargo test --package eth_node` => full package green
+- In progress:
+  - T-004 closure review against strict "live contract deploy + capture" interpretation
+- Decisions made:
+  - Implemented deterministic decode coverage first (canonical event topic/data payloads) to close functional decode gap quickly
+- Open questions:
+  - Whether to require additional Anvil-deployed contract event-capture tests before declaring T-004 fully done
+- Blockers:
+  - None (forge is available; can add deploy-driven tests in next slice if required)
+- Next step:
+  - Team Lead checkpoint to decide: accept current T-004 evidence as complete or add deploy-driven live Anvil event tests before T-005.
+
+---
+
 ## 2026-03-28 Status Snapshot (Stage 4 — T-003 implementation complete, awaiting A-1 approval)
 
 - Timestamp: 2026-03-28

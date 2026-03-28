@@ -14,5 +14,5 @@ pub mod contract;
 
 // Phase 2 modules (uncomment as implemented)
 pub mod executor; // T-001: revm boilerplate (2026-03-27)
-// pub mod quality;
+pub mod quality;
 // pub mod upstream_contrib;
