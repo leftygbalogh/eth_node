@@ -16,3 +16,6 @@ temp_*.ps1
 # Solidity cache
 *.cache
 solidity-files-cache.json
+
+# Upstream contribution forks (temporary workspaces)
+upstream_contrib/forks/
