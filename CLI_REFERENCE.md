@@ -23,7 +23,8 @@
 8. [Recording a session](#8-recording-a-session)
 9. [Environment variables](#9-environment-variables)
 10. [Troubleshooting](#10-troubleshooting)
-11. [Complex Scenarios](#11-complex-scenarios)
+11. [Platform Considerations](#11-platform-considerations)
+12. [Complex Scenarios](#12-complex-scenarios)
    - [Scenario 1: Executor Pipeline](#scenario-1-executor-pipeline--deploy-simulate-compare-verify)
    - [Scenario 2: NFT Lifecycle](#scenario-2-nft-lifecycle--deploy-mint-transfer-approve-decode)
    - [Scenario 3: Multi-Contract](#scenario-3-multi-contract--token-purchase-with-cross-contract-events)
@@ -213,6 +214,8 @@ Balance: 10000000000000000000000 wei
 
 > `10000000000000000000000 wei` = `10000 ETH`.
 > To convert: divide by `10^18` (move the decimal 18 places left).
+
+> **Note**: In normal mode you see both the INFO log and the "Balance:" line. Use `--quiet` if you need just the balance value without log noise.
 
 **With state dump** (saves result as JSON):
 ```bash
@@ -576,6 +579,8 @@ Return: Uint(1000, 256)
 > `Uint(1000, 256)` means the function returned the number `1000` as a 256-bit
 > unsigned integer — exactly the 1000 tokens assigned at deployment.
 
+> **Note**: Using `--quiet` with the `call` command suppresses INFO logs but may also suppress the "Return:" line depending on your logger configuration. Use normal mode for human-readable output.
+
 **Argument types are detected automatically**:
 
 | You type | `eth_node_cli` interprets it as |
@@ -609,8 +614,8 @@ Watching contract 0x5FbDB2315678afecb367f032d93F642f64180aa3 for events (Ctrl-C 
 
 When an event fires, a line like this appears for each one:
 ```
-Event #1: tx=0x43aa... topics=2
-Event #2: tx=0x7bc1... topics=2
+Event #1: tx=0x43aa... topics=1
+Event #2: tx=0x7bc1... topics=1
 ```
 
 On a quiet test network with nothing happening, you'll see no further output
@@ -689,8 +694,8 @@ eth send \
 
 Back in **Terminal 2** you will see:
 ```
-Event #1: tx=0x... topics=2
-Event #2: tx=0x... topics=2
+Event #1: tx=0x... topics=1
+Event #2: tx=0x... topics=1
 ```
 
 Press `Ctrl-C` to stop.
@@ -1101,7 +1106,106 @@ then try again.
 
 ---
 
-## 11. Complex Scenarios
+## 11. Platform Considerations
+
+This section covers platform-specific quirks and workarounds when running `eth_node_cli` commands on different operating systems and shells.
+
+### Windows (PowerShell)
+
+#### Function Signature Quoting Issues
+
+**Problem**: When using `cast send` with function signatures containing parentheses, PowerShell may fail when invoking bash through Git Bash or WSL:
+
+```powershell
+# This FAILS in PowerShell → bash:
+cast send <CONTRACT> "emitTransfer(address,address,uint256)" 0x... 0x... 42 --rpc-url ... --private-key ...
+# Error: bash: -c: line 1: syntax error near unexpected token `('
+```
+
+**Cause**: PowerShell's quoting rules conflict with bash's quoting rules when commands are passed through `-c`.
+
+**Workaround 1** — Use a temporary script file:
+```powershell
+# Create a script file with the full command:
+@"
+cast send <CONTRACT_ADDRESS> \
+  "emitTransfer(address,address,uint256)" \
+  0x1111111111111111111111111111111111111111 \
+  0x2222222222222222222222222222222222222222 \
+  42 \
+  --rpc-url http://127.0.0.1:8545 \
+  --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+"@ | Out-File -FilePath temp_emit.sh -Encoding ASCII
+
+# Run it in bash:
+bash temp_emit.sh
+```
+
+**Workaround 2** — Use native PowerShell where possible:
+```powershell
+# Some Foundry commands work natively in PowerShell without bash:
+forge create ... --broadcast
+cast call ...
+```
+
+**Workaround 3** — Use Git Bash directly:
+Open Git Bash (not PowerShell) and run commands there. All documented examples work in native bash environments.
+
+#### Path Separator Differences
+
+Windows uses backslashes `\` for paths, but most CLI tools expect forward slashes `/`:
+
+```powershell
+# Prefer this:
+eth call --abi-file /tmp/stubtoken.abi.json ...
+
+# Over this (may fail):
+eth call --abi-file C:\tmp\stubtoken.abi.json ...
+```
+
+In PowerShell, `/tmp` maps to `C:\Users\<USERNAME>\AppData\Local\Temp` in Git Bash context.
+
+---
+
+### macOS and Linux
+
+All documented examples should work as written in bash or zsh shells. If you encounter issues:
+
+- Ensure Foundry tools (`forge`, `cast`, `anvil`) are in your `$PATH`
+- Check file permissions: `chmod +x scripts/*.sh` if needed
+- Verify Anvil is running: `curl -X POST -H "Content-Type: application/json" --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' http://127.0.0.1:8545`
+
+---
+
+### Shell-Specific Notes
+
+#### Bash
+All examples tested and working. Use this as the reference environment.
+
+#### PowerShell 7.x
+Most commands work natively. Watch for quoting issues with complex arguments (function signatures, JSON strings). Use temporary script files as workaround.
+
+#### Git Bash (Windows)
+Fully compatible with all documented examples. Recommended shell for Windows users following this documentation.
+
+#### zsh (macOS default)
+Compatible with bash examples. May require `setopt BASH_REMATCH` for some regex patterns if scripting.
+
+---
+
+### Common Platform-Specific Errors
+
+| Error | Platform | Cause | Solution |
+|-------|----------|-------|----------|
+| `syntax error near unexpected token '('` | Windows PowerShell | Function signature quoting conflict | Use temp script file or Git Bash |
+| `command not found: forge` | All | Foundry not in PATH | Run `foundryup` or add to PATH |
+| `connection refused` on port 8545 | All | Anvil not running | Start `anvil` in separate terminal |
+| `invalid UTF-8 sequence` | Windows | CRLF line endings | Use `dos2unix` or save files with LF endings |
+| Permission denied on scripts | macOS/Linux | Missing execute bit | `chmod +x <script>` |
+
+---
+
+## 12. Complex Scenarios
 
 These multi-step workflows demonstrate how to combine CLI commands and library APIs for real-world use cases. Each scenario is capped at ≤10 steps to stay focused.
 
@@ -1120,6 +1224,7 @@ These multi-step workflows demonstrate how to combine CLI commands and library A
    ```bash
    forge create --rpc-url http://127.0.0.1:8545 \
      --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
+     --broadcast \
      config/StubToken.sol:StubToken
    ```
    *Note the deployed contract address (e.g., `0x5FbDB2315678afecb367f032d93F642f64180aa3`).*
