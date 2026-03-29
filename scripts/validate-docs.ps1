@@ -114,4 +114,7 @@ Write-Host "[PASS] CLI Reference scenarios present" -ForegroundColor Green
 Write-Host ""
 
 Write-Host "=== All validation checks passed ===" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "To validate executable examples, run:" -ForegroundColor Yellow
+Write-Host '  bash ./scripts/test-complete-docs.sh' -ForegroundColor Gray
 exit 0
