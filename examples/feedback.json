@@ -98,6 +98,16 @@
       "observation": "The joint post-mortem requirement states that both agent and owner must contribute, but it does not define a required Q-and-A exchange format or explicitly require traceable file citations in the summary.",
       "suggestion": "Clarify that joint post-mortem is a structured Q-and-A process. Require the agent's consolidated presentation to include direct references to the exact files/sections where findings and evidence are recorded (for example feedback.json entries, memory snapshots, prompts log, and release evidence files).",
       "priority": "high"
+    },
+    {
+      "id": "FB-010",
+      "source": "Product owner delegation observation / Phase 2 session 2026-03-28/29",
+      "type": "process-improvement",
+      "target": "governance/03_TEAM_MODEL_HANDOFFS.md",
+      "section": "Delegation protocol and follow-through",
+      "observation": "When owner delegated full approval authority to Team Lead for T-006 and T-009 with complete autonomy, the subagent completed context recovery but did not proceed with actual implementation work. The delegation was recorded in memory.md and session memory, but no follow-up execution occurred. Owner had to ask 'where are we now' the next day to discover no progress was made.",
+      "suggestion": "Add explicit delegation handoff protocol: (1) When delegation is granted, the delegated agent must confirm understanding and immediately begin work or explicitly state a blocking reason. (2) Delegated agent must provide periodic progress updates in memory.md (at minimum: start of work, mid-point check, completion). (3) If delegated work spans multiple sessions, the agent must resume from last checkpoint automatically on next invocation. (4) Add a delegation status check command for owner: 'Delegation Status Report' that shows current task, time elapsed, blockers, and next step without interrupting autonomous work.",
+      "priority": "high"
     }
   ]
 }

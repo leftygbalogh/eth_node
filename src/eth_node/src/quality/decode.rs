@@ -1,6 +1,21 @@
 //! Event decode helpers for standard NFT logs.
 //!
 //! Covers ERC-721 and ERC-1155 standard events for Phase 2 T-004.
+//!
+//! ## ApprovalForAll Ambiguity
+//!
+//! The `ApprovalForAll(address,address,bool)` event signature is **shared** between
+//! ERC-721 and ERC-1155 standards. When decoding logs from unknown contracts or
+//! multi-standard indexers, this creates ambiguity:
+//!
+//! - [`decode_standard_nft_event`] classifies all ApprovalForAll events as ERC-721
+//!   (historical default behavior).
+//! - [`decode_nft_event_lossless`] allows explicit standard selection via the
+//!   `approval_for_all_as` parameter, or returns `AmbiguousApprovalForAll` when
+//!   the standard is unknown.
+//!
+//! Use the lossless decoder when working with multi-standard contracts or when
+//! you need to preserve the ambiguity for downstream resolution.
 
 use alloy_primitives::{Address, B256, U256};
 use alloy_rpc_types::Log;
@@ -123,6 +138,34 @@ pub enum LosslessDecodedEvent {
     AmbiguousApprovalForAll(AmbiguousApprovalForAllEvent),
 }
 
+/// Decode standard NFT events (ERC-721 and ERC-1155) from a log entry.
+///
+/// Supports: Transfer, Approval (ERC-721), TransferSingle, TransferBatch,
+/// ApprovalForAll (classified as ERC-721 by default), and URI (ERC-1155).
+///
+/// # Arguments
+///
+/// - `log`: Reference to an [`alloy_rpc_types::Log`] containing the event data.
+///
+/// # Returns
+///
+/// - `Ok(DecodedEvent)` if the event signature matches a known standard and decodes successfully.
+/// - `Err(DecodeError::UnsupportedEvent)` if topic0 is not a recognized NFT event.
+/// - `Err(DecodeError::MissingTopic)` if required topics are missing.
+/// - `Err(DecodeError::InvalidData)` if event data cannot be ABI-decoded.
+///
+/// # Example
+///
+/// ```ignore
+/// use eth_node::quality::decode_standard_nft_event;
+/// use alloy_rpc_types::Log;
+///
+/// let decoded = decode_standard_nft_event(&log)?;
+/// match decoded {
+///     DecodedEvent::Erc721Transfer(evt) => println!("Token {} transferred", evt.token_id),
+///     _ => println!("Other event"),
+/// }
+/// ```
 pub fn decode_standard_nft_event(log: &Log) -> Result<DecodedEvent, DecodeError> {
     let topic0 = *log.topic0().ok_or(DecodeError::MissingTopic(0))?;
 
@@ -149,6 +192,45 @@ pub fn decode_standard_nft_event(log: &Log) -> Result<DecodedEvent, DecodeError>
     Err(DecodeError::UnsupportedEvent(topic0))
 }
 
+/// Decode NFT events without information loss for ApprovalForAll ambiguity.
+///
+/// Identical to [`decode_standard_nft_event`] except for `ApprovalForAll(address,address,bool)`:
+/// - If `approval_for_all_as` is `Some(standard)`, decodes as the specified standard (ERC-721 or ERC-1155).
+/// - If `None`, returns `LosslessDecodedEvent::AmbiguousApprovalForAll` preserving the raw data
+///   for downstream resolution (e.g., contract introspection or heuristic classification).
+///
+/// # Arguments
+///
+/// - `log`: Reference to an [`alloy_rpc_types::Log`] containing the event data.
+/// - `approval_for_all_as`: Optional hint for ApprovalForAll standard classification.
+///   - `Some(ApprovalForAllStandard::Erc721)` → decode as ERC-721 event.
+///   - `Some(ApprovalForAllStandard::Erc1155)` → decode as ERC-1155 event.
+///   - `None` → return ambiguous event for external resolution.
+///
+/// # Returns
+///
+/// - `Ok(LosslessDecodedEvent::Decoded(event))` for unambiguous events.
+/// - `Ok(LosslessDecodedEvent::AmbiguousApprovalForAll(event))` when ApprovalForAll standard is unknown.
+/// - `Err(DecodeError)` if decoding fails (same error conditions as `decode_standard_nft_event`).
+///
+/// # Example
+///
+/// ```ignore
+/// use eth_node::quality::{decode_nft_event_lossless, ApprovalForAllStandard};
+/// use alloy_rpc_types::Log;
+///
+/// // Explicitly classify as ERC-1155:
+/// let decoded = decode_nft_event_lossless(&log, Some(ApprovalForAllStandard::Erc1155))?;
+///
+/// // Preserve ambiguity:
+/// let decoded = decode_nft_event_lossless(&log, None)?;
+/// match decoded {
+///     LosslessDecodedEvent::AmbiguousApprovalForAll(evt) => {
+///         println!("Ambiguous ApprovalForAll from {}", evt.subject);
+///     }
+///     _ => {},
+/// }
+/// ```
 pub fn decode_nft_event_lossless(
     log: &Log,
     approval_for_all_as: Option<ApprovalForAllStandard>,
@@ -197,6 +279,29 @@ fn decode_shared_approval_for_all(log: &Log) -> Result<DecodedEvent, DecodeError
     decode_erc721_approval_for_all(log).map(DecodedEvent::Erc721ApprovalForAll)
 }
 
+/// Decode an `ApprovalForAll(address,address,bool)` event as ERC-721.
+///
+/// Extracts `owner` and `operator` from topics 1 and 2, and `approved` from event data.
+///
+/// # Arguments
+///
+/// - `log`: Reference to an [`alloy_rpc_types::Log`] with ApprovalForAll event data.
+///
+/// # Returns
+///
+/// - `Ok(Erc721ApprovalForAllEvent)` if topics and data decode successfully.
+/// - `Err(DecodeError::MissingTopic)` if required topics are missing.
+/// - `Err(DecodeError::InvalidData)` if the boolean data field cannot be ABI-decoded.
+///
+/// # Example
+///
+/// ```ignore
+/// use eth_node::quality::decode_erc721_approval_for_all;
+/// use alloy_rpc_types::Log;
+///
+/// let event = decode_erc721_approval_for_all(&log)?;
+/// println!("Owner {} approved operator {}: {}", event.owner, event.operator, event.approved);
+/// ```
 pub fn decode_erc721_approval_for_all(
     log: &Log,
 ) -> Result<Erc721ApprovalForAllEvent, DecodeError> {
@@ -210,6 +315,30 @@ pub fn decode_erc721_approval_for_all(
     })
 }
 
+/// Decode an `ApprovalForAll(address,address,bool)` event as ERC-1155.
+///
+/// Extracts `account` and `operator` from topics 1 and 2, and `approved` from event data.
+/// Semantically identical to [`decode_erc721_approval_for_all`] but returns ERC-1155 event type.
+///
+/// # Arguments
+///
+/// - `log`: Reference to an [`alloy_rpc_types::Log`] with ApprovalForAll event data.
+///
+/// # Returns
+///
+/// - `Ok(Erc1155ApprovalForAllEvent)` if topics and data decode successfully.
+/// - `Err(DecodeError::MissingTopic)` if required topics are missing.
+/// - `Err(DecodeError::InvalidData)` if the boolean data field cannot be ABI-decoded.
+///
+/// # Example
+///
+/// ```ignore
+/// use eth_node::quality::decode_erc1155_approval_for_all;
+/// use alloy_rpc_types::Log;
+///
+/// let event = decode_erc1155_approval_for_all(&log)?;
+/// println!("Account {} approved operator {}: {}", event.account, event.operator, event.approved);
+/// ```
 pub fn decode_erc1155_approval_for_all(
     log: &Log,
 ) -> Result<Erc1155ApprovalForAllEvent, DecodeError> {

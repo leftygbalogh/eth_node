@@ -23,6 +23,10 @@
 8. [Recording a session](#8-recording-a-session)
 9. [Environment variables](#9-environment-variables)
 10. [Troubleshooting](#10-troubleshooting)
+11. [Complex Scenarios](#11-complex-scenarios)
+   - [Scenario 1: Executor Pipeline](#scenario-1-executor-pipeline--deploy-simulate-compare-verify)
+   - [Scenario 2: NFT Lifecycle](#scenario-2-nft-lifecycle--deploy-mint-transfer-approve-decode)
+   - [Scenario 3: Multi-Contract](#scenario-3-multi-contract--token-purchase-with-cross-contract-events)
 
 ---
 
@@ -1094,3 +1098,305 @@ address, not account 0's.
 ### `cargo build` fails
 Run `rustup update stable` to make sure you're on a recent stable toolchain,
 then try again.
+
+---
+
+## 11. Complex Scenarios
+
+These multi-step workflows demonstrate how to combine CLI commands and library APIs for real-world use cases. Each scenario is capped at ≤10 steps to stay focused.
+
+### Scenario 1: Executor Pipeline — Deploy, Simulate, Compare, Verify
+
+**Goal:** Deploy a contract to Anvil, simulate a transaction locally, compare simulation to Anvil execution, and verify consistency.
+
+**Steps:** (7 steps)
+
+1. **Start Anvil** in a separate terminal:
+   ```bash
+   anvil
+   ```
+
+2. **Deploy a simple contract** (e.g., StubToken) to Anvil:
+   ```bash
+   forge create --rpc-url http://127.0.0.1:8545 \
+     --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
+     config/StubToken.sol:StubToken
+   ```
+   *Note the deployed contract address (e.g., `0x5FbDB2315678afecb367f032d93F642f64180aa3`).*
+
+3. **Build a transfer transaction** (in Rust code or CLI):
+   ```rust
+   use eth_node::executor::{simulate_tx, compare_to_anvil, SimulationContext};
+   use alloy_rpc_types::TransactionRequest;
+   use alloy_primitives::{Address, U256, Bytes};
+
+   let tx = TransactionRequest {
+       from: Some(Address::from([0xf3, 0x9f, /* ... account 0 */])),
+       to: Some(contract_address.into()),
+       data: Some(transfer_calldata), // Encoded transfer(recipient, amount)
+       gas: Some(100_000),
+       gas_price: Some(U256::from(10)),
+       ..Default::default()
+   };
+   ```
+
+4. **Simulate the transaction locally**:
+   ```rust
+   let context = SimulationContext {
+       block_number: 1,
+       timestamp: 1710000000,
+       base_fee_per_gas: Some(10),
+       gas_limit: 30_000_000,
+   };
+
+   let result = simulate_tx(&tx, &context)?;
+   println!("Local gas used: {}", result.gas_used);
+   println!("Success: {}", result.success);
+   ```
+
+5. **Compare local simulation to Anvil execution**:
+   ```rust
+   let report = compare_to_anvil(&tx, "http://127.0.0.1:8545", &context).await?;
+
+   println!("Gas delta: {}", report.gas_delta);
+   println!("Return data match: {}", report.return_data_match);
+   ```
+
+6. **Verify gas tolerance** (5% threshold):
+   ```rust
+   let threshold = (report.gas_used_anvil as f64 * 0.05).ceil() as u64;
+   if (report.gas_delta).unsigned_abs() > threshold {
+       eprintln!("⚠️ Gas mismatch exceeds 5%");
+       for diff in &report.differences {
+           eprintln!("  - {}", diff);
+       }
+   } else {
+       println!("✅ Gas within 5% tolerance");
+   }
+   ```
+
+7. **Assert consistency**:
+   ```rust
+   assert!(report.return_data_match, "Return data must match");
+   assert!(report.logs_match, "Logs must match");
+   println!("✅ Simulation verified against Anvil");
+   ```
+
+**Validation:** Build as integration test in `tests/executor_pipeline_scenario.rs` to automate validation.
+
+---
+
+### Scenario 2: NFT Lifecycle — Deploy, Mint, Transfer, Approve, Decode
+
+**Goal:** Deploy an ERC-721 contract, mint a token, transfer it, approve an operator, and decode all emitted events.
+
+**Steps:** (8 steps)
+
+1. **Start Anvil**:
+   ```bash
+   anvil
+   ```
+
+2. **Deploy ERC-721 contract** (e.g., using forge or custom Rust deployment):
+   ```bash
+   forge create --rpc-url http://127.0.0.1:8545 \
+     --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
+     config/SimpleNFT.sol:SimpleNFT
+   ```
+   *Save the contract address.*
+
+3. **Mint an NFT** (token ID 1):
+   ```bash
+   cast send <CONTRACT_ADDRESS> \
+     "mint(address,uint256)" \
+     0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 1 \
+     --rpc-url http://127.0.0.1:8545 \
+     --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+   ```
+   *Save the transaction hash.*
+
+4. **Decode the Transfer event**:
+   ```bash
+   eth decode-receipt <TX_HASH>
+   ```
+   Expected output:
+   ```
+   Event: Transfer
+     from: 0x0000000000000000000000000000000000000000
+     to:   0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+     tokenId: 1
+   ```
+
+5. **Transfer the NFT** to account 1:
+   ```bash
+   cast send <CONTRACT_ADDRESS> \
+     "transferFrom(address,address,uint256)" \
+     0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 \
+     0x70997970C51812dc3A010C7d01b50e0d17dc79C8 \
+     1 \
+     --rpc-url http://127.0.0.1:8545 \
+     --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+   ```
+   *Save the transaction hash.*
+
+6. **Decode the Transfer event**:
+   ```bash
+   eth decode-receipt <TX_HASH>
+   ```
+   Expected output:
+   ```
+   Event: Transfer
+     from: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+     to:   0x70997970C51812dc3A010C7d01b50e0d17dc79C8
+     tokenId: 1
+   ```
+
+7. **Approve an operator** (account 2) to manage account 1's tokens:
+   ```bash
+   # Need account 1's private key for this
+   cast send <CONTRACT_ADDRESS> \
+     "approve(address,uint256)" \
+     0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC \
+     1 \
+     --rpc-url http://127.0.0.1:8545 \
+     --private-key 0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d
+   ```
+   *Save the transaction hash.*
+
+8. **Decode the Approval event**:
+   ```bash
+   eth decode-receipt <TX_HASH>
+   ```
+   Expected output:
+   ```
+   Event: Approval
+     owner: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8
+     approved: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
+     tokenId: 1
+   ```
+
+**Validation:** All events decode successfully; ownership chain (mint → transfer → approve) is consistent.
+
+---
+
+### Scenario 3: Multi-Contract — Token Purchase with Cross-Contract Events
+
+**Goal:** Deploy an ERC-20 token and an NFT marketplace, approve token spending, purchase an NFT, and decode cross-contract events.
+
+**Steps:** (10 steps)
+
+1. **Start Anvil**:
+   ```bash
+   anvil
+   ```
+
+2. **Deploy ERC-20 token contract**:
+   ```bash
+   forge create --rpc-url http://127.0.0.1:8545 \
+     --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
+     config/StubToken.sol:StubToken
+   ```
+   *Save as `TOKEN_ADDRESS`.*
+
+3. **Deploy ERC-721 NFT contract**:
+   ```bash
+   forge create --rpc-url http://127.0.0.1:8545 \
+     --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
+     config/SimpleNFT.sol:SimpleNFT
+   ```
+   *Save as `NFT_ADDRESS`.*
+
+4. **Mint test tokens** to account 0 (1 million tokens):
+   ```bash
+   cast send <TOKEN_ADDRESS> \
+     "mint(address,uint256)" \
+     0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 \
+     1000000000000000000000000 \
+     --rpc-url http://127.0.0.1:8545 \
+     --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+   ```
+
+5. **Mint NFT** (token ID 1) to marketplace owner (account 1):
+   ```bash
+   cast send <NFT_ADDRESS> \
+     "mint(address,uint256)" \
+     0x70997970C51812dc3A010C7d01b50e0d17dc79C8 1 \
+     --rpc-url http://127.0.0.1:8545 \
+     --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+   ```
+
+6. **Approve token spending** (buyer approves marketplace to spend 100 tokens):
+   ```bash
+   cast send <TOKEN_ADDRESS> \
+     "approve(address,uint256)" \
+     0x70997970C51812dc3A010C7d01b50e0d17dc79C8 \
+     100000000000000000000 \
+     --rpc-url http://127.0.0.1:8545 \
+     --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+   ```
+   *Save transaction hash; decode to verify `Approval` event.*
+
+7. **Simulate purchase transaction** (buyer calls `transferFrom` on token, seller transfers NFT):
+   For this step, you'd need a marketplace contract with a `purchase` function. Simplified here as two calls:
+   
+   **Transfer tokens from buyer to seller**:
+   ```bash
+   cast send <TOKEN_ADDRESS> \
+     "transferFrom(address,address,uint256)" \
+     0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 \
+     0x70997970C51812dc3A010C7d01b50e0d17dc79C8 \
+     100000000000000000000 \
+     --rpc-url http://127.0.0.1:8545 \
+     --private-key 0x70997970C51812dc3A010C7d01b50e0d17dc79C8
+   ```
+   *Save transaction hash.*
+
+8. **Transfer NFT from seller to buyer**:
+   ```bash
+   cast send <NFT_ADDRESS> \
+     "transferFrom(address,address,uint256)" \
+     0x70997970C51812dc3A010C7d01b50e0d17dc79C8 \
+     0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 \
+     1 \
+     --rpc-url http://127.0.0.1:8545 \
+     --private-key 0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d
+   ```
+   *Save transaction hash.*
+
+9. **Decode token Transfer event**:
+   ```bash
+   eth decode-receipt <TOKEN_TX_HASH>
+   ```
+   Expected: `Transfer` event (100 tokens from buyer to seller).
+
+10. **Decode NFT Transfer event**:
+    ```bash
+    eth decode-receipt <NFT_TX_HASH>
+    ```
+    Expected: `Transfer` event (token ID 1 from seller to buyer).
+
+**Validation:** Cross-contract event consistency—buyer paid 100 tokens, received NFT; seller received 100 tokens, transferred NFT.
+
+**Note:** For production scenarios, deploy a marketplace contract that atomically handles both transfers in a single transaction (prevents partial execution).
+
+---
+
+### Scenario Validation
+
+All scenarios above can be automated as integration tests:
+- **Scenario 1:** `tests/executor_pipeline_scenario.rs`
+- **Scenario 2:** `tests/nft_lifecycle_scenario.rs`
+- **Scenario 3:** `tests/multi_contract_scenario.rs`
+
+Run all scenario tests:
+```bash
+cargo test --test '*_scenario' -- --nocapture
+```
+
+Each test should:
+1. Spin up a temporary Anvil instance
+2. Execute all scenario steps programmatically
+3. Assert expected outcomes (gas tolerance, event consistency, state changes)
+4. Clean up (kill Anvil) on completion
+
+See [`docs/LIBRARY_API_GUIDE.md`](docs/LIBRARY_API_GUIDE.md) for detailed library API usage within these scenarios.

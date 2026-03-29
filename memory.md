@@ -723,6 +723,33 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
 - Next step:
   - Fold this approved slice into the next broader phase or gate package without reopening it unless new behavior changes land.
 
+---
+
+## 2026-03-28 Status Snapshot (T-006 and T-009 delegation)
+
+- Timestamp: 2026-03-28
+- Current stage: Stage 4 - Build (T-006 starting with full delegation)
+- Completed since last update:
+  - A-1 foundation gate: APPROVED
+  - A-2 gate (T-004 + T-005): APPROVED
+  - decode-receipt CLI slice: APPROVED
+- In progress:
+  - Preparing to start T-006 (upstream audit)
+- Decisions made:
+  - **Delegation active**: Owner (Lefty) delegates stage approval authority to Team Lead for T-006 and T-009
+  - **Team autonomy granted**: Team has complete autonomy until T-009 completion
+  - **No parallel work**: T-006 must complete before T-009 begins
+  - **Next owner involvement**: After T-009 completion, Team Lead reports back to owner
+- Open questions:
+  - None.
+- Blockers:
+  - None.
+- Next step:
+  - Team Lead executes context refresh per governance protocol
+  - Team Lead coordinates T-006 upstream audit with full approval authority
+  - After T-006 closure, Team Lead coordinates T-009 Reth prep
+  - Team Lead reports to owner when both tasks complete.
+
 
 ## 2026-03-19 Status Snapshot 001
 
