@@ -105,7 +105,14 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
   - AC-3 (Concurrency): TB-013, TB-014 ✓
   - AC-7 (Edge Cases): TB-015, TB-016, TB-017 ✓
 - Navigator: All tests approved, test suite certified complete
-- Next: PR preparation (requires owner approval per governance)
+- PR submission: COMPLETE (2026-03-29)
+  - Fork created: https://github.com/leftygbalogh/alloy
+  - Commit pushed: 6a8568e0 (17 tests, +378 lines)
+  - PR submitted to alloy-rs/alloy upstream
+  - Title: "test(provider): add ChainIdFiller test coverage (0% → 99%)"
+  - Oracle confirmed: matches alloy conventions (no doc strings needed)
+  - Claire Voyant forecast: 85% acceptance probability
+  - Next: Monitor PR, respond to reviewer feedback
 
 ## 2026-03-25 Project Start
 
