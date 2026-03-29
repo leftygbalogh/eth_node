@@ -22,6 +22,36 @@ Use this file to persist current status, key decisions, blockers, and next actio
 
 Note: Idle-triggered behavior requires host/editor automation to enforce consistently.
 
+## 2026-03-29 T-009 Implementation Complete — Phase 2 COMPLETE ✓
+
+- Timestamp: 2026-03-29 (continued session)
+- Current stage: Stage 4 — Build (Phase 2: 9 of 9 tasks COMPLETE)
+- Project: ethereum_node_rust (greenfield learning project)
+- Status: T-009 implemented and committed (commit bde745b), ready for A-3 gate approval
+- Completed since last update:
+  - T-009 implementation COMPLETE (3.5 hours)
+  - Created docs/reth_readiness_checklist.md (350+ lines): Hardware requirements, environment config, installation guide, rollback procedure
+  - Created scripts/reth_dryrun.ps1 (200+ lines): 5-step validation (Rust, disk, Reth, network, env vars), exit codes 0/1
+  - Created chronicle/CHR-012-reth-prep.md: Implementation decisions, traceability T-009 → AC-016/017/018
+  - AC-017 verified: Dry-run script executed successfully (validates prereqs without downloading chain data)
+  - Commit: bde745b "feat(docs): Complete T-009 Reth readiness preparation"
+- Project completion status:
+  - **Phase 1:** COMPLETE ✓ (9 components)
+  - **Phase 2 Track A:** 9 of 9 tasks COMPLETE ✓ (T-000 through T-005 + A-1/A-2 gates + T-009)
+  - **Phase 2 Track B:** 3 of 3 tasks COMPLETE ✓ (T-006 through T-008, PR submitted)
+  - **Phase 2:** COMPLETE ✓ (all 12 tasks: Track A 9 + Track B 3)
+  - **PROJECT STATUS:** 100% complete, pending A-3 gate approval for formal closure
+- Decisions made:
+  - PowerShell-only dry-run script (Windows-primary environment, cross-platform deferred)
+  - 190 GB minimum vs 500 GB recommended disk thresholds (feasibility vs production-ready)
+  - Reth integration deferred to Phase 3 (disk space + sync time exceed Phase 2 learning objectives)
+  - Documentation-only deliverables (no actual Reth sync in Phase 2)
+- Open questions: None
+- Blockers: None
+- Next step (Priority 1): Monitor Track B PR (check daily, alloy-rs/alloy, 85% acceptance forecast)
+- Next step (Priority 2): Request A-3 gate approval from user (Lefty) for Phase 2 formal closure
+- Next step (Priority 3): Push commit bde745b to origin/master
+
 ## 2026-03-29 Session Closure — Project Status Review + Comprehensive Handoff
 
 - Timestamp: 2026-03-29 23:59
