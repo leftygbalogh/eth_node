@@ -257,7 +257,7 @@ eth send \
 **Expected output**:
 ```
 2026-...: INFO eth_node_cli: transaction sent hash=0x43aa... block=1
-Transaction: 0x43aab2ff... in block 1
+Transaction success: 0x43aab2ff... in block 1
 ```
 
 > The hash shown is your transaction ID. Copy it — you can use it with `tx-status`.
@@ -1201,6 +1201,7 @@ These multi-step workflows demonstrate how to combine CLI commands and library A
    ```bash
    forge create --rpc-url http://127.0.0.1:8545 \
      --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
+     --broadcast \
      config/SimpleNFT.sol:SimpleNFT
    ```
    *Save the contract address.*
@@ -1294,6 +1295,7 @@ These multi-step workflows demonstrate how to combine CLI commands and library A
    ```bash
    forge create --rpc-url http://127.0.0.1:8545 \
      --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
+     --broadcast \
      config/StubToken.sol:StubToken
    ```
    *Save as `TOKEN_ADDRESS`.*
@@ -1302,6 +1304,7 @@ These multi-step workflows demonstrate how to combine CLI commands and library A
    ```bash
    forge create --rpc-url http://127.0.0.1:8545 \
      --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
+     --broadcast \
      config/SimpleNFT.sol:SimpleNFT
    ```
    *Save as `NFT_ADDRESS`.*
@@ -1347,7 +1350,7 @@ These multi-step workflows demonstrate how to combine CLI commands and library A
      0x70997970C51812dc3A010C7d01b50e0d17dc79C8 \
      100000000000000000000 \
      --rpc-url http://127.0.0.1:8545 \
-     --private-key 0x70997970C51812dc3A010C7d01b50e0d17dc79C8
+     --private-key 0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d
    ```
    *Save transaction hash.*
 
