@@ -3,3 +3,16 @@ output/sessions/
 target/
 *.env
 .env.*
+
+# Forge/Foundry artifacts
+out/
+cache/
+broadcast/
+
+# Temporary test scripts
+temp_*.sh
+temp_*.ps1
+
+# Solidity cache
+*.cache
+solidity-files-cache.json

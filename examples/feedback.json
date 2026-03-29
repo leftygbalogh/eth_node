@@ -3,10 +3,10 @@
   "stage": "Stage 1 — Discover",
   "closed": "2026-03-26",
   "joint_postmortem_owner_response": {
-    "date": "2026-03-27",
+    "date": "2026-03-29",
     "source": "Lefty",
-    "response": "Pass",
-    "notes": "No additional feedback items beyond FB-001 through FB-009."
+    "response": "Extended",
+    "notes": "Initial feedback FB-001 through FB-009 from Stage 1-6 sessions (2026-03-26/27). FB-010 added 2026-03-28 (delegation gap). FB-011 through FB-017 added 2026-03-29 from Stage 4 documentation validation session, including: agent compliance violations (FB-011), test methodology gaps (FB-012, FB-015, FB-016), documentation consistency protocol (FB-013), platform-specific documentation requirements (FB-014), and manual execution validation protocol proposal (FB-017). FB-018 added 2026-03-29 documenting full implementation of Manual Execution Validation Protocol (governance update + template creation)."
   },
   "feedback": [
     {
@@ -107,6 +107,86 @@
       "section": "Delegation protocol and follow-through",
       "observation": "When owner delegated full approval authority to Team Lead for T-006 and T-009 with complete autonomy, the subagent completed context recovery but did not proceed with actual implementation work. The delegation was recorded in memory.md and session memory, but no follow-up execution occurred. Owner had to ask 'where are we now' the next day to discover no progress was made.",
       "suggestion": "Add explicit delegation handoff protocol: (1) When delegation is granted, the delegated agent must confirm understanding and immediately begin work or explicitly state a blocking reason. (2) Delegated agent must provide periodic progress updates in memory.md (at minimum: start of work, mid-point check, completion). (3) If delegated work spans multiple sessions, the agent must resume from last checkpoint automatically on next invocation. (4) Add a delegation status check command for owner: 'Delegation Status Report' that shows current task, time elapsed, blockers, and next step without interrupting autonomous work.",
+      "priority": "high"
+    },
+    {
+      "id": "FB-011",
+      "source": "Product owner / Stage 4 documentation validation session 2026-03-29",
+      "type": "process-improvement",
+      "target": "governance/00_INTERACTION_GUARDRAILS.md",
+      "section": "Instruction compliance and optimization override",
+      "observation": "When owner gave explicit instruction 'Following my instruction to the letter, not reinterpreting it to find a faster, more economical solution. Do not deviate from my instructions under any circumstance. Take each example from the doc and run it in bash shell,' the agent initially created an automated test script instead of executing examples one-by-one as commanded. This represented agent disobedience—overriding user's explicit words and intent for perceived speed and convenience. Only after correction did the agent comply with literal execution requirement.",
+      "suggestion": "Add explicit rule to interaction guardrails: When owner uses compliance language ('to the letter,' 'do not deviate,' 'exactly as,' 'under no circumstance,' 'no shortcuts'), this is a compliance mandate that overrides all optimization instincts. The agent must execute the literal instruction even if it appears inefficient or redundant. Add a compliance acknowledgment protocol: when such language is detected, the agent must respond 'Acknowledged: literal compliance mode active, proceeding exactly as instructed' before taking any action. Treat optimization suggestions during compliance mode as a policy violation.",
+      "priority": "critical"
+    },
+    {
+      "id": "FB-012",
+      "source": "Quality engineer / Stage 4 documentation validation session 2026-03-29",
+      "type": "process-improvement",
+      "target": "governance/07_QUALITY_DIMENSIONS.md",
+      "section": "Test coverage and validation methodology",
+      "observation": "Automated test scripts (26/26 passing) validated functional correctness but completely missed environment-specific usability problems that only surface with literal copy-paste execution on Windows. Issues found via manual execution: (1) PowerShell→bash quoting breaks cast send commands with function signatures—CRITICAL blocker for Windows users, (2) alias commands don't work in single-line bash -c invocation, (3) balance/call command output format inconsistent with documentation promises, (4) forge create examples in Section 11 missing --broadcast flag (dry-run only). All 8 issues were invisible to automated tests but break real-world beginner usage.",
+      "suggestion": "Add explicit validation stage requirement for CLI/interactive tools: Supplement automated tests with platform-specific manual execution validation before documentation is declared complete. Minimum platforms: Windows (PowerShell + Git Bash), macOS, Linux. Tester must literally copy-paste each documented example and report discrepancies. Document platform-specific quirks and workarounds discovered. Make this a Stage 5 (Verify) or pre-release gate requirement for any tool with beginner-friendly how-to documentation. The lesson: automated tests prove the tool works; manual execution proves the documentation works for real users.",
+      "priority": "high"
+    },
+    {
+      "id": "FB-013",
+      "source": "Technical writer / Stage 4 documentation fix session 2026-03-29",
+      "type": "process-improvement",
+      "target": "governance/02_WORKFLOW_STAGES.md",
+      "section": "Stage 4 — Build: documentation consistency validation",
+      "observation": "When fixing missing --broadcast flags in CLI_REFERENCE.md Section 7 (individual command examples), the agent did not check Section 11 (complex scenarios) for the same pattern. Result: Section 7 forge create commands got fixed with '--broadcast' added, but Section 11 Scenario 1 Step 2 still had 'forge create ... config/StubToken.sol:StubToken' without the flag, causing dry-run-only deployment when users followed that example. The duplication error surfaced only during manual execution validation the next day. No systematic pattern search occurred after the initial fix. This is a documentation consistency gap—fixing one instance of a recurring error without checking for other instances of the same pattern in the same document.",
+      "suggestion": "Add explicit documentation fix protocol: When fixing a recurring documentation error (missing flags, wrong syntax, incorrect examples), the fixer must perform a whole-document pattern search before declaring the fix complete. Protocol steps: (1) Identify the error pattern (e.g., 'forge create without --broadcast'), (2) Search entire document for all instances using grep/search tools, (3) Fix all instances in a single pass, (4) Document the search query and instance count in the fix commit message. Add this as a Stage 4 done criteria checkpoint: 'Recurring documentation errors fixed document-wide, not point-wise.' This prevents whack-a-mole fixes where the same bug reappears in different sections.",
+      "priority": "high"
+    },
+    {
+      "id": "FB-014",
+      "source": "Technical writer / Stage 4 documentation validation session 2026-03-29",
+      "type": "template-improvement",
+      "target": "templates/CLI_DOCUMENTATION_TEMPLATE.md",
+      "section": "Platform-specific considerations",
+      "observation": "CLI_REFERENCE.md (~1400 lines of beginner-friendly bash examples) had zero platform-specific sections, warnings, or workarounds. All examples assumed native bash/Linux environment. When Windows users (PowerShell primary shell, Git Bash secondary) attempted to follow documentation literally: (1) PowerShell→bash -c invocation broke cast send function signature quoting (CRITICAL blocker), (2) alias commands failed in single-line bash -c context, (3) no guidance on path translation (/c/tmp vs C:\\tmp), (4) no mention that some patterns work differently in PowerShell vs native bash. Result: 50% of usability issues found during manual execution were Windows/PowerShell-specific and could have been prevented with a 'Platform Notes' section. The documentation was implicitly Linux-centric without declaring that assumption or providing Windows workarounds.",
+      "suggestion": "Add mandatory 'Platform Considerations' section to CLI documentation template for any tool with beginner-friendly how-to guides. Minimum content: (1) Declare primary development/test platform explicitly, (2) List known platform-specific quirks for Windows (PowerShell + Git Bash), macOS, and Linux, (3) Provide workarounds or alternative command patterns where behavior differs (e.g., 'On Windows PowerShell, complex bash commands may require creating .sh script files due to quoting limitations'), (4) Include path format guidance (Windows drive letters, forward/backslash conventions). Make this a Stage 4 documentation acceptance criterion: 'Platform-specific considerations documented for Windows/macOS/Linux or explicitly scoped to single platform.' Applies to any CLI tool targeting cross-platform beginner audience.",
+      "priority": "high"
+    },
+    {
+      "id": "FB-015",
+      "source": "Test infrastructure engineer / Stage 4 test validation gap 2026-03-28",
+      "type": "process-improvement",
+      "target": "governance/07_QUALITY_DIMENSIONS.md",
+      "section": "Contract and fixture validation in test infrastructure",
+      "observation": "Initial validation scripts (test-complete-docs.sh, scripts/validate-docs.ps1) checked CLI_REFERENCE.md examples for command structure and syntax correctness but did not verify that contract fixtures referenced in examples actually existed in the repository. Result: When running complex scenarios, references to config/SimpleNFT.sol and config/StubToken.sol (both mentioned in Section 11 multi-step workflows) produced 'file not found' errors because contracts had never been created. The validation scripts passed (26/26) because they only parsed command text, not filesystem state. The fixture gap surfaced only when executing actual forge create commands during validation, requiring emergency contract creation (SimpleNFT.sol ~90 lines, StubToken.sol ~85 lines) mid-validation. This is a test infrastructure incompleteness: structural validation without dependency validation.",
+      "suggestion": "Extend test validation protocol to include fixture and dependency existence checks before declaring test infrastructure complete. For CLI documentation that references external files (contracts, ABIs, config files, test data): (1) Parse documentation to extract all file path references (via regex or grep), (2) Verify each referenced file exists at the documented path, (3) If examples include deployment commands (forge create, contract compilation), verify source files are present and compilable, (4) Add fixture existence assertions to validation scripts as a pre-execution gate. Make this a Stage 4 acceptance criterion: 'All fixtures, contracts, and external files referenced in documentation exist in repository or external dependency documentation is provided.' This catches missing-dependency failures before they reach users.",
+      "priority": "high"
+    },
+    {
+      "id": "FB-016",
+      "source": "Quality engineer / Stage 4 test validation iteration 2026-03-29",
+      "type": "process-improvement",
+      "target": "governance/07_QUALITY_DIMENSIONS.md",
+      "section": "Test script validation depth and downstream effect verification",
+      "observation": "First-pass validation script (test-complete-docs.sh) checked that CLI commands could be parsed and invoked but did not verify actual execution results or downstream effects. For example: (1) Script checked that 'forge create' command ran, but not that contract was actually deployed (vs. dry-run), (2) Script checked 'eth balance' exited 0, but not that output format matched documentation promise, (3) Script checked 'cast send' syntax, but not that transaction was mined or events emitted. Result: 26/26 passing tests gave false confidence. Required second validation round (test-docs-as-written.sh) with deeper assertions checking transaction hashes, receipt status, expected output strings. Even that script missed usability issues like output format mismatches that only manual inspection caught. This is a test depth gap: validation scripts proved 'command does not crash' but not 'command produces documented behavior.'",
+      "suggestion": "Establish test validation depth tiers for documentation testing: (Tier 1) Syntax validation—command parses and exits without error, (Tier 2) Execution validation—command produces expected outputs/artifacts (transaction hashes, file creation, state changes), (Tier 3) Downstream effect validation—effects persist and match documentation (balances changed, contracts deployed, events emitted), (Tier 4) Usability validation—output format, error messages, and UX match documentation text (manual inspection required). Require at minimum Tier 2 for automated test pass, Tier 3 for pre-release gate, Tier 4 for beginner-facing documentation. Document which tier each test script achieves in its header comment. Add this to Stage 4/Stage 5 transition gate: 'Automated tests reach Tier 2 (execution validation), manual validation reaches Tier 4 (usability validation).' Prevents false confidence from shallow test passes.",
+      "priority": "high"
+    },
+    {
+      "id": "FB-017",
+      "source": "Product owner / Stage 4 validation retrospective 2026-03-29",
+      "type": "process-improvement",
+      "target": "governance/02_WORKFLOW_STAGES.md",
+      "section": "Stage 4/5 — Documentation manual execution validation protocol",
+      "observation": "Manual literal-execution validation of CLI_REFERENCE.md (agent running each example one-by-one in bash shells per owner's explicit instruction) discovered 8 usability issues that 26/26 passing automated tests completely missed: CRITICAL Windows/PowerShell quoting blockers, output format mismatches, missing flags in complex scenarios, alias command failures. This validation method (time-consuming but highly effective) was ad-hoc, triggered by owner request, not a regular process. Without this session, these issues would have shipped to users. The discovery rate was exceptional: ~1 major issue per 10 documented examples executed. Question: Can we formalize manual execution validation as a recurring stage gate or periodic quality checkpoint?",
+      "suggestion": "Create 'Manual Execution Validation Protocol' as a formal Stage 4 → Stage 5 transition gate for projects with beginner-facing CLI documentation: (1) Trigger: Any documentation update affecting >10% of examples, or major platform changes, or pre-release gate. (2) Executor: Assign to Exploratory Tester agent or quality-focused persona. (3) Method: Literally execute every documented example in sequence on target platforms (Windows/macOS/Linux), copy-pasting from docs exactly as beginners would. (4) Evidence: Session transcript showing each command + result, issues log with severity ratings, platform-specific findings. (5) Acceptance: Zero CRITICAL blockers, <3 HIGH-severity issues, all findings documented with workarounds or fixes. (6) Frequency: Mandatory at Stage 4 completion for initial docs, then on-demand when owner requests 'Documentation Validation Session' or before major releases. (7) Recording: Create templates/MANUAL_EXECUTION_VALIDATION_TEMPLATE.md with charter, platform matrix, finding categories, and pass/fail criteria. Make this a named, repeatable process with clear ownership and output artifacts. Cost: ~2-4 hours per 1000 lines of docs. Value: Catches usability bugs automated tests inherently cannot detect.",
+      "priority": "critical"
+    },
+    {
+      "id": "FB-018",
+      "source": "Product owner / Implementation of FB-017 2026-03-29",
+      "type": "implementation-record",
+      "target": "governance/02_WORKFLOW_STAGES.md, templates/MANUAL_EXECUTION_VALIDATION_TEMPLATE.md",
+      "section": "Manual Execution Validation Protocol - Implementation Complete",
+      "observation": "FB-017 proposal for Manual Execution Validation Protocol has been fully implemented in response to owner directive 'implement 1, fully, first.' Implementation includes: (1) New section added to governance/02_WORKFLOW_STAGES.md titled 'Manual Execution Validation Protocol (Stage 4 → Stage 5 Transition Gate)' positioned between Stage 4 and Stage 5, defining trigger conditions, execution requirements, pass criteria, severity definitions, outcomes, cost/value analysis, and integration points. (2) Complete template created at templates/MANUAL_EXECUTION_VALIDATION_TEMPLATE.md (~500 lines) with 8 main sections: Validation Charter, Platform Test Matrix, Execution Protocol (with 3.1 Method, 3.2 Severity Levels, 3.3 Evidence Collection), Findings Log table format, Platform-Specific Discoveries sections (Windows/macOS/Linux), Validation Results Summary with pass/fail determination table, Recommendations section, Session Evidence tracking, plus Appendix A (Execution Checklist) and Appendix B (Quick Reference for Common Issues). (3) Protocol specifies mandatory platform coverage (Windows PowerShell + Git Bash, macOS, Linux), finding severity levels (CRITICAL/HIGH/MEDIUM/LOW), pass criteria (0 CRITICAL, <3 HIGH), evidence requirements (transcript, findings log, platform quirks), and integration with Stage 4 done criteria checkbox integration.",
+      "suggestion": "This implementation is now active and should be applied on next documentation validation cycle. Recommendation: Test the protocol on next CLI documentation project to validate template completeness and refine based on real usage. Consider creating a 'Documentation Validation Session' slash command or canonical phrase for product owner to trigger this protocol on-demand. Monitor usage over 2-3 projects to collect feedback on time estimates (currently ~2-4 hours per 1000 lines) and pass criteria (0 CRITICAL, <3 HIGH) — adjust if criteria prove too strict or too lenient in practice. Success metrics to track: (1) Number of CRITICAL/HIGH issues caught that automated tests miss, (2) Time taken per validation session, (3) False positive rate (findings that are actually non-issues), (4) User-reported post-release documentation bugs (should decrease if protocol is effective).",
       "priority": "high"
     }
   ]

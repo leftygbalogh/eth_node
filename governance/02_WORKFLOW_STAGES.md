@@ -232,6 +232,108 @@ Quality pack activation:
 - Q1 enforced throughout: all code quality, testing, and security standards apply to every task.
 - See `07_QUALITY_DIMENSIONS.md` for observability and documentation sub-items.
 
+---
+
+## Manual Execution Validation Protocol (Stage 4 → Stage 5 Transition Gate)
+
+**Applies to:** Projects with beginner-facing CLI documentation, interactive terminal/CLI tools, or how-to guides targeting cross-platform users.
+
+**Purpose:** Verify that documented examples can be executed literally (copy-paste) by beginner users and produce the documented behavior, output format, and user experience on target platforms.
+
+**Rationale:** Automated tests validate functional correctness but systematically miss environment-specific usability problems that only surface with literal copy-paste execution. Discovery rate in eth_node project: ~1 major issue per 10 documented examples, including CRITICAL Windows/PowerShell blockers invisible to 26/26 passing automated tests.
+
+### Trigger Conditions
+
+Manual Execution Validation is **mandatory** when:
+
+1. Initial documentation completion at Stage 4 for any CLI tool with >50 lines of how-to/example content
+2. Documentation updates affecting >10% of documented examples
+3. Major platform/dependency changes (e.g., shell upgrade, runtime version change)
+4. Pre-release gate for any tool targeting beginner audience
+5. On-demand when product owner requests "Documentation Validation Session"
+
+### Execution Requirements
+
+1. **Executor:** Assign to Exploratory Tester agent, quality-focused persona, or designated validation role
+
+2. **Method:** Literally execute every documented example in sequence on target platforms (minimum: Windows with PowerShell + Git Bash, macOS, Linux), copy-pasting from docs exactly as beginners would
+
+3. **Platform Coverage Matrix:**
+   - Windows (PowerShell + Git Bash): **Mandatory** for cross-platform tools
+   - macOS (zsh/bash): **Mandatory** for cross-platform tools
+   - Linux (bash): **Mandatory** for cross-platform tools
+   - Mark untested platforms as explicit release risks
+
+4. **Evidence Artifacts:**
+   - Session transcript showing each command + result (stored in `docs/evidence/manual-validation-[date].md`)
+   - Findings log with severity ratings (CRITICAL/HIGH/MEDIUM/LOW)
+   - Platform-specific discoveries and workarounds
+   - Execution checklist tracking all examples (✅ PASS / ❌ FAIL / ⚠️ PARTIAL)
+
+5. **Template:** Use `templates/MANUAL_EXECUTION_VALIDATION_TEMPLATE.md` to structure the validation session
+
+### Pass Criteria
+
+Validation session **passes** only when:
+
+- **Zero CRITICAL blockers** (commands that fail to execute, produce errors, or require undocumented fixes)
+- **Fewer than 3 HIGH-severity issues** (output format mismatches, missing expected behavior, unclear instructions requiring workaround)
+- **All findings documented** with reproduction steps, platform context, and severity
+- **Platform-specific quirks identified** and documented (for Windows/PowerShell users especially)
+
+### Finding Severity Definitions
+
+| Severity | Definition | Action Required |
+|----------|-----------|-----------------|
+| **CRITICAL** | Command fails to execute; complete blocker for users following docs | Must fix before Stage 5 |
+| **HIGH** | Command succeeds but output/behavior differs significantly from docs | Must fix or document as known limitation |
+| **MEDIUM** | Command works but UX is confusing or requires undocumented workaround | Recommended fix or add clarification |
+| **LOW** | Minor discrepancy or cosmetic issue (typo, outdated version number) | Optional fix, may defer |
+
+### Validation Outcomes
+
+**PASS:** Proceed to Stage 5  
+**CONDITIONAL PASS:** Proceed with documented known limitations and release risk acceptance  
+**FAIL:** Block Stage 5 until CRITICAL blockers resolved
+
+### Cost and Value
+
+- **Time Investment:** ~2-4 hours per 1000 lines of CLI documentation
+- **Value Delivered:** Catches usability bugs automated tests inherently cannot detect (quoting issues, platform-specific failures, output format mismatches, prerequisite gaps)
+- **ROI Evidence:** eth_node project found 8 issues (2 CRITICAL, 2 HIGH, 4 MEDIUM) via manual validation that 26/26 passing automated tests completely missed
+
+### Integration with Stage 4 Done Criteria
+
+For projects with beginner-facing CLI documentation, add to Stage 4 done criteria:
+
+- [ ] Manual Execution Validation completed on target platforms (evidence in `docs/evidence/`)
+- [ ] Zero CRITICAL blockers or all blockers resolved with evidence
+- [ ] Platform-specific quirks documented in CLI documentation "Platform Considerations" section
+- [ ] Validation findings logged and resolved or accepted as known limitations
+
+### Documentation Improvements Required
+
+When validation identifies platform-specific issues, the following documentation additions are **mandatory** before Stage 5 approval:
+
+1. **Platform Considerations Section:** Add to user-facing docs with:
+   - Primary development/test platform declared
+   - Known platform-specific quirks (Windows/PowerShell quoting, path formats, shell differences)
+   - Workarounds for commands that behave differently across platforms
+   - Path format guidance (Windows drive letters, forward/backslash conventions)
+
+2. **Prerequisite Clarity:** Update setup instructions for any missing fixtures, environment variables, or tool configurations discovered during validation
+
+3. **Output Format Accuracy:** Correct any documented output examples that don't match actual tool behavior
+
+### Frequency
+
+- **Initial documentation:** Mandatory at Stage 4 completion
+- **Major updates:** Required when >10% of examples change
+- **Minor updates:** Optional, at product owner discretion
+- **Pre-release:** Recommended but may be waived if no doc changes since last validation
+
+---
+
 ## Stage 5: Verify
 
 Purpose: Confirm behavior and quality goals.
