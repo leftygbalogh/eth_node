@@ -22,20 +22,23 @@ Use this file to persist current status, key decisions, blockers, and next actio
 
 Note: Idle-triggered behavior requires host/editor automation to enforce consistently.
 
-## 2025-01-03 Library API Documentation 100% Complete ✓
+## 2025-01-03 Library API Documentation 100% Complete + All Examples Verified ✓
 
 - Timestamp: 2025-01-03
 - Current stage: Stage 4 — Build (Phase 2: COMPLETE, A-3 gate pending)
 - Project: ethereum_node_rust (greenfield learning project)
-- Status: Library API Guide extended to 100% coverage (commit 43d2388), ready for A-3 gate approval
+- Status: Library API Guide extended to 100% coverage (commit 43d2388), all examples verified working (commit 415fe37), ready for A-3 gate approval
 - Completed since last update:
-  - All runnable examples verified (2 of 3 executed successfully):
+  - All 3 runnable examples verified working (executed individually one-by-one):
     * simulate_transaction.rs: ✅ PASSED (Success=true, Gas=21000)
     * decode_nft_events.rs: ✅ PASSED (after fixing 2 bugs: Log construction format, data padding)
-    * compare_to_anvil.rs: Ready to run (needs Anvil started)
+    * compare_to_anvil.rs: ✅ PASSED (after fixing account address + gas_price, perfect gas match: 21000 local vs 21000 Anvil)
   - Bug fixes applied to decode_nft_events.rs:
     * Bug 1: ERC-721 Transfer tokenId must be 4th indexed topic (not in data field)
     * Bug 2: ApprovalForAll bool must be 32-byte ABI-encoded (not single byte)
+  - Bug fixes applied to compare_to_anvil.rs:
+    * Bug 3: Wrong Anvil default account address (fixed to 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266)
+    * Bug 4: Missing gas_price field (added 20 gwei to avoid GasPriceLessThanBasefee error)
   - Coverage analysis completed:
     * CLI_REFERENCE.md: 100% complete ✓ (1500+ lines, all 6 commands, 3 complex scenarios)
     * LIBRARY_API_GUIDE.md: Extended from 20% → 100% coverage ✓
@@ -53,11 +56,14 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
       - Use Case 4: NFT Batch Minter with Gas Optimization (simulation, batch sizing, gas tracking)
       - Use Case 5: Multi-Sig Wallet Transaction Proposer (3-of-5 multi-sig workflow)
   - Updated Table of Contents: 11 sections (was 4, now includes all Phase 1 modules + use cases)
-  - Commit: 43d2388 "docs: Complete library API guide to 100% coverage with real-world use cases"
+  - Commits:
+    * 43d2388 "docs: Complete library API guide to 100% coverage with real-world use cases"
+    * fd07d0f "docs(memory): Update status - library API guide 100% complete"
+    * 415fe37 "fix(examples): Fix compare_to_anvil account address and gas price"
 - Documentation completion status:
   - ✅ CLI_REFERENCE.md: 100% complete (1500+ lines, all commands documented)
   - ✅ LIBRARY_API_GUIDE.md: 100% complete (2000+ lines, all modules documented)
-  - ✅ Runnable examples: 3 created, 2 verified working, 1 ready to run
+  - ✅ Runnable examples: 3 created, 3 verified working (all pass individually)
   - ✅ Real-world use cases: 5 practical examples with full code
   - ✅ Technical Writer standard: Achieved (working examples, practical scenarios)
   - ✅ Rust Backend Specialist standard: Achieved (error handling, ownership/borrowing, module design patterns)
@@ -71,9 +77,9 @@ Note: Idle-triggered behavior requires host/editor automation to enforce consist
   - 5 use cases selected to cover: payment workflows, event streaming, read-only queries, gas optimization, multi-sig patterns (breadth of common scenarios)
 - Open questions: None
 - Blockers: None
-- Next step (Priority 1): Request A-3 gate approval from user for Phase 2 formal closure with 100% complete documentation
-- Next step (Priority 2): Run compare_to_anvil.rs example (needs Anvil started on http://127.0.0.1:8545)
-- Next step (Priority 3): Push commit 43d2388 to origin/master
+- Next step (Priority 1): Push commits 43d2388, fd07d0f, 415fe37 to origin/master
+- Next step (Priority 2): Request A-3 gate approval from user for Phase 2 formal closure with 100% complete documentation
+- Next step (Priority 3): If A-3 approved, close Phase 2 and prepare Phase 3 planning
 
 ## 2026-03-30 Documentation Compliance — 100% Standard Achieved ✓
 
