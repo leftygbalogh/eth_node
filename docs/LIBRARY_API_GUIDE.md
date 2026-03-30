@@ -15,6 +15,10 @@ This guide demonstrates how to use the `eth_node` library crate for transaction 
 3. [Integration Examples](#integration-examples)
    - [Simulate and Decode](#simulate-and-decode)
    - [Compare and Validate](#compare-and-validate)
+4. [Rust Patterns & Best Practices](#rust-patterns--best-practices)
+   - [Error Handling](#error-handling)
+   - [Ownership & Borrowing](#ownership--borrowing)
+   - [Module Design](#module-design)
 
 ---
 
@@ -364,6 +368,277 @@ if report.logs_match {
     eprintln!("⚠️ Log mismatch detected!");
 }
 ```
+
+---
+
+## Rust Patterns & Best Practices
+
+This section explains Rust-specific patterns used throughout the library to help you write idiomatic code when using `eth_node`.
+
+### Error Handling
+
+The library uses `Result<T, E>` for all fallible operations. Understanding when and how to propagate errors is critical for robust code.
+
+#### When to Use `?` vs `match`
+
+Use the `?` operator for straightforward error propagation when you don't need to inspect or transform the error:
+
+```rust
+use eth_node::executor::simulate_tx;
+
+fn run_simulation() -> Result<(), Box<dyn std::error::Error>> {
+    let tx = build_transaction();
+    let context = SimulationContext::default();
+    
+    // ✓ Use ? when propagating errors up the call stack
+    let result = simulate_tx(&tx, &context)?;
+    
+    println!("Gas used: {}", result.gas_used);
+    Ok(())
+}
+```
+
+Use `match` when you need to handle specific error variants differently:
+
+```rust
+use eth_node::quality::{decode_standard_nft_event, DecodeError};
+
+match decode_standard_nft_event(&log) {
+    Ok(event) => process_event(event),
+    Err(DecodeError::UnsupportedEvent) => {
+        // Log and skip unsupported events gracefully
+        eprintln!("Skipping unsupported event");
+    }
+    Err(DecodeError::InvalidData(msg)) => {
+        // Critical error - abort processing
+        panic!("Invalid event data: {}", msg);
+    }
+    Err(e) => return Err(e.into()), // Propagate other errors
+}
+```
+
+#### Error Type Design with `thiserror`
+
+The library modules define their own error types using `thiserror`:
+
+```rust
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum ExecutorError {
+    #[error("simulation failed: {0}")]
+    SimulationFailed(String),
+    
+    #[error("RPC communication error: {0}")]
+    RpcError(#[from] alloy_transport::TransportError),
+    
+    #[error("invalid transaction: {0}")]
+    InvalidTransaction(String),
+}
+```
+
+**Key patterns:**
+- `#[error("...")]` defines display format (shown in error messages)
+- `#[from]` enables automatic conversion via `?` operator (e.g., `TransportError` → `ExecutorError::RpcError`)
+- Use descriptive error messages that aid debugging
+
+#### Explicit Error Propagation Discipline
+
+When calling library functions, always handle or propagate errors—never unwrap in production code:
+
+```rust
+// ✗ BAD: Panic on error (only acceptable in examples/tests)
+let result = simulate_tx(&tx, &context).unwrap();
+
+// ✓ GOOD: Propagate error to caller
+let result = simulate_tx(&tx, &context)?;
+
+// ✓ ALSO GOOD: Provide context when propagating
+let result = simulate_tx(&tx, &context)
+    .map_err(|e| format!("Failed to simulate transaction: {}", e))?;
+```
+
+### Ownership & Borrowing
+
+Rust's ownership system prevents data races and use-after-free bugs. Understanding when to use references vs owned values is essential.
+
+#### When to Use `&T` vs `&mut T` vs Owned Values
+
+Use **`&T` (shared reference)** when you only need to read data:
+
+```rust
+use eth_node::executor::{simulate_tx, SimulationContext};
+
+// SimulationContext is borrowed immutably (can't be modified)
+fn run_simulation(tx: &TransactionRequest, context: &SimulationContext) -> Result<SimulationResult, ExecutorError> {
+    simulate_tx(tx, context) // Both parameters borrowed, original values unchanged
+}
+```
+
+Use **`&mut T` (mutable reference)** when you need to modify data in-place:
+
+```rust
+fn update_context(context: &mut SimulationContext, new_timestamp: u64) {
+    context.timestamp = new_timestamp; // Modify in-place via mutable borrow
+}
+```
+
+Use **owned values (`T`)** when transferring ownership or storing long-term:
+
+```rust
+use std::collections::HashMap;
+
+struct SimulationCache {
+    results: HashMap<String, SimulationResult>, // Owned values stored in cache
+}
+
+impl SimulationCache {
+    fn insert(&mut self, key: String, result: SimulationResult) {
+        // Takes ownership of both key and result
+        self.results.insert(key, result);
+    }
+}
+```
+
+#### Lifetime Requirements in Function Signatures
+
+Most library functions accept references with implicit lifetimes:
+
+```rust
+// Implicit lifetime: returned Log references live as long as the input result
+fn extract_logs(result: &SimulationResult) -> &[Log] {
+    &result.logs
+}
+```
+
+When returning references derived from multiple inputs, lifetimes must be explicit:
+
+```rust
+// Explicit lifetime: returned reference tied to 'a (the input parameter)
+fn find_event<'a>(logs: &'a [Log], topic: &B256) -> Option<&'a Log> {
+    logs.iter().find(|log| log.topics().first() == Some(topic))
+}
+```
+
+#### Clone vs Move Tradeoffs
+
+Moving transfers ownership (zero cost), cloning duplicates data (may be expensive):
+
+```rust
+use alloy_rpc_types::TransactionRequest;
+
+// Move (no clone): tx ownership transferred to simulate_tx
+let tx = TransactionRequest::default();
+let result = simulate_tx(&tx, &context)?; // Borrow (no move)
+
+// Clone when you need to reuse the original:
+let tx = TransactionRequest::default();
+let result1 = simulate_tx(&tx, &context)?;    // First simulation
+let result2 = simulate_tx(&tx, &context)?;    // Reuse tx (borrowed, no clone needed)
+
+// Clone when crossing thread boundaries:
+let tx = TransactionRequest::default();
+let tx_clone = tx.clone(); // Explicit clone for thread
+std::thread::spawn(move || {
+    simulate_tx(&tx_clone, &context) // tx_clone moved into thread
+});
+// Original tx still usable here
+```
+
+**Guidelines:**
+- Prefer borrowing (`&T`) when possible—zero-cost and most flexible
+- Clone only when necessary (thread boundaries, persistent storage, or modification without affecting original)
+- Types like `Address`, `U256` are `Copy` (implicit clone)—cheap to pass by value
+
+### Module Design
+
+The library follows modular design principles to maintain clear boundaries and composability.
+
+#### Trait Boundaries
+
+The executor module works with any type implementing `revm::StateProvider`:
+
+```rust
+use revm::db::{StateProvider, InMemoryDB};
+use eth_node::executor::simulate_tx;
+
+// Works with in-memory database
+let db = InMemoryDB::default();
+let result = simulate_tx(&tx, &context)?;
+
+// Also works with custom state providers (e.g., RPC-backed state)
+struct RpcStateProvider { /* ... */ }
+impl StateProvider for RpcStateProvider { /* ... */ }
+
+let rpc_db = RpcStateProvider::new("http://localhost:8545");
+// Same function, different state provider
+```
+
+**Design principle:** Accept trait objects or generic bounds (`impl Trait`, `T: Trait`) rather than concrete types to maximize composability.
+
+#### Public API Decisions
+
+Each module exposes a minimal public API:
+
+```rust
+// Public API (module root):
+pub use executor::{simulate_tx, simulate_contract_call, compare_to_anvil};
+pub use quality::{decode_standard_nft_event, decode_nft_event_lossless};
+
+// Internal functions (not re-exported):
+mod executor {
+    pub fn simulate_tx(...) -> Result<SimulationResult, ExecutorError> { /* ... */ }
+    
+    // Internal helper (not in public API)
+    fn build_evm_env(...) -> Env { /* ... */ }
+}
+```
+
+**Guidelines:**
+- Minimize public surface area (easier to maintain backward compatibility)
+- Re-export commonly used types from module roots
+- Keep implementation details private (users depend on behavior, not internals)
+
+#### Internal vs Public Functions
+
+Use `pub(crate)` for functions needed across modules but not exposed to library users:
+
+```rust
+// Public API (exposed to library users)
+pub fn simulate_tx(...) -> Result<SimulationResult, ExecutorError> { /* ... */ }
+
+// Internal API (visible within crate only)
+pub(crate) fn validate_transaction(tx: &TransactionRequest) -> Result<(), ExecutorError> {
+    // Shared validation logic used by multiple public functions
+    // Not exposed to end users
+}
+
+// Private (visible within module only)
+fn build_evm_env(...) -> Env {
+    // Implementation detail, not shared
+}
+```
+
+#### Extensibility Points
+
+The library provides hooks for customization via trait implementations:
+
+```rust
+// Example: Custom event decoder
+pub trait EventDecoder {
+    fn decode(&self, log: &Log) -> Result<DecodedEvent, DecodeError>;
+}
+
+// Users can implement custom decoders
+struct MyCustomDecoder;
+impl EventDecoder for MyCustomDecoder {
+    fn decode(&self, log: &Log) -> Result<DecodedEvent, DecodeError> {
+        // Custom decoding logic
+    }
+}
+```
+
+**Design principle:** Provide trait-based extension points for common customization needs rather than hard-coding behavior.
 
 ---
 
