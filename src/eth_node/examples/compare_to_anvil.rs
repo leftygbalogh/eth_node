@@ -25,14 +25,12 @@ async fn main() -> Result<(), ExecutorError> {
     println!("=== Compare Local Simulation to Anvil ===\n");
 
     // Use Anvil's first default test account (pre-funded with 10000 ETH)
-    let anvil_account = Address::from([
-        0xf3, 0x9f, 0xd6, 0xe5, 0x1a, 0xad, 0x88, 0xf6,
-        0xf4, 0xce, 0x6a, 0xb8, 0x82, 0x7f, 0x06, 0xdd,
-        0x02, 0xe3, 0x4e, 0xc5,
-    ]);
+    let anvil_account: Address = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+        .parse()
+        .expect("Valid Anvil default address");
 
     let recipient = Address::from([0x22; 20]);
-    let value = U256::from(1_000_000_000_000u64); // 1000 gwei
+    let value = U256::from(1_000_000_000u64); // 1 gwei (reduced to avoid any gas issues)
 
     // Build transaction (must be executable on Anvil)
     let tx = TransactionRequest {
@@ -40,6 +38,7 @@ async fn main() -> Result<(), ExecutorError> {
         to: Some(recipient.into()),
         value: Some(value),
         gas: Some(21_000),
+        gas_price: Some(20_000_000_000u128), // 20 gwei
         ..Default::default()
     };
 
