@@ -1,6 +1,6 @@
 # Library API Usage Guide
 
-This guide demonstrates how to use the `eth_node` library crate for transaction simulation, contract calls, and event decoding.
+This guide demonstrates how to use the `eth_node` library crate for transaction simulation, contract calls, event decoding, RPC operations, signing, transaction broadcasting, event streaming, and contract interaction.
 
 ## Table of Contents
 
@@ -15,10 +15,39 @@ This guide demonstrates how to use the `eth_node` library crate for transaction 
 3. [Integration Examples](#integration-examples)
    - [Simulate and Decode](#simulate-and-decode)
    - [Compare and Validate](#compare-and-validate)
-4. [Rust Patterns & Best Practices](#rust-patterns--best-practices)
-   - [Error Handling](#error-handling)
-   - [Ownership & Borrowing](#ownership--borrowing)
-   - [Module Design](#module-design)
+4. [RPC Module](#rpc-module)
+   - [Creating a Client](#creating-a-client)
+   - [Query Operations](#query-operations)
+   - [Transaction Operations](#transaction-operations)
+   - [Log Queries](#log-queries)
+5. [Signer Module](#signer-module)
+   - [Loading Private Keys](#loading-private-keys)
+   - [Signing Transactions](#signing-transactions)
+6. [Transaction Module](#transaction-module)
+   - [Building Transactions](#building-transactions)
+   - [Broadcasting with Confirmation](#broadcasting-with-confirmation)
+7. [Events Module](#events-module)
+   - [HTTP Polling Mode](#http-polling-mode)
+   - [WebSocket Subscription Mode](#websocket-subscription-mode)
+   - [Filter by Event Signature](#filter-by-event-signature)
+8. [Contract Module](#contract-module)
+   - [Creating a Contract Caller](#creating-a-contract-caller)
+   - [Read Calls (view functions)](#read-calls-view-functions)
+   - [Write Transactions (state-changing)](#write-transactions-state-changing)
+9. [Primitives Module](#primitives-module)
+   - [Address Parsing](#address-parsing)
+   - [ABI Encoding/Decoding](#abi-encodingdecoding)
+   - [RLP Encoding/Decoding](#rlp-encodingdecoding)
+10. [Real-World Use Cases](#real-world-use-cases)
+    - [Use Case 1: Freelancer Payment Processor](#use-case-1-freelancer-payment-processor)
+    - [Use Case 2: DAO Voting with Gas Sponsorship](#use-case-2-dao-voting-with-gas-sponsorship)
+    - [Use Case 3: Token Vesting Schedule Checker](#use-case-3-token-vesting-schedule-checker)
+    - [Use Case 4: NFT Batch Minter with Gas Optimization](#use-case-4-nft-batch-minter-with-gas-optimization)
+    - [Use Case 5: Multi-Sig Wallet Transaction Proposer](#use-case-5-multi-sig-wallet-transaction-proposer)
+11. [Rust Patterns & Best Practices](#rust-patterns--best-practices)
+    - [Error Handling](#error-handling)
+    - [Ownership & Borrowing](#ownership--borrowing)
+    - [Module Design](#module-design)
 
 ---
 
@@ -368,6 +397,902 @@ if report.logs_match {
     eprintln!("⚠️ Log mismatch detected!");
 }
 ```
+
+---
+
+## RPC Module
+
+The `rpc` module provides an async JSON-RPC client for Ethereum-compatible endpoints.
+
+### Creating a Client
+
+```rust
+use eth_node::rpc::RpcClient;
+
+let client = RpcClient::new("http://127.0.0.1:8545")?;
+println!("Connected to: {}", client.endpoint());
+```
+
+### Query Operations
+
+**Get block number:**
+```rust
+let block_num = client.block_number().await?;
+println!("Latest block: {}", block_num);
+```
+
+**Get account balance:**
+```rust
+use alloy_primitives::Address;
+
+let address = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266".parse()?;
+let balance = client.get_balance(address).await?;
+println!("Balance: {} wei", balance);
+```
+
+**Get balance at specific block:**
+```rust
+use alloy_rpc_types::BlockId;
+
+let balance = client.get_balance_at(address, BlockId::number(100)).await?;
+```
+
+**Get transaction count (nonce):**
+```rust
+let nonce = client.get_transaction_count(address).await?;
+println!("Next nonce: {}", nonce);
+```
+
+**Get gas price:**
+```rust
+let gas_price = client.gas_price().await?;
+println!("Gas price: {} wei", gas_price);
+```
+
+### Transaction Operations
+
+**Estimate gas:**
+```rust
+use alloy_rpc_types::TransactionRequest;
+
+let tx = TransactionRequest {
+    from: Some(sender),
+    to: Some(recipient.into()),
+    value: Some(U256::from(1_000_000)),
+    ..Default::default()
+};
+
+let gas_estimate = client.estimate_gas(tx).await?;
+println!("Estimated gas: {}", gas_estimate);
+```
+
+**Send raw transaction:**
+```rust
+use alloy_primitives::Bytes;
+
+let raw_tx = Bytes::from(signed_transaction.raw_bytes);
+let tx_hash = client.send_raw_transaction(raw_tx).await?;
+println!("Submitted: {:?}", tx_hash);
+```
+
+**Get transaction receipt:**
+```rust
+let receipt = client.get_transaction_receipt(tx_hash).await?;
+if let Some(receipt) = receipt {
+    println!("Status: {:?}", receipt.status());
+    println!("Gas used: {}", receipt.gas_used);
+}
+```
+
+**Call contract (read-only):**
+```rust
+let result = client.call(tx_request).await?;
+println!("Return data: 0x{}", hex::encode(&result));
+```
+
+### Log Queries
+
+**Get logs with filter:**
+```rust
+use alloy_rpc_types::Filter;
+
+let filter = Filter::new()
+    .address(contract_address)
+    .from_block(1000)
+    .to_block(2000);
+
+let logs = client.get_logs(filter).await?;
+println!("Found {} logs", logs.len());
+```
+
+---
+
+## Signer Module
+
+The `signer` module handles private key management and transaction signing.
+
+### Loading Private Keys
+
+**From environment variable:**
+```rust
+use eth_node::signer::EthSigner;
+
+// Expects ETH_PRIVATE_KEY=0x...
+let signer = EthSigner::from_env()?;
+println!("Signer address: {}", signer.address());
+```
+
+**From hex string:**
+```rust
+let key = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
+let signer = EthSigner::from_key(key)?;
+```
+
+### Signing Transactions
+
+**EIP-1559 transaction:**
+```rust
+use eth_node::signer::UnsignedTx;
+use alloy_consensus::TxEip1559;
+use alloy_primitives::{TxKind, U256};
+
+let unsigned = UnsignedTx::Eip1559(TxEip1559 {
+    chain_id: 1,
+    nonce: 0,
+    gas_limit: 21_000,
+    max_fee_per_gas: 50_000_000_000,
+    max_priority_fee_per_gas: 2_000_000_000,
+    to: TxKind::Call(recipient),
+    value: U256::from(1_000_000_000_000_000_000u64), // 1 ETH
+    input: Default::default(),
+    access_list: Default::default(),
+});
+
+let signed = signer.sign(unsigned)?;
+println!("Transaction hash: {:?}", signed.hash);
+println!("From: {}", signed.from);
+// signed.raw_bytes ready for eth_sendRawTransaction
+```
+
+**Legacy transaction:**
+```rust
+use alloy_consensus::TxLegacy;
+
+let unsigned = UnsignedTx::Legacy(TxLegacy {
+    chain_id: Some(1),
+    nonce: 0,
+    gas_price: 20_000_000_000,
+    gas_limit: 21_000,
+    to: TxKind::Call(recipient),
+    value: U256::from(1_000_000_000_000_000_000u64),
+    input: Default::default(),
+});
+
+let signed = signer.sign(unsigned)?;
+```
+
+---
+
+## Transaction Module
+
+The `tx` module provides a fluent builder for transactions and a broadcaster with confirmation polling.
+
+### Building Transactions
+
+**Auto-fetch fees (EIP-1559):**
+```rust
+use eth_node::tx::TxBuilder;
+
+let builder = TxBuilder::new()
+    .to(recipient)
+    .value(U256::from(1_000_000_000_000_000_000u64)) // 1 ETH
+    .build_unsigned(&client, &signer).await?;
+// Nonce and fees automatically fetched from RPC
+```
+
+**Custom EIP-1559 fees:**
+```rust
+let builder = TxBuilder::new()
+    .to(recipient)
+    .value(U256::from(500_000_000_000_000_000u64)) // 0.5 ETH
+    .max_fee(50_000_000_000, 2_000_000_000) // max_fee, priority_fee
+    .build_unsigned(&client, &signer).await?;
+```
+
+**Legacy gas price:**
+```rust
+let builder = TxBuilder::new()
+    .to(recipient)
+    .value(U256::from(1_000_000))
+    .gas_price(20_000_000_000)
+    .build_unsigned(&client, &signer).await?;
+```
+
+**Contract interaction with data:**
+```rust
+use alloy_primitives::Bytes;
+
+let calldata = Bytes::from(hex::decode("a9059cbb...")?); // transfer(address,uint256)
+let builder = TxBuilder::new()
+    .to(token_contract)
+    .data(calldata)
+    .gas(100_000)
+    .build_unsigned(&client, &signer).await?;
+```
+
+### Broadcasting with Confirmation
+
+**Send and wait for confirmation:**
+```rust
+use eth_node::tx::{Broadcaster, BroadcastConfig};
+
+let config = BroadcastConfig {
+    poll_interval_ms: 1000,
+    timeout_secs: 60,
+};
+
+let broadcaster = Broadcaster::new(client, signer);
+let receipt = broadcaster.send(tx_builder, config).await?;
+
+println!("Mined in block: {:?}", receipt.block_number);
+println!("Gas used: {}", receipt.gas_used);
+```
+
+**Fire-and-forget (no wait):**
+```rust
+let config = BroadcastConfig {
+    poll_interval_ms: 0, // Skip polling
+    timeout_secs: 0,
+};
+
+// Returns as soon as transaction is accepted by mempool
+broadcaster.send(tx_builder, config).await?;
+```
+
+**Handle reverted transactions:**
+```rust
+use eth_node::tx::TxError;
+
+match broadcaster.send(tx_builder, config).await {
+    Ok(receipt) => println!("Success!"),
+    Err(TxError::Reverted { hash, receipt }) => {
+        eprintln!("Transaction reverted: {:?}", hash);
+        eprintln!("Gas used: {}", receipt.gas_used);
+    }
+    Err(e) => return Err(e.into()),
+}
+```
+
+---
+
+## Events Module
+
+The `events` module streams contract events via HTTP polling or WebSocket subscriptions.
+
+### HTTP Polling Mode
+
+```rust
+use eth_node::events::Listener;
+use alloy_rpc_types::Filter;
+use futures::StreamExt;
+
+let filter = Filter::new()
+    .address(contract_address)
+    .from_block(BlockNumberOrTag::Latest);
+
+let mut stream = Listener::new("http://127.0.0.1:8545")
+    .with_poll_interval(Duration::from_secs(2))
+    .subscribe(filter);
+
+while let Some(result) = stream.next().await {
+    match result {
+        Ok(log) => println!("Log: {:?}", log),
+        Err(e) => eprintln!("Error: {}", e),
+    }
+}
+```
+
+### WebSocket Subscription Mode
+
+```rust
+let mut stream = Listener::new("ws://127.0.0.1:8545")
+    .with_max_reconnect(Some(5)) // Retry 5 times on disconnect
+    .subscribe(filter);
+
+while let Some(result) = stream.next().await {
+    match result {
+        Ok(log) => {
+            // Process log
+            println!("Block: {:?}, Tx: {:?}", log.block_number, log.transaction_hash);
+        }
+        Err(ListenerError::ReconnectExhausted(n)) => {
+            eprintln!("Gave up after {} reconnect attempts", n);
+            break;
+        }
+        Err(e) => eprintln!("Stream error: {}", e),
+    }
+}
+```
+
+### Filter by Event Signature
+
+```rust
+use alloy_primitives::B256;
+
+// Transfer(address,address,uint256) topic0
+let transfer_topic = B256::from([
+    0xdd, 0xf2, 0x52, 0xad, 0x1b, 0xe2, 0xc8, 0x9b,
+    0x69, 0xc2, 0xb0, 0x68, 0xfc, 0x37, 0x8d, 0xaa,
+    0x95, 0x2b, 0xa7, 0xf1, 0x63, 0xc4, 0xa1, 0x16,
+    0x28, 0xf5, 0x5a, 0x4d, 0xf5, 0x23, 0xb3, 0xef,
+]);
+
+let filter = Filter::new()
+    .address(contract_address)
+    .event_signature(transfer_topic);
+
+let mut stream = Listener::new("ws://127.0.0.1:8545").subscribe(filter);
+```
+
+---
+
+## Contract Module
+
+The `contract` module provides ABI-driven contract interaction (read calls and write transactions).
+
+### Creating a Contract Caller
+
+```rust
+use eth_node::contract::ContractCaller;
+
+let abi_json = r#"[
+  {
+    "name": "balanceOf",
+    "type": "function",
+    "inputs": [{"name": "account", "type": "address"}],
+    "outputs": [{"name": "", "type": "uint256"}],
+    "stateMutability": "view"
+  },
+  {
+    "name": "transfer",
+    "type": "function",
+    "inputs": [
+      {"name": "recipient", "type": "address"},
+      {"name": "amount", "type": "uint256"}
+    ],
+    "outputs": [{"name": "", "type": "bool"}],
+    "stateMutability": "nonpayable"
+  }
+]"#;
+
+let contract = ContractCaller::new(token_address, abi_json)?;
+```
+
+### Read Calls (view functions)
+
+```rust
+use alloy_dyn_abi::DynSolValue;
+
+let user = Address::from([0x11; 20]);
+let args = vec![DynSolValue::Address(user)];
+
+let result = contract.call("balanceOf", &args, &client).await?;
+
+// result is Vec<DynSolValue>
+if let Some(DynSolValue::Uint(balance, _)) = result.first() {
+    println!("Balance: {}", balance);
+}
+```
+
+### Write Transactions (state-changing)
+
+```rust
+let recipient = Address::from([0x22; 20]);
+let amount = DynSolValue::Uint(U256::from(1_000_000_000_000_000_000u64), 256);
+
+let args = vec![
+    DynSolValue::Address(recipient),
+    amount,
+];
+
+let receipt = contract.send("transfer", &args, &signer, &client).await?;
+println!("Transfer mined in block: {:?}", receipt.block_number);
+```
+
+---
+
+## Primitives Module
+
+The `primitives` module provides low-level encoding/decoding utilities for ABI and RLP formats.
+
+### Address Parsing
+
+```rust
+use eth_node::primitives::parse_address;
+
+let addr = parse_address("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266")?;
+let addr_no_prefix = parse_address("f39Fd6e51aad88F6F4ce6aB8827279cffFb92266")?; // Also works
+```
+
+### ABI Encoding/Decoding
+
+**uint256:**
+```rust
+use eth_node::primitives::{abi_encode_uint256, abi_decode_uint256};
+use alloy_primitives::U256;
+
+let value = U256::from(12345);
+let encoded = abi_encode_uint256(value);
+let decoded = abi_decode_uint256(&encoded)?;
+assert_eq!(value, decoded);
+```
+
+**address:**
+```rust
+use eth_node::primitives::{abi_encode_address, abi_decode_address};
+
+let addr = Address::from([0xAA; 20]);
+let encoded = abi_encode_address(addr);
+let decoded = abi_decode_address(&encoded)?;
+```
+
+**bool:**
+```rust
+use eth_node::primitives::{abi_encode_bool, abi_decode_bool};
+
+let encoded = abi_encode_bool(true);
+let decoded = abi_decode_bool(&encoded)?;
+```
+
+**string:**
+```rust
+use eth_node::primitives::{abi_encode_string, abi_decode_string};
+
+let encoded = abi_encode_string("Hello, Ethereum!");
+let decoded = abi_decode_string(&encoded)?;
+```
+
+### RLP Encoding/Decoding
+
+**u64:**
+```rust
+use eth_node::primitives::{rlp_encode_u64, rlp_decode_u64};
+
+let value = 42u64;
+let encoded = rlp_encode_u64(value);
+let decoded = rlp_decode_u64(&encoded)?;
+```
+
+**bytes:**
+```rust
+use eth_node::primitives::{rlp_encode_bytes, rlp_decode_bytes};
+
+let data = b"arbitrary bytes";
+let encoded = rlp_encode_bytes(data);
+let decoded = rlp_decode_bytes(&encoded)?;
+```
+
+---
+
+## Real-World Use Cases
+
+### Use Case 1: Freelancer Payment Processor
+
+**Scenario:** Alice hires Bob to design a logo. She escrows 12,345 wei in a smart contract. When Bob delivers, Alice approves payment, and Bob receives the funds.
+
+```rust
+use eth_node::{rpc::RpcClient, signer::EthSigner, tx::{TxBuilder, Broadcaster, BroadcastConfig}, contract::ContractCaller};
+use alloy_dyn_abi::DynSolValue;
+use alloy_primitives::{Address, U256};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // 1. Setup
+    let client = RpcClient::new("http://127.0.0.1:8545")?;
+    let alice = EthSigner::from_key("0xac09...")?; // Alice's key
+    let bob_address: Address = "0x7099...".parse()?;
+    
+    let escrow_abi = r#"[
+      {"name":"deposit","type":"function","inputs":[],"outputs":[],"stateMutability":"payable"},
+      {"name":"release","type":"function","inputs":[{"name":"recipient","type":"address"}],"outputs":[],"stateMutability":"nonpayable"},
+      {"name":"balance","type":"function","inputs":[],"outputs":[{"name":"","type":"uint256"}],"stateMutability":"view"}
+    ]"#;
+    
+    let escrow_contract = ContractCaller::new(escrow_address, escrow_abi)?;
+    
+    // 2. Alice deposits 12,345 wei
+    println!("Alice deposits payment...");
+    let deposit_builder = TxBuilder::new()
+        .to(escrow_address)
+        .value(U256::from(12_345))
+        .gas(100_000);
+    
+    let broadcaster = Broadcaster::new(&client, &alice);
+    let config = BroadcastConfig { poll_interval_ms: 1000, timeout_secs: 30 };
+    
+    let receipt = broadcaster.send(deposit_builder, config).await?;
+    println!("✓ Deposited in block {}", receipt.block_number.unwrap());
+    
+    // 3. Check escrow balance
+    let balance = escrow_contract.call("balance", &[], &client).await?;
+    if let Some(DynSolValue::Uint(bal, _)) = balance.first() {
+        println!("Escrow balance: {} wei", bal);
+        assert_eq!(*bal, U256::from(12_345));
+    }
+    
+    // 4. Bob delivers logo → Alice approves release
+    println!("\nBob delivered logo. Alice approves payment...");
+    let args = vec![DynSolValue::Address(bob_address)];
+    let release_receipt = escrow_contract.send("release", &args, &alice, &client).await?;
+    println!("✓ Payment released in block {}", release_receipt.block_number.unwrap());
+    
+    // 5. Verify Bob received funds
+    let bob_balance = client.get_balance(bob_address).await?;
+    println!("Bob's new balance: {} wei", bob_balance);
+    
+    Ok(())
+}
+```
+
+**Key Points:**
+- Escrow ensures Alice doesn't pay until delivery
+- Bob guaranteed payment once approved (on-chain enforcement)
+- Contract holds funds trustlessly (no intermediary needed)
+
+---
+
+### Use Case 2: DAO Voting with Gas Sponsorship
+
+**Scenario:** A DAO member wants to vote on proposal #42. Gas fees are sponsored by the DAO treasury (relay pattern).
+
+```rust
+use eth_node::{rpc::RpcClient, signer::EthSigner, contract::ContractCaller, events::Listener};
+use alloy_dyn_abi::DynSolValue;
+use futures::StreamExt;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = RpcClient::new("http://127.0.0.1:8545")?;
+    let dao_treasury = EthSigner::from_env()?; // DAO pays gas
+    
+    let dao_abi = r#"[
+      {"name":"vote","type":"function","inputs":[
+        {"name":"proposalId","type":"uint256"},
+        {"name":"support","type":"bool"}
+      ],"outputs":[],"stateMutability":"nonpayable"},
+      {"name":"VoteCast","type":"event","inputs":[
+        {"name":"voter","indexed":true,"type":"address"},
+        {"name":"proposalId","indexed":true,"type":"uint256"},
+        {"name":"support","indexed":false,"type":"bool"}
+      ]}
+    ]"#;
+    
+    let dao_contract = ContractCaller::new(dao_address, dao_abi)?;
+    
+    // 1. Member submits vote (DAO treasury pays gas)
+    let proposal_id = DynSolValue::Uint(U256::from(42), 256);
+    let support = DynSolValue::Bool(true); // Vote YES
+    
+    println!("Casting vote on proposal 42...");
+    let vote_receipt = dao_contract.send(
+        "vote", 
+        &[proposal_id, support], 
+        &dao_treasury, 
+        &client
+    ).await?;
+    
+    println!("✓ Vote cast in tx: {:?}", vote_receipt.transaction_hash);
+    println!("Gas paid by DAO treasury: {} wei", 
+             vote_receipt.gas_used * vote_receipt.effective_gas_price.unwrap_or(U256::from(0)));
+    
+    // 2. Listen for VoteCast events (real-time)
+    let filter = Filter::new()
+        .address(dao_address)
+        .from_block(BlockNumberOrTag::Latest)
+        .event("VoteCast(address,uint256,bool)");
+    
+    let mut stream = Listener::new("ws://127.0.0.1:8545").subscribe(filter);
+    
+    println!("\nWatching for votes...");
+    while let Some(Ok(log)) = stream.next().await {
+        // Decode VoteCast event
+        if let Ok(DecodedEvent::Custom(event)) = decode_custom_event(&log) {
+            println!("Vote detected:");
+            println!("  Voter: {}", event.voter);
+            println!("  Proposal: {}", event.proposal_id);
+            println!("  Support: {}", event.support);
+        }
+    }
+    
+    Ok(())
+}
+```
+
+**Key Points:**
+- Gas sponsorship enables fee-less voting for members
+- Real-time event streaming confirms votes as they happen
+- Treasury address can be a multisig or gnosis-safe
+
+---
+
+### Use Case 3: Token Vesting Schedule Checker
+
+**Scenario:** An employee wants to check how many tokens are unlocked from their vesting contract at any given timestamp.
+
+```rust
+use eth_node::{rpc::RpcClient, contract::ContractCaller};
+use alloy_dyn_abi::DynSolValue;
+use alloy_primitives::U256;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = RpcClient::new("http://127.0.0.1:8545")?;
+    
+    let vesting_abi = r#"[
+      {"name":"getUnlockedAmount","type":"function","inputs":[
+        {"name":"timestamp","type":"uint256"}
+      ],"outputs":[{"name":"","type":"uint256"}],"stateMutability":"view"},
+      {"name":"totalVested","type":"function","inputs":[],"outputs":[{"name":"","type":"uint256"}],"stateMutability":"view"},
+      {"name":"claimed","type":"function","inputs":[],"outputs":[{"name":"","type":"uint256"}],"stateMutability":"view"}
+    ]"#;
+    
+    let vesting_contract = ContractCaller::new(vesting_address, vesting_abi)?;
+    
+    // 1. Check total vested amount
+    let total = vesting_contract.call("totalVested", &[], &client).await?;
+    let total_tokens = if let Some(DynSolValue::Uint(val, _)) = total.first() {
+        *val
+    } else {
+        U256::ZERO
+    };
+    
+    println!("Total vested: {} tokens", total_tokens);
+    
+    // 2. Check already claimed
+    let claimed = vesting_contract.call("claimed", &[], &client).await?;
+    let claimed_tokens = if let Some(DynSolValue::Uint(val, _)) = claimed.first() {
+        *val
+    } else {
+        U256::ZERO
+    };
+    
+    println!("Already claimed: {} tokens", claimed_tokens);
+    
+    // 3. Check unlocked amount at different timestamps
+    let timestamps = vec![
+        1704067200, // 2024-01-01
+        1719792000, // 2024-07-01
+        1735689600, // 2025-01-01
+    ];
+    
+    for ts in timestamps {
+        let args = vec![DynSolValue::Uint(U256::from(ts), 256)];
+        let result = vesting_contract.call("getUnlockedAmount", &args, &client).await?;
+        
+        if let Some(DynSolValue::Uint(unlocked, _)) = result.first() {
+            let claimable = if *unlocked > claimed_tokens {
+                *unlocked - claimed_tokens
+            } else {
+                U256::ZERO
+            };
+            
+            let date = chrono::NaiveDateTime::from_timestamp_opt(ts as i64, 0)
+                .unwrap()
+                .format("%Y-%m-%d");
+            
+            println!("\n{}: {} tokens unlocked", date, unlocked);
+            println!("  → {} claimable now", claimable);
+        }
+    }
+    
+    Ok(())
+}
+```
+
+**Key Points:**
+- Read-only calls cost zero gas
+- Can simulate future unlock amounts without waiting
+- Useful for financial planning
+
+---
+
+### Use Case 4: NFT Batch Minter with Gas Optimization
+
+**Scenario:** Mint 100 NFTs to different recipients, monitoring gas usage per transaction to optimize batch size.
+
+```rust
+use eth_node::{rpc::RpcClient, signer::EthSigner, tx::{TxBuilder, Broadcaster, BroadcastConfig}, executor::{simulate_tx, SimulationContext}};
+use alloy_rpc_types::TransactionRequest;
+use alloy_primitives::{Address, Bytes, U256};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = RpcClient::new("http://127.0.0.1:8545")?;
+    let minter = EthSigner::from_env()?;
+    
+    let nft_address: Address = "0x5FbD...".parse()?;
+    let recipients: Vec<Address> = generate_recipients(100); // 100 distinct addresses
+    
+    // 1. Simulate single mint to estimate gas
+    let single_mint_data = encode_mint_call(recipients[0], 1);
+    let sim_tx = TransactionRequest {
+        from: Some(minter.address()),
+        to: Some(nft_address.into()),
+        data: Some(single_mint_data.clone()),
+        gas: Some(500_000),
+        ..Default::default()
+    };
+    
+    let context = SimulationContext {
+        block_number: 1,
+        timestamp: 1710000000,
+        base_fee_per_gas: Some(10),
+        gas_limit: 30_000_000,
+    };
+    
+    let sim_result = simulate_tx(&sim_tx, &context)?;
+    println!("Single mint gas: {}", sim_result.gas_used);
+    
+    // 2. Determine optimal batch size (target: 80% of block gas limit)
+    let block_gas_limit = 30_000_000u64;
+    let target_gas = (block_gas_limit as f64 * 0.8) as u64;
+    let single_gas = sim_result.gas_used;
+    let batch_size = std::cmp::min(target_gas / single_gas, 100);
+    
+    println!("Optimal batch size: {} mints per tx", batch_size);
+    
+    // 3. Batch mint with gas tracking
+    let config = BroadcastConfig { poll_interval_ms: 500, timeout_secs: 60 };
+    let broadcaster = Broadcaster::new(&client, &minter);
+    
+    let mut total_gas = 0u64;
+    let mut token_id = 1u64;
+    
+    for batch in recipients.chunks(batch_size as usize) {
+        let batch_data = encode_batch_mint_call(batch, token_id);
+        
+        let tx_builder = TxBuilder::new()
+            .to(nft_address)
+            .data(batch_data)
+            .gas((single_gas * batch.len() as u64) + 50_000); // Add safety margin
+        
+        println!("\nMinting tokens {} to {}...", token_id, token_id + batch.len() as u64 - 1);
+        let receipt = broadcaster.send(tx_builder, config).await?;
+        
+        let gas_used = receipt.gas_used;
+        total_gas += gas_used;
+        
+        println!("✓ Batch mined in block {}", receipt.block_number.unwrap());
+        println!("  Gas used: {}", gas_used);
+        println!("  Avg per mint: {}", gas_used / batch.len() as u64);
+        
+        token_id += batch.len() as u64;
+    }
+    
+    println!("\n=== Summary ===");
+    println!("Total tokens minted: {}", token_id - 1);
+    println!("Total gas used: {}", total_gas);
+    println!("Average gas per token: {}", total_gas / (token_id - 1));
+    
+    Ok(())
+}
+
+fn encode_mint_call(recipient: Address, token_id: u64) -> Bytes {
+    // Encode mint(address,uint256) function call
+    use alloy_sol_types::{sol, SolCall};
+    sol! {
+        function mint(address to, uint256 tokenId);
+    }
+    Bytes::from(mint::mintCall { to: recipient, tokenId: U256::from(token_id) }.abi_encode())
+}
+
+fn encode_batch_mint_call(recipients: &[Address], start_token_id: u64) -> Bytes {
+    // Encode batch mint logic (contract-specific)
+    todo!("Implement based on your NFT contract's batch mint function")
+}
+
+fn generate_recipients(count: usize) -> Vec<Address> {
+    (0..count)
+        .map(|i| Address::from_slice(&[i as u8; 20]))
+        .collect()
+}
+```
+
+**Key Points:**
+- Simulation predicts gas cost without spending gas
+- Batch size optimization prevents block gas limit hits
+- Gas tracking enables cost analysis
+
+---
+
+### Use Case 5: Multi-Sig Wallet Transaction Proposer
+
+**Scenario:** Propose a transaction to a multi-sig wallet that requires 3 of 5 signatures.
+
+```rust
+use eth_node::{rpc::RpcClient, signer::EthSigner, contract::ContractCaller};
+use alloy_dyn_abi::DynSolValue;
+use alloy_primitives::{Address, Bytes, U256};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = RpcClient::new("http://127.0.0.1:8545")?;
+    let proposer = EthSigner::from_env()?; // One of the 5 owners
+    
+    let multisig_abi = r#"[
+      {"name":"submitTransaction","type":"function","inputs":[
+        {"name":"destination","type":"address"},
+        {"name":"value","type":"uint256"},
+        {"name":"data","type":"bytes"}
+      ],"outputs":[{"name":"transactionId","type":"uint256"}],"stateMutability":"nonpayable"},
+      {"name":"confirmTransaction","type":"function","inputs":[
+        {"name":"transactionId","type":"uint256"}
+      ],"outputs":[],"stateMutability":"nonpayable"},
+      {"name":"getTransactionCount","type":"function","inputs":[
+        {"name":"pending","type":"bool"},
+        {"name":"executed","type":"bool"}
+      ],"outputs":[{"name":"","type":"uint256"}],"stateMutability":"view"}
+    ]"#;
+    
+    let multisig = ContractCaller::new(multisig_address, multisig_abi)?;
+    
+    // 1. Propose transaction: Send 5 ETH to charity
+    let charity: Address = "0xCafe...".parse()?;
+    let amount = U256::from(5_000_000_000_000_000_000u64); // 5 ETH
+    let empty_data = Bytes::default();
+    
+    println!("Proposing transaction: Send 5 ETH to charity...");
+    let submit_args = vec![
+        DynSolValue::Address(charity),
+        DynSolValue::Uint(amount, 256),
+        DynSolValue::Bytes(empty_data.to_vec()),
+    ];
+    
+    let submit_result = multisig.send("submitTransaction", &submit_args, &proposer, &client).await?;
+    
+    // Extract transaction ID from event logs
+    let tx_id = extract_transaction_id_from_receipt(&submit_result)?;
+    println!("✓ Transaction #{} proposed", tx_id);
+    
+    // 2. Auto-confirm as proposer (1 of 3 required signatures)
+    println!("\nConfirming as proposer...");
+    let confirm_args = vec![DynSolValue::Uint(U256::from(tx_id), 256)];
+    multisig.send("confirmTransaction", &confirm_args, &proposer, &client).await?;
+    println!("✓ Confirmation 1/3 submitted");
+    
+    // 3. Check pending transaction count
+    let pending_args = vec![
+        DynSolValue::Bool(true),  // Include pending
+        DynSolValue::Bool(false), // Exclude executed
+    ];
+    let count = multisig.call("getTransactionCount", &pending_args, &client).await?;
+    
+    if let Some(DynSolValue::Uint(pending_count, _)) = count.first() {
+        println!("\nPending transactions: {}", pending_count);
+    }
+    
+    println!("\nWaiting for 2 more owners to confirm transaction #{}...", tx_id);
+    println!("Once reached, transaction will auto-execute.");
+    
+    Ok(())
+}
+
+fn extract_transaction_id_from_receipt(receipt: &TransactionReceipt) -> Result<u64, Box<dyn std::error::Error>> {
+    // Parse Submission(uint256 indexed transactionId) event
+    for log in &receipt.inner.logs() {
+        if log.topics().len() >= 2 {
+            let tx_id_bytes = log.topics()[1];
+            return Ok(U256::from_be_bytes(tx_id_bytes.0).to::<u64>());
+        }
+    }
+    Err("Transaction ID not found in logs".into())
+}
+```
+
+**Key Points:**
+- Multi-sig enforces consensus for high-value operations
+- Transaction proposed but not executed until threshold reached
+- On-chain state machine tracks confirmations
 
 ---
 
