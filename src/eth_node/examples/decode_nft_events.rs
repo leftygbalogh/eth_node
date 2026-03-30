@@ -37,8 +37,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 erc721_transfer_topic,
                 B256::left_padding_from(&[0x11; 20]), // from
                 B256::left_padding_from(&[0x22; 20]), // to
+                B256::from(U256::from(42).to_be_bytes()), // tokenId (indexed)
             ],
-            Bytes::from(U256::from(42).to_be_bytes_vec()), // tokenId
+            Bytes::default(), // No data for indexed-only event
         ),
         ..Default::default()
     };
@@ -72,7 +73,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 B256::left_padding_from(&[0x33; 20]), // owner/account
                 B256::left_padding_from(&[0x44; 20]), // operator
             ],
-            Bytes::from([0x01]), // approved = true
+            Bytes::copy_from_slice(&[
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, // approved = true
+            ]),
         ),
         ..Default::default()
     };
