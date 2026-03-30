@@ -13,6 +13,10 @@ broadcast/
 temp_*.sh
 temp_*.ps1
 
+# Session artifacts
+coverage-output.txt
+documentation_issues.txt
+
 # Solidity cache
 *.cache
 solidity-files-cache.json
